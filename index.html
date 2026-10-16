@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gamify — Minimalist Daily Puzzle Platform</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #161f30;
+      --border: #26334d;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.2);
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(22, 31, 48, 0.7);
+      backdrop-filter: blur(8px);
+    }
+
+    .brand { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.025em; color: var(--accent); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+    }
+
+    main {
+      flex: 1;
+      max-width: 900px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      gap: 2rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    .matrix-grid {
+      display: inline-grid;
+      gap: 6px;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: #0d1322;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .matrix-cell {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      font-weight: 600;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+    }
+
+    .matrix-cell.target {
+      background: #1e293b;
+      color: var(--accent);
+      font-size: 0.95rem;
+      border-color: #334155;
+    }
+
+    .matrix-input {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.15rem;
+      text-align: center;
+      outline: none;
+    }
+
+    .actions { display: flex; gap: 1rem; margin-top: 1rem; }
+    button.primary {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      font-weight: 600;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button.primary:hover { opacity: 0.9; }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 0.65rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .leaderboard-table th { color: var(--text-muted); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">GAMIFY // STATIC DAILY</div>
+    <div style="display: flex; gap: 0.75rem;">
+      <div class="badge">🪙 Coins: <span id="coin-balance">100</span></div>
+      <div class="badge">🔥 Streak: <span id="streak-count">0</span></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <h2 id="game-title">Number Grid Matrix</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+            Generated deterministically in-browser via Seeded PRNG. Zero server queries.
+          </p>
+        </div>
+        <div id="status-badge" class="badge" style="color: var(--accent);">Daily Active</div>
+      </div>
+
+      <div class="tabs" style="margin-top: 1.25rem;">
+        <button class="tab-btn active" data-tier="easy">Easy (3x3)</button>
+        <button class="tab-btn" data-tier="medium">Medium (4x4)</button>
+        <button class="tab-btn" data-tier="hard">Hard (5x5)</button>
+        <button class="tab-btn" data-tier="playground">Unlimited Playground</button>
+      </div>
+
+      <div id="puzzle-container">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="actions">
+        <button id="validate-btn" class="primary">Verify & Submit Score</button>
+        <button id="unlock-btn" class="tab-btn" style="display: none;">Unlock Tier</button>
+      </div>
+      <div id="feedback-msg" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+    </section>
+
+    <section class="card">
+      <div class="tabs">
+        <button class="tab-btn active" id="btn-daily-tab">Today's Daily Leaderboard</button>
+        <button class="tab-btn" id="btn-global-tab">Global Averages (20+ Plays)</button>
+      </div>
+      <div id="leaderboard-view">Loading standings...</div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/client/app.js"></script>
+</body>
+</html>

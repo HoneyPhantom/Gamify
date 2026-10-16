@@ -1,0 +1,17 @@
+name = "gamify-api"
+main = "src/worker/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gamify-prod-db"
+database_id = "00000000-0000-0000-0000-000000000000" # Replace with 'npx wrangler d1 create gamify-prod-db' output
+migrations_dir = "./"
+
+# Static site configuration (if deploying unified or linking to Pages)
+# [site]
+# bucket = "./dist"
