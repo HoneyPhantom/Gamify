@@ -18,6 +18,26 @@ export default {
       });
     }
 
+    // -------------------------------------------------------------------
+    // Static Asset Delivery (Cloudflare Workers Static Assets / Pages)
+    // -------------------------------------------------------------------
+    if (!url.pathname.startsWith('/api')) {
+      if (env.ASSETS) {
+        return await env.ASSETS.fetch(request);
+      }
+      
+      // Fallback if static assets binding is not yet attached
+      if (url.pathname === '/' || url.pathname === '/index.html') {
+        return new Response(
+          `<!DOCTYPE html><html><head><title>Gamify API Online</title><style>body{font-family:sans-serif;background:#0b0f19;color:#e2e8f0;padding:2rem;text-align:center;}</style></head><body><h1>🎮 Gamify API Worker is Live</h1><p>Static assets are not bound. If deploying via Workers, configure <code>[assets] directory = "./dist"</code>. If deploying via Cloudflare Pages, set build output to <code>dist</code>.</p><p><a href="/api/leaderboard/number-grid" style="color:#38bdf8">Check Leaderboard API</a></p></body></html>`,
+          {
+            status: 200,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          }
+        );
+      }
+    }
+
     try {
       // -------------------------------------------------------------------
       // 1. Google OAuth Token Exchange Endpoint

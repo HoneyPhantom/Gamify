@@ -12,6 +12,7 @@ database_name = "gamify-prod-db"
 database_id = "05381ba1-cc11-468f-9859-54447cdc446f"
 migrations_dir = "./"
 
-# Static site configuration (if deploying unified or linking to Pages)
-# [site]
-# bucket = "./dist"
+# Cloudflare Workers Static Assets (Serves frontend static bundle from ./dist)
+[assets]
+directory = "./dist"
+binding = "ASSETS"

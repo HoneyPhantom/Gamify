@@ -7,6 +7,7 @@ export interface Env {
   JWT_SECRET: string;
   GOOGLE_CLIENT_ID: string;
   ENVIRONMENT?: string;
+  ASSETS?: Fetcher;
 }
 
 export interface AuthenticatedUser {
