@@ -9,7 +9,7 @@ ENVIRONMENT = "production"
 [[d1_databases]]
 binding = "DB"
 database_name = "gamify-prod-db"
-database_id = "00000000-0000-0000-0000-000000000000" # Replace with 'npx wrangler d1 create gamify-prod-db' output
+database_id = "05381ba1-cc11-468f-9859-54447cdc446f"
 migrations_dir = "./"
 
 # Static site configuration (if deploying unified or linking to Pages)
