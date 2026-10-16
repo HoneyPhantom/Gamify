@@ -88,7 +88,9 @@ function createMatrixPuzzle(rng, size, revealRatio) {
 export const gameConfig = {
   id: "number-grid",
   title: "Number Grid Matrix",
-  description: "Deduce the missing numbers to balance row and column target sums.",
+  description: "Deduce missing numbers to balance row & column target sums.",
+  badge: "Logic Grid",
+  icon: "🔢",
   difficulties: {
     easy: {
       tier: "easy",

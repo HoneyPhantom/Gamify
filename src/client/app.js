@@ -1,176 +1,365 @@
-import { getDailyPuzzle, getPlaygroundPuzzle, getTodayDateStr } from '../games/index.js';
+import { getAllGames, getDailyPuzzle, getPlaygroundPuzzle, getTodayDateStr } from '../games/index.js';
+import { KB_ROWS, evaluateWordleGuess } from '../games/wordle.js';
 import { api } from './api.js';
 
+// Application State
+let activeGameId = 'wordle';
 let currentTier = 'easy';
 let currentPuzzle = null;
 let startTime = Date.now();
 let userUnlocks = { easy_unlocked: 1, medium_unlocked: 0, hard_unlocked: 0, playground_unlocked: 0 };
 
-const puzzleContainer = document.getElementById('puzzle-container');
-const feedbackMsg = document.getElementById('feedback-msg');
-const unlockBtn = document.getElementById('unlock-btn');
-const validateBtn = document.getElementById('validate-btn');
+// Wordle Runtime State
+let targetWord = "";
+let maxAttempts = 6;
+let currentRow = 0;
+let currentCol = 0;
+let guesses = [];
+let isGameOver = false;
+let totalScore = 0;
+let gamesWon = 0;
+
+// DOM Elements
+const lobbyView = document.getElementById('lobby-view');
+const gameView = document.getElementById('game-view');
+const gamesGrid = document.getElementById('games-grid');
+const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
+const brandLogo = document.getElementById('brand-logo');
+
+const lockedTierContainer = document.getElementById('locked-tier-container');
+const lockedTierTitle = document.getElementById('locked-tier-title');
+const unlockTierBtn = document.getElementById('unlock-tier-btn');
+const activeGameContainer = document.getElementById('active-game-container');
+
 const coinBalanceEl = document.getElementById('coin-balance');
 const streakCountEl = document.getElementById('streak-count');
+const statusEl = document.getElementById('status');
+const totalScoreEl = document.getElementById('total-score');
+const gamesWonEl = document.getElementById('games-won');
+const boardEl = document.getElementById('board');
+const keyboardEl = document.getElementById('keyboard');
+const newGameBtn = document.getElementById('new-game-btn');
+const tierTabs = document.getElementById('tier-tabs');
 
+// =========================================================================
+// 1. MODULAR GAMES LOBBY RENDERING
+// =========================================================================
+function renderGamesLobby() {
+  const games = getAllGames();
+  gamesGrid.innerHTML = '';
+
+  games.forEach(game => {
+    const box = document.createElement('div');
+    box.className = 'game-box';
+    box.innerHTML = `
+      <div>
+        <div class="game-box-top">
+          <div class="game-icon">${game.icon || '🎮'}</div>
+          <span class="game-pill">${game.badge || 'Daily Puzzle'}</span>
+        </div>
+        <h2 class="game-box-title">${game.title}</h2>
+        <p class="game-box-desc">${game.description}</p>
+      </div>
+      <div class="game-box-footer">
+        <span class="tiers-tag">4 Difficulty Tiers</span>
+        <button class="enter-btn">Play Now →</button>
+      </div>
+    `;
+
+    box.addEventListener('click', () => {
+      enterGame(game.id);
+    });
+
+    gamesGrid.appendChild(box);
+  });
+}
+
+function enterGame(gameId) {
+  activeGameId = gameId;
+  lobbyView.classList.add('hidden');
+  gameView.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Reset to easy tier on enter
+  currentTier = 'easy';
+  document.querySelectorAll('#tier-tabs .tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tier === 'easy');
+  });
+
+  loadCurrentPuzzle();
+  loadLeaderboard();
+}
+
+function returnToLobby() {
+  gameView.classList.add('hidden');
+  lobbyView.classList.remove('hidden');
+}
+
+backToLobbyBtn.addEventListener('click', returnToLobby);
+brandLogo.addEventListener('click', returnToLobby);
+
+// =========================================================================
+// 2. PUZZLE GENERATION & TIER MANAGEMENT
+// =========================================================================
 function isTierUnlocked(tier) {
   if (tier === 'easy') return true;
   return userUnlocks[`${tier}_unlocked`] === 1;
 }
 
-function loadPuzzle(tier) {
-  currentTier = tier;
-  feedbackMsg.textContent = '';
+function loadCurrentPuzzle() {
   const dateStr = getTodayDateStr();
 
-  if (!isTierUnlocked(tier)) {
-    puzzleContainer.innerHTML = `
-      <div style="padding: 2.5rem; text-align: center; color: var(--text-muted); border: 1px dashed var(--border); border-radius: 8px;">
-        🔒 <strong>Tier Locked</strong><br/>
-        This tier requires unlocking before access.
-      </div>
-    `;
-    unlockBtn.style.display = 'inline-block';
-    unlockBtn.textContent = `Unlock ${tier.toUpperCase()}`;
-    validateBtn.style.display = 'none';
+  // Tier Access Check
+  if (!isTierUnlocked(currentTier)) {
+    activeGameContainer.classList.add('hidden');
+    lockedTierContainer.classList.remove('hidden');
+    lockedTierTitle.textContent = `${currentTier.toUpperCase()} Tier Locked`;
+    unlockTierBtn.textContent = `Unlock ${currentTier.toUpperCase()}`;
     return;
   }
 
-  unlockBtn.style.display = 'none';
-  validateBtn.style.display = 'inline-block';
+  lockedTierContainer.classList.add('hidden');
+  activeGameContainer.classList.remove('hidden');
 
-  // Instant zero-worker client-side generation
-  if (tier === 'playground') {
-    currentPuzzle = getPlaygroundPuzzle('number-grid', 4);
+  // Generate puzzle locally using deterministic PRNG (zero-worker overhead)
+  if (currentTier === 'playground') {
+    currentPuzzle = getPlaygroundPuzzle(activeGameId);
   } else {
-    currentPuzzle = getDailyPuzzle('number-grid', tier, dateStr);
+    currentPuzzle = getDailyPuzzle(activeGameId, currentTier, dateStr);
   }
 
   startTime = Date.now();
-  renderGrid(currentPuzzle);
+
+  if (activeGameId === 'wordle') {
+    initWordle(currentPuzzle);
+  }
 }
 
-function renderGrid(puzzle) {
-  const { size, initialGrid, rowTargets, colTargets } = puzzle;
-  
-  // Matrix has size + 1 columns and size + 1 rows (extra row/col for targets)
-  let html = `<div class="matrix-grid" style="grid-template-columns: repeat(${size + 1}, 48px);">`;
-
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      const val = initialGrid[r][c];
-      if (val !== null) {
-        html += `<div class="matrix-cell" style="opacity: 0.85;">${val}</div>`;
-      } else {
-        html += `
-          <div class="matrix-cell">
-            <input type="number" min="1" max="${puzzle.maxVal}" class="matrix-input" data-row="${r}" data-col="${c}" />
-          </div>`;
-      }
-    }
-    // Row target column
-    html += `<div class="matrix-cell target">→ ${rowTargets[r]}</div>`;
-  }
-
-  // Column target row
-  for (let c = 0; c < size; c++) {
-    html += `<div class="matrix-cell target">↓ ${colTargets[c]}</div>`;
-  }
-  html += `<div class="matrix-cell target">★</div></div>`;
-
-  puzzleContainer.innerHTML = html;
-}
-
-function readUserGrid() {
-  const size = currentPuzzle.size;
-  const grid = [];
-  for (let r = 0; r < size; r++) {
-    const row = [];
-    for (let c = 0; c < size; c++) {
-      const fixedVal = currentPuzzle.initialGrid[r][c];
-      if (fixedVal !== null) {
-        row.push(fixedVal);
-      } else {
-        const input = puzzleContainer.querySelector(`input[data-row="${r}"][data-col="${c}"]`);
-        row.push(input && input.value ? parseInt(input.value, 10) : 0);
-      }
-    }
-    grid.push(row);
-  }
-  return grid;
-}
-
-// Tier Switch Tab Listeners
-document.querySelectorAll('.tab-btn[data-tier]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn[data-tier]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    loadPuzzle(btn.dataset.tier);
-  });
+// Tier Switch Listeners
+tierTabs.addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  document.querySelectorAll('#tier-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTier = btn.dataset.tier;
+  loadCurrentPuzzle();
 });
 
 // Unlock Tier Action
-unlockBtn.addEventListener('click', async () => {
+unlockTierBtn.addEventListener('click', async () => {
   try {
-    feedbackMsg.style.color = 'var(--accent)';
-    feedbackMsg.textContent = `Unlocking ${currentTier}...`;
-    const res = await api.unlockTier('number-grid', currentTier);
+    unlockTierBtn.disabled = true;
+    unlockTierBtn.textContent = 'Unlocking...';
+
+    const res = await api.unlockTier(activeGameId, currentTier);
     userUnlocks = res.unlocks;
     coinBalanceEl.textContent = res.remainingCoins;
-    feedbackMsg.style.color = 'var(--success)';
-    feedbackMsg.textContent = res.message;
-    loadPuzzle(currentTier);
+    loadCurrentPuzzle();
   } catch (err) {
-    feedbackMsg.style.color = 'var(--danger)';
-    feedbackMsg.textContent = err.message;
+    alert(err.message || 'Failed to unlock tier');
+  } finally {
+    unlockTierBtn.disabled = false;
   }
 });
 
-// Validate & Submit Score Action
-validateBtn.addEventListener('click', async () => {
-  const userGrid = readUserGrid();
-  const isValid = currentPuzzle.validate(userGrid);
+// =========================================================================
+// 3. WORDLE GAME ENGINE
+// =========================================================================
+function initWordle(puzzle) {
+  targetWord = puzzle.targetWord;
+  maxAttempts = puzzle.maxAttempts || 6;
+  currentRow = 0;
+  currentCol = 0;
+  guesses = Array(maxAttempts).fill("").map(() => Array(5).fill(""));
+  isGameOver = false;
 
-  if (!isValid) {
-    feedbackMsg.style.color = 'var(--danger)';
-    feedbackMsg.textContent = '❌ Solution incorrect! Check target sums.';
+  statusEl.innerText = `Attempt 1 of ${maxAttempts}`;
+  statusEl.style.color = "var(--text-muted)";
+
+  renderBoard();
+  renderKeyboard();
+}
+
+function updateScoreDisplay() {
+  totalScoreEl.innerText = totalScore;
+  gamesWonEl.innerText = gamesWon;
+}
+
+function renderBoard() {
+  boardEl.innerHTML = "";
+  boardEl.style.gridTemplateRows = `repeat(${maxAttempts}, 1fr)`;
+
+  for (let r = 0; r < maxAttempts; r++) {
+    const rowEl = document.createElement("div");
+    rowEl.className = "row";
+    for (let c = 0; c < 5; c++) {
+      const cellEl = document.createElement("div");
+      cellEl.className = "cell";
+      cellEl.id = `cell-${r}-${c}`;
+      cellEl.innerText = guesses[r][c] || "";
+      rowEl.appendChild(cellEl);
+    }
+    boardEl.appendChild(rowEl);
+  }
+}
+
+function renderKeyboard() {
+  keyboardEl.innerHTML = "";
+
+  KB_ROWS.forEach(row => {
+    const rowEl = document.createElement("div");
+    rowEl.className = "kb-row";
+    row.forEach(key => {
+      const btn = document.createElement("button");
+      btn.className = "key";
+      btn.id = `key-${key}`;
+      btn.innerText = key === "DELETE" ? "⌫" : key;
+      if (key === "ENTER" || key === "DELETE") {
+        btn.classList.add("wide");
+      }
+      btn.addEventListener("click", () => handleInput(key));
+      rowEl.appendChild(btn);
+    });
+    keyboardEl.appendChild(rowEl);
+  });
+}
+
+function handleInput(key) {
+  if (isGameOver) return;
+
+  if (key === "ENTER") {
+    submitGuess();
+  } else if (key === "DELETE" || key === "BACKSPACE") {
+    removeLetter();
+  } else if (/^[A-Z]$/.test(key)) {
+    addLetter(key);
+  }
+}
+
+function addLetter(letter) {
+  if (currentCol < 5 && currentRow < maxAttempts) {
+    guesses[currentRow][currentCol] = letter;
+    const cell = document.getElementById(`cell-${currentRow}-${currentCol}`);
+    if (cell) {
+      cell.innerText = letter;
+      cell.classList.add("pop");
+      setTimeout(() => cell.classList.remove("pop"), 100);
+    }
+    currentCol++;
+  }
+}
+
+function removeLetter() {
+  if (currentCol > 0) {
+    currentCol--;
+    guesses[currentRow][currentCol] = "";
+    const cell = document.getElementById(`cell-${currentRow}-${currentCol}`);
+    if (cell) cell.innerText = "";
+  }
+}
+
+async function submitGuess() {
+  if (currentCol < 5) {
+    showStatus("Word must be 5 letters!", "var(--danger)");
     return;
   }
 
-  const timeTakenMs = Date.now() - startTime;
-  const baseScore = currentPuzzle.size * 1000;
-  const timeBonus = Math.max(0, 5000 - Math.floor(timeTakenMs / 10));
-  const finalScore = baseScore + timeBonus;
+  const guess = guesses[currentRow].join("");
+  const result = evaluateWordleGuess(guess, targetWord);
 
-  feedbackMsg.style.color = 'var(--success)';
-  feedbackMsg.textContent = `🎉 Solved correctly in ${(timeTakenMs / 1000).toFixed(1)}s! Submitting...`;
+  // Apply row animation and key coloring
+  for (let i = 0; i < 5; i++) {
+    const cell = document.getElementById(`cell-${currentRow}-${i}`);
+    const letter = guess[i];
+    const statusClass = result[i];
 
-  try {
-    const res = await api.submitScore({
-      gameId: 'number-grid',
-      difficulty: currentTier,
-      score: finalScore,
-      timeTakenMs,
-      dateStr: getTodayDateStr(),
-    });
+    if (cell) cell.classList.add(statusClass);
 
-    coinBalanceEl.textContent = res.currentCoins;
-    streakCountEl.textContent = res.streakCount;
-    feedbackMsg.textContent = `🏆 Score recorded (${finalScore} pts)! ${res.coinsAwarded > 0 ? `+${res.coinsAwarded} Coins Earned!` : 'Daily puzzle already completed today.'}`;
-    loadLeaderboard();
-  } catch (err) {
-    feedbackMsg.style.color = 'var(--warning)';
-    feedbackMsg.textContent = `Validated locally! (Server: ${err.message})`;
+    const keyBtn = document.getElementById(`key-${letter}`);
+    if (keyBtn) {
+      if (statusClass === "correct") {
+        keyBtn.className = "key correct";
+      } else if (statusClass === "present" && !keyBtn.classList.contains("correct")) {
+        keyBtn.className = "key present";
+      } else if (statusClass === "absent" && !keyBtn.classList.contains("correct") && !keyBtn.classList.contains("present")) {
+        keyBtn.className = "key absent";
+      }
+    }
+  }
+
+  // Win Condition
+  if (guess === targetWord) {
+    const earnedPoints = (maxAttempts - currentRow) * 100;
+    totalScore += earnedPoints;
+    gamesWon++;
+    updateScoreDisplay();
+
+    showStatus(`🎉 Solved in ${currentRow + 1} tries! (+${earnedPoints} pts)`, "var(--correct-bg)");
+    isGameOver = true;
+
+    // Submit score to Cloudflare Workers API
+    const timeTakenMs = Date.now() - startTime;
+    try {
+      const res = await api.submitScore({
+        gameId: activeGameId,
+        difficulty: currentTier,
+        score: earnedPoints,
+        timeTakenMs,
+        dateStr: getTodayDateStr(),
+      });
+
+      if (res.coinsAwarded > 0) {
+        coinBalanceEl.textContent = res.currentCoins;
+        streakCountEl.textContent = res.streakCount;
+        showStatus(`🎉 +${earnedPoints} Pts & +${res.coinsAwarded} Coins Earned!`, "var(--correct-bg)");
+      }
+      loadLeaderboard();
+    } catch (e) {
+      console.warn('Score submission note:', e.message);
+    }
+    return;
+  }
+
+  currentRow++;
+  currentCol = 0;
+
+  // Loss Condition
+  if (currentRow >= maxAttempts) {
+    showStatus(`Game Over! Word was: ${targetWord}`, "var(--danger)");
+    isGameOver = true;
+  } else {
+    showStatus(`Attempt ${currentRow + 1} of ${maxAttempts}`, "var(--text-muted)");
+  }
+}
+
+function showStatus(msg, color) {
+  statusEl.innerText = msg;
+  statusEl.style.color = color;
+}
+
+newGameBtn.addEventListener('click', () => {
+  loadCurrentPuzzle();
+});
+
+// Physical Keyboard Listener
+window.addEventListener("keydown", (e) => {
+  if (gameView.classList.contains('hidden')) return;
+  const key = e.key.toUpperCase();
+  if (key === "ENTER" || key === "BACKSPACE" || /^[A-Z]$/.test(key)) {
+    handleInput(key);
   }
 });
 
+// =========================================================================
+// 4. LEADERBOARD RENDERING
+// =========================================================================
 async function loadLeaderboard() {
   const view = document.getElementById('leaderboard-view');
   try {
-    const data = await api.getLeaderboard('number-grid');
+    const data = await api.getLeaderboard(activeGameId);
     renderLeaderboardView(data);
   } catch {
-    view.innerHTML = '<p style="color: var(--text-muted);">Leaderboard currently offline.</p>';
+    view.innerHTML = '<p style="color: var(--text-muted);">Leaderboard is loading or offline.</p>';
   }
 }
 
@@ -181,7 +370,7 @@ function renderLeaderboardView(data) {
   if (isGlobal) {
     const rows = data.globalLeaderboard || [];
     if (!rows.length) {
-      view.innerHTML = '<p style="color: var(--text-muted);">No global ranks yet (requires 20+ completed games).</p>';
+      view.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No global ranks yet (requires 20+ completed games).</p>';
       return;
     }
     view.innerHTML = `
@@ -204,7 +393,7 @@ function renderLeaderboardView(data) {
   } else {
     const rows = data.dailyLeaderboard || [];
     if (!rows.length) {
-      view.innerHTML = '<p style="color: var(--text-muted);">No daily entries recorded yet today. Be the first!</p>';
+      view.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No daily entries recorded yet today. Be the first to solve!</p>';
       return;
     }
     view.innerHTML = `
@@ -239,6 +428,8 @@ document.getElementById('btn-global-tab').addEventListener('click', (e) => {
   loadLeaderboard();
 });
 
-// Initial boot
-loadPuzzle('easy');
-loadLeaderboard();
+// =========================================================================
+// 5. APPLICATION BOOTSTRAP
+// =========================================================================
+renderGamesLobby();
+updateScoreDisplay();

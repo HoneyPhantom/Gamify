@@ -3,51 +3,71 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gamify — Minimalist Daily Puzzle Platform</title>
+  <title>Gamify — Minimalist Daily Puzzle Gaming Platform</title>
   <style>
     :root {
-      --bg: #0b0f19;
+      --bg-color: #0b0f19;
       --card-bg: #161f30;
-      --border: #26334d;
-      --text: #e2e8f0;
+      --card-hover: #1c283e;
+      --border-color: #26334d;
+      --text-color: #f8fafc;
       --text-muted: #94a3b8;
+      --correct-bg: #22c55e;
+      --present-bg: #eab308;
+      --absent-bg: #334155;
+      --key-bg: #475569;
+      --key-hover: #64748b;
       --accent: #38bdf8;
       --accent-glow: rgba(56, 189, 248, 0.2);
-      --success: #34d399;
+      --danger: #f43f5e;
       --warning: #fbbf24;
-      --danger: #f87171;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
-    header {
+    /* Top Navigation Header */
+    header.site-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.25rem 2rem;
-      border-bottom: 1px solid var(--border);
-      background: rgba(22, 31, 48, 0.7);
-      backdrop-filter: blur(8px);
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(22, 31, 48, 0.85);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
 
-    .brand { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.025em; color: var(--accent); }
+    .brand {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--accent);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.25rem 0.75rem;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
       border-radius: 9999px;
       font-size: 0.85rem;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
+      font-weight: 600;
+      background: rgba(11, 15, 25, 0.6);
+      border: 1px solid var(--border-color);
     }
 
     main {
@@ -56,146 +76,515 @@
       width: 100%;
       margin: 2rem auto;
       padding: 0 1.5rem;
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 2rem;
     }
 
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
+    /* View Transitions */
+    .hidden { display: none !important; }
+
+    /* =========================================================================
+       VIEW 1: MODULAR GAMES LOBBY (BOXED GRID)
+       ========================================================================= */
+    .lobby-header {
+      text-align: center;
+      margin-bottom: 0.5rem;
     }
 
-    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-    .tab-btn {
+    .lobby-header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .lobby-header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .game-box {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.75rem;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-box:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 30px -10px var(--accent-glow);
+      background-color: var(--card-hover);
+    }
+
+    .game-box-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .game-icon {
+      font-size: 2.5rem;
+      line-height: 1;
+    }
+
+    .game-pill {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .game-box-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+    }
+
+    .game-box-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+      flex: 1;
+    }
+
+    .game-box-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(71, 85, 105, 0.4);
+      padding-top: 1rem;
+    }
+
+    .tiers-tag {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .enter-btn {
+      background: var(--accent);
+      color: #0b0f19;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .enter-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* =========================================================================
+       VIEW 2: ACTIVE GAME ARENA
+       ========================================================================= */
+    .game-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .back-btn {
       background: transparent;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-color);
       color: var(--text-muted);
       padding: 0.5rem 1rem;
       border-radius: 8px;
       cursor: pointer;
-      font-weight: 500;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
     }
-    .tab-btn.active {
-      background: var(--accent);
-      color: #000;
+
+    .back-btn:hover {
+      color: var(--text-color);
       border-color: var(--accent);
     }
 
-    .matrix-grid {
-      display: inline-grid;
-      gap: 6px;
-      margin: 1.5rem 0;
-      padding: 1rem;
-      background: #0d1322;
-      border-radius: 8px;
-      border: 1px solid var(--border);
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
     }
 
-    .matrix-cell {
-      width: 48px;
-      height: 48px;
+    .tab-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0b0f19;
+      border-color: var(--accent);
+    }
+
+    .game-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 24px 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .score-board {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .score-board span {
+      color: var(--accent);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    button.reset-btn {
+      background-color: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 8px 16px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button.reset-btn:hover {
+      opacity: 0.9;
+    }
+
+    .status {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      height: 24px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Wordle Board Styling */
+    .board {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .cell {
+      width: 54px;
+      height: 54px;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.15rem;
-      font-weight: 600;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
+      font-size: 1.7rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      user-select: none;
+      transition: transform 0.1s ease, background-color 0.35s ease, border-color 0.35s ease;
     }
 
-    .matrix-cell.target {
-      background: #1e293b;
-      color: var(--accent);
-      font-size: 0.95rem;
-      border-color: #334155;
+    .cell.pop {
+      transform: scale(1.08);
+      border-color: var(--text-muted);
     }
 
-    .matrix-input {
-      width: 100%;
-      height: 100%;
-      background: transparent;
-      border: none;
+    .cell.correct {
+      background-color: var(--correct-bg);
+      border-color: var(--correct-bg);
       color: #fff;
-      font-size: 1.15rem;
-      text-align: center;
-      outline: none;
     }
 
-    .actions { display: flex; gap: 1rem; margin-top: 1rem; }
-    button.primary {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      font-weight: 600;
-      padding: 0.65rem 1.25rem;
-      border-radius: 8px;
-      cursor: pointer;
+    .cell.present {
+      background-color: var(--present-bg);
+      border-color: var(--present-bg);
+      color: #fff;
     }
-    button.primary:hover { opacity: 0.9; }
+
+    .cell.absent {
+      background-color: var(--absent-bg);
+      border-color: var(--absent-bg);
+      color: var(--text-muted);
+    }
+
+    /* Wordle Keyboard Styling */
+    .keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .kb-row {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      width: 100%;
+    }
+
+    .key {
+      background-color: var(--key-bg);
+      color: var(--text-color);
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      padding: 0;
+      height: 50px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      text-transform: uppercase;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+
+    .key:hover {
+      background-color: var(--key-hover);
+    }
+
+    .key.wide {
+      flex: 1.5;
+      font-size: 0.75rem;
+    }
+
+    .key.correct {
+      background-color: var(--correct-bg) !important;
+      color: #fff;
+    }
+
+    .key.present {
+      background-color: var(--present-bg) !important;
+      color: #fff;
+    }
+
+    .key.absent {
+      background-color: var(--absent-bg) !important;
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .rules {
+      background-color: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 15px;
+    }
+
+    .rules h3 {
+      margin: 0 0 6px 0;
+      color: var(--text-color);
+      font-size: 0.9rem;
+    }
+
+    .rules ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .rules li {
+      margin-bottom: 3px;
+    }
+
+    /* Leaderboard Container */
+    .leaderboard-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.5rem;
+      width: 100%;
+    }
 
     .leaderboard-table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
     }
+
     .leaderboard-table th, .leaderboard-table td {
-      padding: 0.65rem;
+      padding: 0.75rem;
       text-align: left;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-color);
       font-size: 0.9rem;
     }
-    .leaderboard-table th { color: var(--text-muted); font-weight: 600; }
+
+    .leaderboard-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Locked state overlay */
+    .locked-view {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      border: 1px dashed var(--border-color);
+      border-radius: 12px;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">GAMIFY // STATIC DAILY</div>
-    <div style="display: flex; gap: 0.75rem;">
+
+  <!-- Top Sticky Navigation -->
+  <header class="site-header">
+    <div class="brand" id="brand-logo">
+      <span>🎮</span>
+      <span>GAMIFY</span>
+    </div>
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
       <div class="badge">🪙 Coins: <span id="coin-balance">100</span></div>
       <div class="badge">🔥 Streak: <span id="streak-count">0</span></div>
     </div>
   </header>
 
   <main>
-    <section class="card">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
-          <h2 id="game-title">Number Grid Matrix</h2>
-          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
-            Generated deterministically in-browser via Seeded PRNG. Zero server queries.
-          </p>
-        </div>
-        <div id="status-badge" class="badge" style="color: var(--accent);">Daily Active</div>
+    <!-- ================================================================= -->
+    <!-- VIEW 1: MODULAR GAMES LOBBY (BOXES)                               -->
+    <!-- ================================================================= -->
+    <section id="lobby-view">
+      <div class="lobby-header">
+        <h1>Daily Puzzles Hub</h1>
+        <p>Select a game module to play today's seeded daily challenge or unlimited playground.</p>
       </div>
 
-      <div class="tabs" style="margin-top: 1.25rem;">
-        <button class="tab-btn active" data-tier="easy">Easy (3x3)</button>
-        <button class="tab-btn" data-tier="medium">Medium (4x4)</button>
-        <button class="tab-btn" data-tier="hard">Hard (5x5)</button>
+      <div class="games-grid" id="games-grid">
+        <!-- Rendered dynamically from modular games registry -->
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 2: ACTIVE GAME ARENA                                         -->
+    <!-- ================================================================= -->
+    <section id="game-view" class="hidden">
+      <div class="game-top-bar">
+        <button class="back-btn" id="back-to-lobby-btn">
+          ← Back to Games Hub
+        </button>
+        <div id="game-badge" class="badge" style="color: var(--accent);">Daily Active</div>
+      </div>
+
+      <div class="tabs" id="tier-tabs">
+        <button class="tab-btn active" data-tier="easy">Easy (6 Attempts)</button>
+        <button class="tab-btn" data-tier="medium">Medium (5 Attempts)</button>
+        <button class="tab-btn" data-tier="hard">Hard (4 Attempts)</button>
         <button class="tab-btn" data-tier="playground">Unlimited Playground</button>
       </div>
 
-      <div id="puzzle-container">
-        <!-- Rendered dynamically -->
+      <!-- Locked Tier Banner (when tier is not yet unlocked) -->
+      <div id="locked-tier-container" class="locked-view hidden">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔒</div>
+        <h3 id="locked-tier-title" style="margin-bottom: 0.5rem;">Tier Locked</h3>
+        <p id="locked-tier-desc" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+          Unlock this tier using your earned coins to access tougher challenges and bigger rewards.
+        </p>
+        <button id="unlock-tier-btn" class="enter-btn">Unlock Tier</button>
       </div>
 
-      <div class="actions">
-        <button id="validate-btn" class="primary">Verify & Submit Score</button>
-        <button id="unlock-btn" class="tab-btn" style="display: none;">Unlock Tier</button>
-      </div>
-      <div id="feedback-msg" style="margin-top: 1rem; font-size: 0.9rem;"></div>
-    </section>
+      <!-- Active Game Card Container -->
+      <div id="active-game-container" class="game-card">
+        <div class="score-board">
+          <div>Total Score: <span id="total-score">0</span></div>
+          <div>Games Won: <span id="games-won">0</span></div>
+        </div>
 
-    <section class="card">
-      <div class="tabs">
-        <button class="tab-btn active" id="btn-daily-tab">Today's Daily Leaderboard</button>
-        <button class="tab-btn" id="btn-global-tab">Global Averages (20+ Plays)</button>
+        <div class="controls">
+          <button class="reset-btn" id="new-game-btn">New Game</button>
+          <div id="status" class="status">Attempt 1 of 6</div>
+        </div>
+
+        <div id="board" class="board"></div>
+
+        <div id="keyboard" class="keyboard"></div>
+
+        <div class="rules">
+          <h3>How to Play & Scoring:</h3>
+          <ul>
+            <li>Guess the 5-letter word in the allotted attempts.</li>
+            <li><strong>Scoring:</strong> 1st try = 600 pts, 2nd = 500 pts, 3rd = 400 pts, 4th = 300 pts, 5th = 200 pts, 6th = 100 pts.</li>
+            <li><span style="color:var(--correct-bg); font-weight:bold;">Green:</span> Letter is correct and in the right spot.</li>
+            <li><span style="color:var(--present-bg); font-weight:bold;">Yellow:</span> Letter is in the word but wrong spot.</li>
+            <li><span style="color:var(--text-muted); font-weight:bold;">Dark:</span> Letter is not in the word.</li>
+          </ul>
+        </div>
       </div>
-      <div id="leaderboard-view">Loading standings...</div>
+
+      <!-- Live Leaderboard Container -->
+      <div class="leaderboard-card" style="margin-top: 1rem;">
+        <div class="tabs">
+          <button class="tab-btn active" id="btn-daily-tab">Today's Daily Leaderboard</button>
+          <button class="tab-btn" id="btn-global-tab">Global Averages (20+ Plays)</button>
+        </div>
+        <div id="leaderboard-view">Loading standings...</div>
+      </div>
     </section>
   </main>
 

@@ -12,7 +12,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           // Bundle modular games separately for optimal static edge caching
-          games: ['./src/games/number-grid.js', './src/games/prng.js']
+          games: ['./src/games/wordle.js', './src/games/number-grid.js', './src/games/prng.js']
         }
       }
     }

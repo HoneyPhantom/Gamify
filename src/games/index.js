@@ -50,6 +50,8 @@ export function getAllGames() {
     id: game.id,
     title: game.title,
     description: game.description || "",
+    badge: game.badge || "Daily Puzzle",
+    icon: game.icon || "🎮",
     difficulties: Object.keys(game.difficulties).map(tier => ({
       tier,
       unlockCost: game.difficulties[tier].unlockCost,

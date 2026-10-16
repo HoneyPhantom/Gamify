@@ -170,11 +170,17 @@ export async function handleGoogleAuth(idToken: string, env: Env): Promise<{ tok
       VALUES (?, ?, ?, ?, ?, 100, 0, DATETIME('now'), DATETIME('now'))
     `).bind(userId, googleUid, email, displayName, avatarUrl).run();
 
-    // Default unlocks row
-    await env.DB.prepare(`
-      INSERT INTO user_game_unlocks (id, user_id, game_id, easy_unlocked, medium_unlocked, hard_unlocked, playground_unlocked)
-      VALUES (?, ?, 'number-grid', 1, 0, 0, 0)
-    `).bind(`${userId}#number-grid`, userId).run();
+    // Default unlocks rows for wordle and number-grid
+    await env.DB.batch([
+      env.DB.prepare(`
+        INSERT INTO user_game_unlocks (id, user_id, game_id, easy_unlocked, medium_unlocked, hard_unlocked, playground_unlocked)
+        VALUES (?, ?, 'wordle', 1, 0, 0, 0)
+      `).bind(`${userId}#wordle`, userId),
+      env.DB.prepare(`
+        INSERT INTO user_game_unlocks (id, user_id, game_id, easy_unlocked, medium_unlocked, hard_unlocked, playground_unlocked)
+        VALUES (?, ?, 'number-grid', 1, 0, 0, 0)
+      `).bind(`${userId}#number-grid`, userId),
+    ]);
 
     user = (await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first<UserRow>())!;
   } else {
