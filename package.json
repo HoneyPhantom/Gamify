@@ -4,19 +4,24 @@
   "description": "Minimalist static-first daily puzzle gaming platform on Cloudflare Pages, Workers, D1 & Google OAuth",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "build": "vite build",
-    "dev:frontend": "vite",
     "build:frontend": "vite build",
-    "preview:frontend": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview",
+    "dev": "vite",
+    "dev:frontend": "vite",
     "dev:worker": "wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
     "deploy:worker": "wrangler deploy",
     "d1:create": "wrangler d1 create gamify-prod-db",
     "d1:migrate:local": "wrangler d1 execute DB --local --file=./schema.sql",
     "d1:migrate:remote": "wrangler d1 execute DB --remote --file=./schema.sql"
   },
-  "dependencies": {},
-  "devDependencies": {
+  "dependencies": {
     "@cloudflare/workers-types": "^4.20240925.0",
     "typescript": "^5.6.2",
     "vite": "^5.4.8",
