@@ -31,7 +31,7 @@ async function getHmacKey(secret: string): Promise<CryptoKey> {
   const enc = new TextEncoder();
   return crypto.subtle.importKey(
     'raw',
-    enc.encode(secret),
+    enc.encode(secret) as unknown as BufferSource,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign', 'verify']
@@ -55,7 +55,7 @@ export async function signSessionJwt(payload: Record<string, unknown>, secret: s
   const data = new TextEncoder().encode(`${encHeader}.${encPayload}`);
 
   const key = await getHmacKey(secret);
-  const signature = await crypto.subtle.sign('HMAC', key, data);
+  const signature = await crypto.subtle.sign('HMAC', key, data as unknown as BufferSource);
   const encSignature = base64UrlEncode(new Uint8Array(signature));
 
   return `${encHeader}.${encPayload}.${encSignature}`;
@@ -74,11 +74,11 @@ export async function verifySessionJwt(token: string, secret: string): Promise<R
   const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
   const signature = base64UrlDecode(signatureB64);
 
-  const isValid = await crypto.subtle.verify('HMAC', key, signature, data);
+  const isValid = await crypto.subtle.verify('HMAC', key, signature as unknown as BufferSource, data as unknown as BufferSource);
   if (!isValid) return null;
 
   try {
-    const payloadJson = new TextDecoder().decode(base64UrlDecode(payloadB64));
+    const payloadJson = new TextDecoder().decode(base64UrlDecode(payloadB64) as unknown as BufferSource);
     const claims = JSON.parse(payloadJson);
     const now = Math.floor(Date.now() / 1000);
     if (claims.exp && claims.exp < now) {
