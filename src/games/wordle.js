@@ -50,8 +50,10 @@ export const gameConfig = {
   id: "wordle",
   title: "Wordle",
   description: "Guess the hidden 5-letter word in 6 attempts.",
-  badge: "Featured Word Game",
+  badge: "Free to Play",
   icon: "🔤",
+  isFree: true,
+  gameUnlockCost: 0,
   difficulties: {
     easy: {
       tier: "easy",

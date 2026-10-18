@@ -2,12 +2,16 @@ import { getAllGames, getDailyPuzzle, getPlaygroundPuzzle, getTodayDateStr } fro
 import { KB_ROWS, evaluateWordleGuess } from '../games/wordle.js';
 import { api } from './api.js';
 
-// Application State
+// =========================================================================
+// APPLICATION STATE
+// =========================================================================
+let currentUser = api.getCachedUser();
+let userUnlocks = {}; // Map of gameId -> unlock record
+
 let activeGameId = 'wordle';
 let currentTier = 'easy';
 let currentPuzzle = null;
 let startTime = Date.now();
-let userUnlocks = { easy_unlocked: 1, medium_unlocked: 0, hard_unlocked: 0, playground_unlocked: 0 };
 
 // Wordle Runtime State
 let targetWord = "";
@@ -15,72 +19,310 @@ let maxAttempts = 6;
 let currentRow = 0;
 let currentCol = 0;
 let guesses = [];
-let isGameOver = false;
+let isWordleOver = false;
 let totalScore = 0;
 let gamesWon = 0;
 
 // DOM Elements
-const lobbyView = document.getElementById('lobby-view');
+const frontPageView = document.getElementById('front-page-view');
 const gameView = document.getElementById('game-view');
-const gamesGrid = document.getElementById('games-grid');
-const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
+const gamesScrollList = document.getElementById('games-scroll-list');
+const backToHomeBtn = document.getElementById('back-to-home-btn');
 const brandLogo = document.getElementById('brand-logo');
 
-const lockedTierContainer = document.getElementById('locked-tier-container');
-const lockedTierTitle = document.getElementById('locked-tier-title');
-const unlockTierBtn = document.getElementById('unlock-tier-btn');
-const activeGameContainer = document.getElementById('active-game-container');
-
+const authStateLoggedIn = document.getElementById('auth-state-logged-in');
+const authStateLoggedOut = document.getElementById('auth-state-logged-out');
 const coinBalanceEl = document.getElementById('coin-balance');
 const streakCountEl = document.getElementById('streak-count');
+const navUserNameEl = document.getElementById('nav-user-name');
+const btnOpenAuth = document.getElementById('btn-open-auth');
+const btnLogout = document.getElementById('btn-logout');
+
+const authModal = document.getElementById('auth-modal');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+const tabLoginBtn = document.getElementById('tab-login-btn');
+const tabRegisterBtn = document.getElementById('tab-register-btn');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const authFeedback = document.getElementById('auth-feedback');
+const loginUsernameInput = document.getElementById('login-username');
+const loginPinInput = document.getElementById('login-pin');
+
+const lockedTierContainer = document.getElementById('locked-tier-container');
+const lockedBannerTitle = document.getElementById('locked-banner-title');
+const lockedBannerDesc = document.getElementById('locked-banner-desc');
+const unlockActionBtn = document.getElementById('unlock-action-btn');
+const activeGameContainer = document.getElementById('active-game-container');
+const gameBadge = document.getElementById('game-badge');
+const tierTabs = document.getElementById('tier-tabs');
 const statusEl = document.getElementById('status');
 const totalScoreEl = document.getElementById('total-score');
 const gamesWonEl = document.getElementById('games-won');
-const boardEl = document.getElementById('board');
-const keyboardEl = document.getElementById('keyboard');
+const gameArenaContent = document.getElementById('game-arena-content');
+const gameRulesBox = document.getElementById('game-rules-box');
 const newGameBtn = document.getElementById('new-game-btn');
-const tierTabs = document.getElementById('tier-tabs');
 
 // =========================================================================
-// 1. MODULAR GAMES LOBBY RENDERING
+// 1. AUTHENTICATION & SESSION MANAGEMENT (4-DIGIT PIN & 7-DAY EXPIRY)
 // =========================================================================
-function renderGamesLobby() {
+function updateAuthUI() {
+  if (currentUser && !api.isSessionExpired()) {
+    authStateLoggedIn.classList.remove('hidden');
+    authStateLoggedOut.classList.add('hidden');
+    coinBalanceEl.textContent = currentUser.coins ?? 100;
+    streakCountEl.textContent = currentUser.streakCount ?? 0;
+    navUserNameEl.textContent = currentUser.displayName || currentUser.username;
+  } else {
+    authStateLoggedIn.classList.add('hidden');
+    authStateLoggedOut.classList.remove('hidden');
+  }
+}
+
+function openAuthModal(mode = 'login', prefilledUsername = '', notice = '') {
+  authModal.classList.remove('hidden');
+  authFeedback.style.display = 'none';
+
+  if (notice) {
+    showAuthFeedback(notice, 'error');
+  }
+
+  if (mode === 'register') {
+    tabRegisterBtn.classList.add('active');
+    tabLoginBtn.classList.remove('active');
+    registerForm.classList.remove('hidden');
+    loginForm.classList.add('hidden');
+    document.getElementById('reg-username').focus();
+  } else {
+    tabLoginBtn.classList.add('active');
+    tabRegisterBtn.classList.remove('active');
+    loginForm.classList.remove('hidden');
+    registerForm.classList.add('hidden');
+    if (prefilledUsername) {
+      loginUsernameInput.value = prefilledUsername;
+      loginPinInput.focus();
+    } else {
+      loginUsernameInput.focus();
+    }
+  }
+}
+
+function closeAuthModal() {
+  authModal.classList.add('hidden');
+  authFeedback.style.display = 'none';
+}
+
+function showAuthFeedback(msg, type = 'error') {
+  authFeedback.textContent = msg;
+  authFeedback.className = `feedback-banner ${type === 'error' ? 'feedback-error' : 'feedback-success'}`;
+  authFeedback.style.display = 'block';
+}
+
+// Session Expiration Handler
+api.onSessionExpired = (username) => {
+  currentUser = null;
+  updateAuthUI();
+  renderGamesScrollList();
+  openAuthModal('login', username || '', '🔒 Your 7-day session has expired. Enter your 4-digit PIN to continue.');
+};
+
+// Modal Tab Switchers
+tabLoginBtn.addEventListener('click', () => openAuthModal('login'));
+tabRegisterBtn.addEventListener('click', () => openAuthModal('register'));
+btnOpenAuth.addEventListener('click', () => openAuthModal('login'));
+modalCloseBtn.addEventListener('click', closeAuthModal);
+
+// Close modal on click outside card
+authModal.addEventListener('click', (e) => {
+  if (e.target === authModal) closeAuthModal();
+});
+
+// Register Form Submit
+registerForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('reg-username').value.trim();
+  const displayName = document.getElementById('reg-display-name').value.trim();
+  const pin = document.getElementById('reg-pin').value.trim();
+  const confirmPin = document.getElementById('reg-confirm-pin').value.trim();
+
+  if (pin !== confirmPin) {
+    showAuthFeedback('PINs do not match. Please enter the same 4-digit PIN.', 'error');
+    return;
+  }
+
+  if (!/^\d{4}$/.test(pin)) {
+    showAuthFeedback('PIN must be exactly 4 digits.', 'error');
+    return;
+  }
+
+  try {
+    const res = await api.register(username, displayName, pin);
+    currentUser = res.user;
+    updateAuthUI();
+    closeAuthModal();
+    await fetchUserProfile();
+    renderGamesScrollList();
+  } catch (err) {
+    showAuthFeedback(err.message, 'error');
+  }
+});
+
+// Login Form Submit
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = loginUsernameInput.value.trim();
+  const pin = loginPinInput.value.trim();
+
+  try {
+    const res = await api.login(username, pin);
+    currentUser = res.user;
+    updateAuthUI();
+    closeAuthModal();
+    loginPinInput.value = '';
+    await fetchUserProfile();
+    renderGamesScrollList();
+  } catch (err) {
+    showAuthFeedback(err.message, 'error');
+  }
+});
+
+// Logout / Lock Action
+btnLogout.addEventListener('click', () => {
+  api.logout();
+  currentUser = null;
+  userUnlocks = {};
+  updateAuthUI();
+  renderGamesScrollList();
+  returnToHome();
+});
+
+// Fetch Profile & Unlocks from Server
+async function fetchUserProfile() {
+  if (!api.token || api.isSessionExpired()) return;
+  try {
+    const res = await api.getMe();
+    currentUser = {
+      ...res.user,
+      coins: res.user.coins,
+      streakCount: res.user.streak_count,
+      displayName: res.user.display_name,
+      username: res.user.username,
+    };
+    userUnlocks = {};
+    (res.unlocks || []).forEach(u => {
+      userUnlocks[u.game_id] = u;
+    });
+    updateAuthUI();
+  } catch (e) {
+    console.warn('Profile fetch note:', e.message);
+  }
+}
+
+// =========================================================================
+// 2. FRONT PAGE & SCROLLABLE GAMES LIST
+// =========================================================================
+function isGameUnlocked(gameId) {
+  if (gameId === 'wordle') return true; // Wordle is free by default
+  const record = userUnlocks[gameId];
+  return record && record.game_unlocked === 1;
+}
+
+function isTierUnlocked(gameId, tier) {
+  if (!isGameUnlocked(gameId)) return false;
+  if (tier === 'easy') return true;
+  const record = userUnlocks[gameId];
+  return record && record[`${tier}_unlocked`] === 1;
+}
+
+function renderGamesScrollList() {
   const games = getAllGames();
-  gamesGrid.innerHTML = '';
+  gamesScrollList.innerHTML = '';
 
   games.forEach(game => {
-    const box = document.createElement('div');
-    box.className = 'game-box';
-    box.innerHTML = `
+    const unlocked = isGameUnlocked(game.id);
+    const card = document.createElement('div');
+    card.className = 'game-card-box';
+
+    let statusHtml = '';
+    let actionBtnHtml = '';
+
+    if (game.isFree || unlocked) {
+      statusHtml = `<span class="game-status-badge ${game.isFree ? 'status-free' : 'status-unlocked'}">${game.isFree ? 'Free to Play' : 'Unlocked'}</span>`;
+      actionBtnHtml = `<button class="game-action-btn btn-play">Play ${game.title} →</button>`;
+    } else {
+      statusHtml = `<span class="game-status-badge status-locked">🔒 ${game.gameUnlockCost || 100} Coins</span>`;
+      actionBtnHtml = `<button class="game-action-btn btn-unlock-gold">Unlock for ${game.gameUnlockCost || 100} Coins 🪙</button>`;
+    }
+
+    card.innerHTML = `
       <div>
-        <div class="game-box-top">
-          <div class="game-icon">${game.icon || '🎮'}</div>
-          <span class="game-pill">${game.badge || 'Daily Puzzle'}</span>
+        <div class="game-card-top">
+          <div class="game-card-icon">${game.icon || '🎮'}</div>
+          ${statusHtml}
         </div>
-        <h2 class="game-box-title">${game.title}</h2>
-        <p class="game-box-desc">${game.description}</p>
+        <h3 class="game-card-title">${game.title}</h3>
+        <p class="game-card-desc">${game.description}</p>
+        <div class="game-card-tiers">
+          <span>🎯 Easy · Medium · Hard · Playground</span>
+        </div>
       </div>
-      <div class="game-box-footer">
-        <span class="tiers-tag">4 Difficulty Tiers</span>
-        <button class="enter-btn">Play Now →</button>
+      <div>
+        ${actionBtnHtml}
       </div>
     `;
 
-    box.addEventListener('click', () => {
-      enterGame(game.id);
+    card.addEventListener('click', () => {
+      handleGameCardClick(game);
     });
 
-    gamesGrid.appendChild(box);
+    gamesScrollList.appendChild(card);
   });
+}
+
+async function handleGameCardClick(game) {
+  // If not logged in, prompt user to log in or create profile
+  if (!currentUser || api.isSessionExpired()) {
+    openAuthModal('login', '', 'Please create a profile or unlock with your 4-digit PIN to play and save your coins & streaks.');
+    return;
+  }
+
+  // If game is locked (e.g. number-grid)
+  if (!isGameUnlocked(game.id)) {
+    const cost = game.gameUnlockCost || 100;
+    const confirmUnlock = confirm(
+      `Unlock ${game.title} for ${cost} coins?\n\nYour Balance: ${currentUser.coins ?? 0} coins`
+    );
+
+    if (confirmUnlock) {
+      await unlockGameBase(game.id, cost);
+    }
+    return;
+  }
+
+  // Game is unlocked, enter game view
+  enterGame(game.id);
+}
+
+async function unlockGameBase(gameId, cost) {
+  try {
+    const res = await api.unlockTier(gameId, 'game');
+    userUnlocks[gameId] = res.unlocks;
+    currentUser.coins = res.remainingCoins;
+    updateAuthUI();
+    renderGamesScrollList();
+    alert(`🎉 ${res.message}`);
+    enterGame(gameId);
+  } catch (err) {
+    alert(err.message || 'Failed to unlock game');
+  }
 }
 
 function enterGame(gameId) {
   activeGameId = gameId;
-  lobbyView.classList.add('hidden');
+  frontPageView.classList.add('hidden');
   gameView.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // Reset to easy tier on enter
+  // Reset to easy tier
   currentTier = 'easy';
   document.querySelectorAll('#tier-tabs .tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tier === 'easy');
@@ -90,52 +332,19 @@ function enterGame(gameId) {
   loadLeaderboard();
 }
 
-function returnToLobby() {
+function returnToHome() {
   gameView.classList.add('hidden');
-  lobbyView.classList.remove('hidden');
+  frontPageView.classList.remove('hidden');
+  renderGamesScrollList();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-backToLobbyBtn.addEventListener('click', returnToLobby);
-brandLogo.addEventListener('click', returnToLobby);
+backToHomeBtn.addEventListener('click', returnToHome);
+brandLogo.addEventListener('click', returnToHome);
 
 // =========================================================================
-// 2. PUZZLE GENERATION & TIER MANAGEMENT
+// 3. TIER MANAGEMENT & UNLOCKS
 // =========================================================================
-function isTierUnlocked(tier) {
-  if (tier === 'easy') return true;
-  return userUnlocks[`${tier}_unlocked`] === 1;
-}
-
-function loadCurrentPuzzle() {
-  const dateStr = getTodayDateStr();
-
-  // Tier Access Check
-  if (!isTierUnlocked(currentTier)) {
-    activeGameContainer.classList.add('hidden');
-    lockedTierContainer.classList.remove('hidden');
-    lockedTierTitle.textContent = `${currentTier.toUpperCase()} Tier Locked`;
-    unlockTierBtn.textContent = `Unlock ${currentTier.toUpperCase()}`;
-    return;
-  }
-
-  lockedTierContainer.classList.add('hidden');
-  activeGameContainer.classList.remove('hidden');
-
-  // Generate puzzle locally using deterministic PRNG (zero-worker overhead)
-  if (currentTier === 'playground') {
-    currentPuzzle = getPlaygroundPuzzle(activeGameId);
-  } else {
-    currentPuzzle = getDailyPuzzle(activeGameId, currentTier, dateStr);
-  }
-
-  startTime = Date.now();
-
-  if (activeGameId === 'wordle') {
-    initWordle(currentPuzzle);
-  }
-}
-
-// Tier Switch Listeners
 tierTabs.addEventListener('click', (e) => {
   const btn = e.target.closest('.tab-btn');
   if (!btn) return;
@@ -145,39 +354,104 @@ tierTabs.addEventListener('click', (e) => {
   loadCurrentPuzzle();
 });
 
-// Unlock Tier Action
-unlockTierBtn.addEventListener('click', async () => {
-  try {
-    unlockTierBtn.disabled = true;
-    unlockTierBtn.textContent = 'Unlocking...';
+function loadCurrentPuzzle() {
+  const dateStr = getTodayDateStr();
 
-    const res = await api.unlockTier(activeGameId, currentTier);
-    userUnlocks = res.unlocks;
-    coinBalanceEl.textContent = res.remainingCoins;
+  // 1. Check if game itself is unlocked
+  if (!isGameUnlocked(activeGameId)) {
+    activeGameContainer.classList.add('hidden');
+    lockedTierContainer.classList.remove('hidden');
+    lockedBannerTitle.textContent = 'Game Module Locked';
+    lockedBannerDesc.textContent = `Unlock ${activeGameId} with 100 coins to access its daily puzzles.`;
+    unlockActionBtn.textContent = 'Unlock Game (100 Coins) 🪙';
+    unlockActionBtn.onclick = () => unlockGameBase(activeGameId, 100);
+    return;
+  }
+
+  // 2. Check if selected tier is unlocked
+  if (!isTierUnlocked(activeGameId, currentTier)) {
+    activeGameContainer.classList.add('hidden');
+    lockedTierContainer.classList.remove('hidden');
+    const tierCosts = { easy: 50, medium: 150, hard: 300, playground: 500 };
+    const cost = tierCosts[currentTier] || 150;
+
+    lockedBannerTitle.textContent = `${currentTier.toUpperCase()} Tier Locked`;
+    lockedBannerDesc.textContent = currentTier === 'playground'
+      ? 'Unlimited Playground requires conquering and unlocking Easy, Medium, and Hard tiers first.'
+      : `Unlock ${currentTier.toUpperCase()} tier for ${cost} coins to play and earn bigger rewards.`;
+
+    unlockActionBtn.textContent = `Unlock ${currentTier.toUpperCase()} (${cost} Coins) 🪙`;
+    unlockActionBtn.onclick = () => unlockSpecificTier(activeGameId, currentTier);
+    return;
+  }
+
+  // Unlocked & accessible
+  lockedTierContainer.classList.add('hidden');
+  activeGameContainer.classList.remove('hidden');
+
+  if (currentTier === 'playground') {
+    currentPuzzle = getPlaygroundPuzzle(activeGameId);
+    gameBadge.textContent = 'Playground Mode (Unranked)';
+  } else {
+    currentPuzzle = getDailyPuzzle(activeGameId, currentTier, dateStr);
+    gameBadge.textContent = `Daily ${currentTier.toUpperCase()} (${dateStr})`;
+  }
+
+  startTime = Date.now();
+
+  if (activeGameId === 'wordle') {
+    mountWordle(currentPuzzle);
+  } else if (activeGameId === 'number-grid') {
+    mountNumberGrid(currentPuzzle);
+  }
+}
+
+async function unlockSpecificTier(gameId, tier) {
+  try {
+    unlockActionBtn.disabled = true;
+    unlockActionBtn.textContent = 'Unlocking...';
+
+    const res = await api.unlockTier(gameId, tier);
+    userUnlocks[gameId] = res.unlocks;
+    currentUser.coins = res.remainingCoins;
+    updateAuthUI();
+    alert(`🎉 ${res.message}`);
     loadCurrentPuzzle();
   } catch (err) {
     alert(err.message || 'Failed to unlock tier');
   } finally {
-    unlockTierBtn.disabled = false;
+    unlockActionBtn.disabled = false;
   }
-});
+}
 
 // =========================================================================
-// 3. WORDLE GAME ENGINE
+// 4. WORDLE GAME ENGINE
 // =========================================================================
-function initWordle(puzzle) {
+function mountWordle(puzzle) {
   targetWord = puzzle.targetWord;
   maxAttempts = puzzle.maxAttempts || 6;
   currentRow = 0;
   currentCol = 0;
   guesses = Array(maxAttempts).fill("").map(() => Array(5).fill(""));
-  isGameOver = false;
+  isWordleOver = false;
 
   statusEl.innerText = `Attempt 1 of ${maxAttempts}`;
   statusEl.style.color = "var(--text-muted)";
+  updateScoreDisplay();
 
-  renderBoard();
-  renderKeyboard();
+  gameRulesBox.innerHTML = `
+    <h3>How to Play & Scoring:</h3>
+    <ul>
+      <li>Guess the 5-letter word in <strong>${maxAttempts} attempts</strong>.</li>
+      <li><strong>Scoring:</strong> Earlier solves earn higher points: 1st = 600, 2nd = 500, 3rd = 400, etc.</li>
+      <li><span style="color:var(--correct-bg); font-weight:bold;">Green:</span> Correct letter and spot.</li>
+      <li><span style="color:var(--present-bg); font-weight:bold;">Yellow:</span> Letter is in the word but wrong spot.</li>
+      <li><span style="color:var(--text-muted); font-weight:bold;">Dark:</span> Letter is not in the word.</li>
+    </ul>
+  `;
+
+  renderWordleBoard();
+  renderWordleKeyboard();
 }
 
 function updateScoreDisplay() {
@@ -185,10 +459,13 @@ function updateScoreDisplay() {
   gamesWonEl.innerText = gamesWon;
 }
 
-function renderBoard() {
-  boardEl.innerHTML = "";
-  boardEl.style.gridTemplateRows = `repeat(${maxAttempts}, 1fr)`;
+function renderWordleBoard() {
+  gameArenaContent.innerHTML = `
+    <div id="board" class="board" style="grid-template-rows: repeat(${maxAttempts}, 1fr);"></div>
+    <div id="keyboard" class="keyboard"></div>
+  `;
 
+  const board = document.getElementById('board');
   for (let r = 0; r < maxAttempts; r++) {
     const rowEl = document.createElement("div");
     rowEl.className = "row";
@@ -199,12 +476,13 @@ function renderBoard() {
       cellEl.innerText = guesses[r][c] || "";
       rowEl.appendChild(cellEl);
     }
-    boardEl.appendChild(rowEl);
+    board.appendChild(rowEl);
   }
 }
 
-function renderKeyboard() {
-  keyboardEl.innerHTML = "";
+function renderWordleKeyboard() {
+  const kb = document.getElementById('keyboard');
+  kb.innerHTML = "";
 
   KB_ROWS.forEach(row => {
     const rowEl = document.createElement("div");
@@ -217,26 +495,26 @@ function renderKeyboard() {
       if (key === "ENTER" || key === "DELETE") {
         btn.classList.add("wide");
       }
-      btn.addEventListener("click", () => handleInput(key));
+      btn.addEventListener("click", () => handleWordleInput(key));
       rowEl.appendChild(btn);
     });
-    keyboardEl.appendChild(rowEl);
+    kb.appendChild(rowEl);
   });
 }
 
-function handleInput(key) {
-  if (isGameOver) return;
+function handleWordleInput(key) {
+  if (isWordleOver) return;
 
   if (key === "ENTER") {
-    submitGuess();
+    submitWordleGuess();
   } else if (key === "DELETE" || key === "BACKSPACE") {
-    removeLetter();
+    removeWordleLetter();
   } else if (/^[A-Z]$/.test(key)) {
-    addLetter(key);
+    addWordleLetter(key);
   }
 }
 
-function addLetter(letter) {
+function addWordleLetter(letter) {
   if (currentCol < 5 && currentRow < maxAttempts) {
     guesses[currentRow][currentCol] = letter;
     const cell = document.getElementById(`cell-${currentRow}-${currentCol}`);
@@ -249,7 +527,7 @@ function addLetter(letter) {
   }
 }
 
-function removeLetter() {
+function removeWordleLetter() {
   if (currentCol > 0) {
     currentCol--;
     guesses[currentRow][currentCol] = "";
@@ -258,16 +536,15 @@ function removeLetter() {
   }
 }
 
-async function submitGuess() {
+async function submitWordleGuess() {
   if (currentCol < 5) {
-    showStatus("Word must be 5 letters!", "var(--danger)");
+    showWordleStatus("Word must be 5 letters!", "var(--danger)");
     return;
   }
 
   const guess = guesses[currentRow].join("");
   const result = evaluateWordleGuess(guess, targetWord);
 
-  // Apply row animation and key coloring
   for (let i = 0; i < 5; i++) {
     const cell = document.getElementById(`cell-${currentRow}-${i}`);
     const letter = guess[i];
@@ -294,14 +571,14 @@ async function submitGuess() {
     gamesWon++;
     updateScoreDisplay();
 
-    showStatus(`🎉 Solved in ${currentRow + 1} tries! (+${earnedPoints} pts)`, "var(--correct-bg)");
-    isGameOver = true;
+    showWordleStatus(`🎉 Solved in ${currentRow + 1} tries! (+${earnedPoints} pts)`, "var(--correct-bg)");
+    isWordleOver = true;
 
-    // Submit score to Cloudflare Workers API
-    const timeTakenMs = Date.now() - startTime;
+    // Submit score to Cloudflare API
+    const timeTakenMs = Math.max(1500, Date.now() - startTime);
     try {
       const res = await api.submitScore({
-        gameId: activeGameId,
+        gameId: 'wordle',
         difficulty: currentTier,
         score: earnedPoints,
         timeTakenMs,
@@ -309,13 +586,14 @@ async function submitGuess() {
       });
 
       if (res.coinsAwarded > 0) {
-        coinBalanceEl.textContent = res.currentCoins;
-        streakCountEl.textContent = res.streakCount;
-        showStatus(`🎉 +${earnedPoints} Pts & +${res.coinsAwarded} Coins Earned!`, "var(--correct-bg)");
+        currentUser.coins = res.currentCoins;
+        currentUser.streakCount = res.streakCount;
+        updateAuthUI();
+        showWordleStatus(`🎉 +${earnedPoints} Pts & +${res.coinsAwarded} Coins Earned!`, "var(--correct-bg)");
       }
       loadLeaderboard();
     } catch (e) {
-      console.warn('Score submission note:', e.message);
+      console.warn('Score submission sync note:', e.message);
     }
     return;
   }
@@ -323,35 +601,136 @@ async function submitGuess() {
   currentRow++;
   currentCol = 0;
 
-  // Loss Condition
   if (currentRow >= maxAttempts) {
-    showStatus(`Game Over! Word was: ${targetWord}`, "var(--danger)");
-    isGameOver = true;
+    showWordleStatus(`Game Over! Word was: ${targetWord}`, "var(--danger)");
+    isWordleOver = true;
   } else {
-    showStatus(`Attempt ${currentRow + 1} of ${maxAttempts}`, "var(--text-muted)");
+    showWordleStatus(`Attempt ${currentRow + 1} of ${maxAttempts}`, "var(--text-muted)");
   }
 }
 
-function showStatus(msg, color) {
+function showWordleStatus(msg, color) {
   statusEl.innerText = msg;
   statusEl.style.color = color;
+}
+
+// Physical Keyboard Listener
+window.addEventListener("keydown", (e) => {
+  if (gameView.classList.contains('hidden') || activeGameId !== 'wordle') return;
+  const key = e.key.toUpperCase();
+  if (key === "ENTER" || key === "BACKSPACE" || /^[A-Z]$/.test(key)) {
+    handleWordleInput(key);
+  }
+});
+
+// =========================================================================
+// 5. NUMBER GRID MATRIX GAME ENGINE
+// =========================================================================
+function mountNumberGrid(puzzle) {
+  const { size, initialGrid, rowTargets, colTargets, maxVal } = puzzle;
+
+  statusEl.innerText = `${size}x${size} Matrix Puzzle`;
+  statusEl.style.color = "var(--text-muted)";
+
+  gameRulesBox.innerHTML = `
+    <h3>Number Grid Rules:</h3>
+    <ul>
+      <li>Fill empty cells with numbers from <strong>1 to ${maxVal}</strong>.</li>
+      <li>Each row must sum to its target number on the right (→).</li>
+      <li>Each column must sum to its target number at the bottom (↓).</li>
+    </ul>
+  `;
+
+  let html = `
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <div class="matrix-grid" style="grid-template-columns: repeat(${size + 1}, 48px);">
+  `;
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const val = initialGrid[r][c];
+      if (val !== null) {
+        html += `<div class="matrix-cell" style="opacity: 0.85;">${val}</div>`;
+      } else {
+        html += `
+          <div class="matrix-cell">
+            <input type="number" min="1" max="${maxVal}" class="matrix-input" data-row="${r}" data-col="${c}" />
+          </div>`;
+      }
+    }
+    html += `<div class="matrix-cell target">→ ${rowTargets[r]}</div>`;
+  }
+
+  for (let c = 0; c < size; c++) {
+    html += `<div class="matrix-cell target">↓ ${colTargets[c]}</div>`;
+  }
+  html += `<div class="matrix-cell target">★</div></div>
+    <div style="margin-top: 1rem;">
+      <button id="verify-matrix-btn" class="game-action-btn btn-play" style="max-width: 260px;">
+        Verify Solution & Submit
+      </button>
+    </div>
+  </div>`;
+
+  gameArenaContent.innerHTML = html;
+
+  document.getElementById('verify-matrix-btn').addEventListener('click', async () => {
+    const userGrid = [];
+    for (let r = 0; r < size; r++) {
+      const row = [];
+      for (let c = 0; c < size; c++) {
+        const fixedVal = initialGrid[r][c];
+        if (fixedVal !== null) {
+          row.push(fixedVal);
+        } else {
+          const inp = gameArenaContent.querySelector(`input[data-row="${r}"][data-col="${c}"]`);
+          row.push(inp && inp.value ? parseInt(inp.value, 10) : 0);
+        }
+      }
+      userGrid.push(row);
+    }
+
+    const isValid = puzzle.validate(userGrid);
+    if (!isValid) {
+      statusEl.innerText = "❌ Incorrect solution. Check your target sums!";
+      statusEl.style.color = "var(--danger)";
+      return;
+    }
+
+    const timeTakenMs = Math.max(1500, Date.now() - startTime);
+    const score = size * 1000 + Math.max(0, 5000 - Math.floor(timeTakenMs / 10));
+
+    statusEl.innerText = `🎉 Matrix Solved in ${(timeTakenMs / 1000).toFixed(1)}s! (+${score} pts)`;
+    statusEl.style.color = "var(--correct-bg)";
+
+    try {
+      const res = await api.submitScore({
+        gameId: 'number-grid',
+        difficulty: currentTier,
+        score,
+        timeTakenMs,
+        dateStr: getTodayDateStr(),
+      });
+
+      if (res.coinsAwarded > 0) {
+        currentUser.coins = res.currentCoins;
+        currentUser.streakCount = res.streakCount;
+        updateAuthUI();
+        statusEl.innerText = `🎉 Solved! +${score} Pts & +${res.coinsAwarded} Coins Earned!`;
+      }
+      loadLeaderboard();
+    } catch (e) {
+      console.warn('Matrix score submission note:', e.message);
+    }
+  });
 }
 
 newGameBtn.addEventListener('click', () => {
   loadCurrentPuzzle();
 });
 
-// Physical Keyboard Listener
-window.addEventListener("keydown", (e) => {
-  if (gameView.classList.contains('hidden')) return;
-  const key = e.key.toUpperCase();
-  if (key === "ENTER" || key === "BACKSPACE" || /^[A-Z]$/.test(key)) {
-    handleInput(key);
-  }
-});
-
 // =========================================================================
-// 4. LEADERBOARD RENDERING
+// 6. LEADERBOARDS
 // =========================================================================
 async function loadLeaderboard() {
   const view = document.getElementById('leaderboard-view');
@@ -429,7 +808,12 @@ document.getElementById('btn-global-tab').addEventListener('click', (e) => {
 });
 
 // =========================================================================
-// 5. APPLICATION BOOTSTRAP
+// 7. INITIAL BOOTSTRAP
 // =========================================================================
-renderGamesLobby();
-updateScoreDisplay();
+async function bootstrap() {
+  updateAuthUI();
+  await fetchUserProfile();
+  renderGamesScrollList();
+}
+
+bootstrap();

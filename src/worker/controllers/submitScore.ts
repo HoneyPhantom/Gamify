@@ -6,7 +6,7 @@ const REWARD_COINS: Record<string, number> = {
   easy: 15,
   medium: 35,
   hard: 75,
-  playground: 0, // Playground gives infinite practice, daily coins only for daily puzzles
+  playground: 0, // Playground gives infinite practice
 };
 
 export async function handleSubmitScore(
@@ -33,15 +33,21 @@ export async function handleSubmitScore(
     return errorResponse('Score out of plausible bounds', 400);
   }
 
-  // Anti-cheat: human speed check (e.g. minimum 1.5 seconds)
-  if (timeTakenMs < 1500) {
+  // Anti-cheat: human speed check
+  if (timeTakenMs < 1200) {
     return errorResponse('Completion time rejected: below physical human threshold', 422);
   }
 
-  // 1. Verify user has unlocked the tier
+  // 1. Verify user has unlocked the game and the tier
   const unlocks = await env.DB.prepare(
     'SELECT * FROM user_game_unlocks WHERE user_id = ? AND game_id = ?'
   ).bind(user.id, gameId).first<UserGameUnlockRow>();
+
+  if (!unlocks || unlocks.game_unlocked !== 1) {
+    return errorResponse(`Access denied: Game '${gameId}' is locked. Unlock it with coins to record scores.`, 403, {
+      code: 'GAME_LOCKED',
+    });
+  }
 
   const columnMap: Record<string, keyof UserGameUnlockRow> = {
     easy: 'easy_unlocked',
@@ -51,15 +57,14 @@ export async function handleSubmitScore(
   };
 
   const col = columnMap[difficulty];
-  if (!col || (unlocks && unlocks[col] !== 1 && difficulty !== 'easy')) {
-    return errorResponse(`Access denied: Tier '${difficulty}' is not unlocked for this user.`, 403);
+  if (!col || unlocks[col] !== 1) {
+    return errorResponse(`Access denied: Tier '${difficulty}' is not unlocked for this game.`, 403, {
+      code: 'TIER_LOCKED',
+    });
   }
 
   // 2. Fetch current user state for streak & coins
-  const currentUser = await env.DB.prepare(
-    'SELECT * FROM users WHERE id = ?'
-  ).bind(user.id).first<UserRow>();
-
+  const currentUser = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(user.id).first<UserRow>();
   if (!currentUser) {
     return errorResponse('User profile not found', 404);
   }
@@ -119,7 +124,7 @@ export async function handleSubmitScore(
       `).bind(coinsToAward, newStreak, playedDate, user.id)
     );
 
-    // C. Daily Leaderboard Entry (Only for competitive daily tiers)
+    // C. Daily Leaderboard Entry
     const leaderboardId = `lb_${gameId}_${difficulty}_${user.id}_${playedDate}`;
     batchStatements.push(
       env.DB.prepare(`
@@ -135,13 +140,16 @@ export async function handleSubmitScore(
   // Execute all updates atomically
   await env.DB.batch(batchStatements);
 
-  // Fetch updated aggregates
-  const updatedStats = await env.DB.prepare(`
-    SELECT total_score, plays_count, best_score, 
-           ROUND(CAST(total_score AS REAL) / plays_count, 2) as average_score
-    FROM user_game_stats 
-    WHERE user_id = ? AND game_id = ?
-  `).bind(user.id, gameId).first();
+  // Fetch updated aggregates and balance
+  const [updatedStats, updatedUser] = await Promise.all([
+    env.DB.prepare(`
+      SELECT total_score, plays_count, best_score, 
+             ROUND(CAST(total_score AS REAL) / plays_count, 2) as average_score
+      FROM user_game_stats 
+      WHERE user_id = ? AND game_id = ?
+    `).bind(user.id, gameId).first(),
+    env.DB.prepare('SELECT coins, streak_count FROM users WHERE id = ?').bind(user.id).first<{ coins: number; streak_count: number }>(),
+  ]);
 
   return jsonResponse({
     success: true,
@@ -149,8 +157,8 @@ export async function handleSubmitScore(
     timeTakenMs,
     isFirstDailyCompletion,
     coinsAwarded: coinsToAward,
-    currentCoins: currentUser.coins + coinsToAward,
-    streakCount: newStreak,
+    currentCoins: updatedUser?.coins ?? (currentUser.coins + coinsToAward),
+    streakCount: updatedUser?.streak_count ?? newStreak,
     stats: updatedStats,
   });
 }

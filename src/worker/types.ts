@@ -5,23 +5,33 @@
 export interface Env {
   DB: D1Database;
   JWT_SECRET: string;
-  GOOGLE_CLIENT_ID: string;
   ENVIRONMENT?: string;
   ASSETS?: Fetcher;
 }
 
 export interface AuthenticatedUser {
   id: string;
-  googleUid: string;
-  email: string;
+  username: string;
   displayName: string;
 }
 
+export type UnlockTarget = 'game' | 'easy' | 'medium' | 'hard' | 'playground';
 export type DifficultyTier = 'easy' | 'medium' | 'hard' | 'playground';
+
+export interface RegisterRequestBody {
+  username: string;
+  displayName: string;
+  pin: string;
+}
+
+export interface LoginRequestBody {
+  username: string;
+  pin: string;
+}
 
 export interface UnlockRequestBody {
   gameId: string;
-  tier: DifficultyTier;
+  tier: UnlockTarget;
 }
 
 export interface SubmitScoreRequestBody {
@@ -34,13 +44,14 @@ export interface SubmitScoreRequestBody {
 
 export interface UserRow {
   id: string;
-  google_uid: string;
-  email: string;
+  username: string;
   display_name: string;
-  avatar_url?: string;
+  pin_hash: string;
+  pin_salt: string;
   coins: number;
   streak_count: number;
   last_played_date: string | null;
+  last_login_at: string;
   created_at: string;
   updated_at: string;
 }
@@ -49,11 +60,13 @@ export interface UserGameUnlockRow {
   id: string;
   user_id: string;
   game_id: string;
+  game_unlocked: number;
   easy_unlocked: number;
   medium_unlocked: number;
   hard_unlocked: number;
   playground_unlocked: number;
   unlocked_at: string;
+  updated_at: string;
 }
 
 export interface UserGameStatsRow {

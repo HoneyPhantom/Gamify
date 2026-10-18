@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gamify — Minimalist Daily Puzzle Gaming Platform</title>
+  <title>Gamify — Minimalist Daily Puzzle Universe</title>
   <style>
     :root {
       --bg-color: #0b0f19;
-      --card-bg: #161f30;
-      --card-hover: #1c283e;
-      --border-color: #26334d;
+      --card-bg: #151d2f;
+      --card-hover: #1b263d;
+      --border-color: #24324c;
+      --border-focus: #38bdf8;
       --text-color: #f8fafc;
       --text-muted: #94a3b8;
       --correct-bg: #22c55e;
@@ -21,6 +22,7 @@
       --accent-glow: rgba(56, 189, 248, 0.2);
       --danger: #f43f5e;
       --warning: #fbbf24;
+      --gold: #f59e0b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,17 +33,18 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
     }
 
-    /* Top Navigation Header */
+    /* Top Sticky Navigation */
     header.site-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 1rem 2rem;
       border-bottom: 1px solid var(--border-color);
-      background: rgba(22, 31, 48, 0.85);
-      backdrop-filter: blur(10px);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
       position: sticky;
       top: 0;
       z-index: 50;
@@ -50,12 +53,19 @@
     .brand {
       font-size: 1.25rem;
       font-weight: 800;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
       color: var(--accent);
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
+      user-select: none;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
     .badge {
@@ -65,142 +75,286 @@
       padding: 0.35rem 0.85rem;
       border-radius: 9999px;
       font-size: 0.85rem;
-      font-weight: 600;
-      background: rgba(11, 15, 25, 0.6);
+      font-weight: 700;
+      background: rgba(11, 15, 25, 0.7);
       border: 1px solid var(--border-color);
     }
 
+    .btn-login {
+      background: var(--accent);
+      color: #0b0f19;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-login:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-lock {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-lock:hover { color: var(--danger); border-color: var(--danger); }
+
     main {
       flex: 1;
-      max-width: 900px;
+      max-width: 1000px;
       width: 100%;
-      margin: 2rem auto;
+      margin: 1.5rem auto 3rem auto;
       padding: 0 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 2rem;
+      gap: 2.5rem;
     }
 
-    /* View Transitions */
     .hidden { display: none !important; }
 
     /* =========================================================================
-       VIEW 1: MODULAR GAMES LOBBY (BOXED GRID)
+       FRONT PAGE HERO & DESCRIPTION
        ========================================================================= */
-    .lobby-header {
+    .hero-section {
       text-align: center;
-      margin-bottom: 0.5rem;
+      padding: 2.5rem 1rem 1rem 1rem;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
-    .lobby-header h1 {
-      font-size: 2.2rem;
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.75rem;
       font-weight: 800;
-      letter-spacing: -0.025em;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 0.3rem 0.85rem;
+      border-radius: 9999px;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .lobby-header p {
+    .hero-description {
+      font-size: 1.05rem;
+      line-height: 1.65;
       color: var(--text-muted);
-      font-size: 1rem;
+      margin-bottom: 2rem;
     }
 
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-      gap: 1.5rem;
+    .feature-pills {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
 
-    .game-box {
-      background-color: var(--card-bg);
+    .pill-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      background: rgba(21, 29, 47, 0.6);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
+      padding: 0.4rem 0.9rem;
+      border-radius: 9999px;
+    }
+
+    /* =========================================================================
+       SCROLLABLE GAMES LIST
+       ========================================================================= */
+    .games-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .scroll-hint {
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Horizontal & Grid Scrollable Tray */
+    .games-scroll-container {
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      padding: 0.5rem 0.25rem 1.5rem 0.25rem;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .games-scroll-container::-webkit-scrollbar {
+      height: 8px;
+    }
+    .games-scroll-container::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 9999px;
+    }
+    .games-scroll-container::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 9999px;
+    }
+    .games-scroll-container::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+
+    .game-card-box {
+      flex: 0 0 340px;
+      scroll-snap-align: start;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
       padding: 1.75rem;
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
       position: relative;
-      overflow: hidden;
     }
 
-    .game-box:hover {
-      transform: translateY(-4px);
+    .game-card-box:hover {
+      transform: translateY(-5px);
       border-color: var(--accent);
-      box-shadow: 0 12px 30px -10px var(--accent-glow);
-      background-color: var(--card-hover);
+      box-shadow: 0 15px 35px -10px var(--accent-glow);
+      background: var(--card-hover);
     }
 
-    .game-box-top {
+    .game-card-top {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
 
-    .game-icon {
-      font-size: 2.5rem;
+    .game-card-icon {
+      font-size: 2.8rem;
       line-height: 1;
     }
 
-    .game-pill {
+    .game-status-badge {
       font-size: 0.75rem;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      padding: 0.25rem 0.65rem;
-      border-radius: 6px;
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      border: 1px solid transparent;
+    }
+
+    .status-free {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--correct-bg);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .status-locked {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--gold);
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+
+    .status-unlocked {
       background: rgba(56, 189, 248, 0.15);
       color: var(--accent);
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-color: rgba(56, 189, 248, 0.3);
     }
 
-    .game-box-title {
-      font-size: 1.4rem;
-      font-weight: 700;
+    .game-card-title {
+      font-size: 1.45rem;
+      font-weight: 800;
       margin-bottom: 0.5rem;
-      color: var(--text-color);
+      color: #fff;
     }
 
-    .game-box-desc {
-      font-size: 0.9rem;
-      color: var(--text-muted);
+    .game-card-desc {
+      font-size: 0.92rem;
       line-height: 1.5;
+      color: var(--text-muted);
       margin-bottom: 1.5rem;
       flex: 1;
     }
 
-    .game-box-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid rgba(71, 85, 105, 0.4);
-      padding-top: 1rem;
-    }
-
-    .tiers-tag {
+    .game-card-tiers {
       font-size: 0.8rem;
-      color: var(--text-muted);
+      color: #64748b;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
-    .enter-btn {
-      background: var(--accent);
-      color: #0b0f19;
+    .game-action-btn {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
       font-weight: 700;
-      font-size: 0.9rem;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
+      font-size: 0.95rem;
       border: none;
       cursor: pointer;
-      transition: opacity 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
     }
 
-    .enter-btn:hover {
-      opacity: 0.9;
+    .btn-play {
+      background: var(--accent);
+      color: #0b0f19;
     }
+    .btn-play:hover { opacity: 0.9; }
+
+    .btn-unlock-gold {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #000;
+    }
+    .btn-unlock-gold:hover { filter: brightness(1.1); }
 
     /* =========================================================================
        VIEW 2: ACTIVE GAME ARENA
@@ -225,19 +379,9 @@
       gap: 0.4rem;
       transition: all 0.2s;
     }
+    .back-btn:hover { color: var(--text-color); border-color: var(--accent); }
 
-    .back-btn:hover {
-      color: var(--text-color);
-      border-color: var(--accent);
-    }
-
-    .tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.25rem;
-      flex-wrap: wrap;
-    }
-
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
     .tab-btn {
       background: transparent;
       border: 1px solid var(--border-color);
@@ -249,7 +393,6 @@
       font-size: 0.85rem;
       transition: all 0.2s;
     }
-
     .tab-btn.active {
       background: var(--accent);
       color: #0b0f19;
@@ -259,9 +402,9 @@
     .game-card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 24px 20px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -272,7 +415,7 @@
       display: flex;
       justify-content: space-around;
       width: 100%;
-      background-color: rgba(15, 23, 42, 0.5);
+      background-color: rgba(11, 15, 25, 0.6);
       border: 1px solid var(--border-color);
       padding: 10px;
       border-radius: 8px;
@@ -280,10 +423,7 @@
       font-size: 0.9rem;
       font-weight: 600;
     }
-
-    .score-board span {
-      color: var(--accent);
-    }
+    .score-board span { color: var(--accent); }
 
     .controls {
       display: flex;
@@ -304,10 +444,6 @@
       transition: opacity 0.2s;
     }
 
-    button.reset-btn:hover {
-      opacity: 0.9;
-    }
-
     .status {
       font-weight: 700;
       font-size: 0.95rem;
@@ -317,19 +453,9 @@
       align-items: center;
     }
 
-    /* Wordle Board Styling */
-    .board {
-      display: grid;
-      gap: 6px;
-      margin-bottom: 20px;
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-    }
-
+    /* Wordle Board */
+    .board { display: grid; gap: 6px; margin-bottom: 20px; }
+    .row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
     .cell {
       width: 54px;
       height: 54px;
@@ -344,46 +470,14 @@
       user-select: none;
       transition: transform 0.1s ease, background-color 0.35s ease, border-color 0.35s ease;
     }
+    .cell.pop { transform: scale(1.08); border-color: var(--text-muted); }
+    .cell.correct { background-color: var(--correct-bg); border-color: var(--correct-bg); color: #fff; }
+    .cell.present { background-color: var(--present-bg); border-color: var(--present-bg); color: #fff; }
+    .cell.absent { background-color: var(--absent-bg); border-color: var(--absent-bg); color: var(--text-muted); }
 
-    .cell.pop {
-      transform: scale(1.08);
-      border-color: var(--text-muted);
-    }
-
-    .cell.correct {
-      background-color: var(--correct-bg);
-      border-color: var(--correct-bg);
-      color: #fff;
-    }
-
-    .cell.present {
-      background-color: var(--present-bg);
-      border-color: var(--present-bg);
-      color: #fff;
-    }
-
-    .cell.absent {
-      background-color: var(--absent-bg);
-      border-color: var(--absent-bg);
-      color: var(--text-muted);
-    }
-
-    /* Wordle Keyboard Styling */
-    .keyboard {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      width: 100%;
-      max-width: 480px;
-    }
-
-    .kb-row {
-      display: flex;
-      justify-content: center;
-      gap: 4px;
-      width: 100%;
-    }
-
+    /* Wordle Keyboard */
+    .keyboard { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 480px; }
+    .kb-row { display: flex; justify-content: center; gap: 4px; width: 100%; }
     .key {
       background-color: var(--key-bg);
       color: var(--text-color);
@@ -391,7 +485,6 @@
       border-radius: 5px;
       font-weight: bold;
       font-size: 0.9rem;
-      padding: 0;
       height: 50px;
       flex: 1;
       display: flex;
@@ -400,124 +493,287 @@
       cursor: pointer;
       user-select: none;
       text-transform: uppercase;
-      transition: background-color 0.2s, opacity 0.2s;
+      transition: background-color 0.2s;
     }
+    .key:hover { background-color: var(--key-hover); }
+    .key.wide { flex: 1.5; font-size: 0.75rem; }
+    .key.correct { background-color: var(--correct-bg) !important; color: #fff; }
+    .key.present { background-color: var(--present-bg) !important; color: #fff; }
+    .key.absent { background-color: var(--absent-bg) !important; color: var(--text-muted); opacity: 0.6; }
 
-    .key:hover {
-      background-color: var(--key-hover);
+    /* Number Grid Matrix Display */
+    .matrix-grid {
+      display: inline-grid;
+      gap: 6px;
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: #0d1322;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
     }
-
-    .key.wide {
-      flex: 1.5;
-      font-size: 0.75rem;
+    .matrix-cell {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      font-weight: 700;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-color);
     }
-
-    .key.correct {
-      background-color: var(--correct-bg) !important;
+    .matrix-cell.target { background: #1e293b; color: var(--accent); font-size: 0.95rem; border-color: #334155; }
+    .matrix-input {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      border: none;
       color: #fff;
-    }
-
-    .key.present {
-      background-color: var(--present-bg) !important;
-      color: #fff;
-    }
-
-    .key.absent {
-      background-color: var(--absent-bg) !important;
-      color: var(--text-muted);
-      opacity: 0.6;
+      font-size: 1.15rem;
+      text-align: center;
+      outline: none;
     }
 
     .rules {
-      background-color: rgba(15, 23, 42, 0.5);
+      background-color: rgba(11, 15, 25, 0.6);
       border: 1px solid var(--border-color);
       padding: 12px 16px;
       border-radius: 8px;
       width: 100%;
       box-sizing: border-box;
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
       margin-top: 15px;
     }
-
-    .rules h3 {
-      margin: 0 0 6px 0;
-      color: var(--text-color);
-      font-size: 0.9rem;
-    }
-
-    .rules ul {
-      margin: 0;
-      padding-left: 18px;
-    }
-
-    .rules li {
-      margin-bottom: 3px;
-    }
+    .rules h3 { margin: 0 0 6px 0; color: var(--text-color); font-size: 0.9rem; }
+    .rules ul { margin: 0; padding-left: 18px; }
+    .rules li { margin-bottom: 4px; }
 
     /* Leaderboard Container */
     .leaderboard-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 1.5rem;
       width: 100%;
     }
-
-    .leaderboard-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-
+    .leaderboard-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     .leaderboard-table th, .leaderboard-table td {
       padding: 0.75rem;
       text-align: left;
       border-bottom: 1px solid var(--border-color);
       font-size: 0.9rem;
     }
+    .leaderboard-table th { color: var(--text-muted); font-weight: 600; }
 
-    .leaderboard-table th {
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    /* Locked state overlay */
+    /* Locked Box */
     .locked-view {
-      padding: 3rem 1.5rem;
+      padding: 3.5rem 1.5rem;
       text-align: center;
       border: 1px dashed var(--border-color);
-      border-radius: 12px;
+      border-radius: 16px;
+      background: rgba(21, 29, 47, 0.4);
       width: 100%;
+    }
+
+    /* =========================================================================
+       PIN AUTH MODAL
+       ========================================================================= */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      max-width: 440px;
+      width: 100%;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1.25rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .modal-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .modal-tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .form-input {
+      background: rgba(11, 15, 25, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: var(--accent); }
+
+    .pin-input {
+      letter-spacing: 8px;
+      font-size: 1.4rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .auth-submit-btn {
+      width: 100%;
+      padding: 0.85rem;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #0b0f19;
+      font-weight: 800;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 0.5rem;
+    }
+    .auth-submit-btn:hover { opacity: 0.9; }
+
+    .modal-notice {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 1rem;
+      line-height: 1.4;
+    }
+
+    .feedback-banner {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .feedback-error {
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+    .feedback-success {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--correct-bg);
+      border: 1px solid rgba(34, 197, 94, 0.3);
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Sticky Navigation -->
+  <!-- Top Sticky Navigation Bar -->
   <header class="site-header">
     <div class="brand" id="brand-logo">
       <span>🎮</span>
       <span>GAMIFY</span>
     </div>
-    <div style="display: flex; gap: 0.75rem; align-items: center;">
-      <div class="badge">🪙 Coins: <span id="coin-balance">100</span></div>
-      <div class="badge">🔥 Streak: <span id="streak-count">0</span></div>
+
+    <div class="nav-actions">
+      <!-- Authenticated Badges -->
+      <div id="auth-state-logged-in" class="nav-actions hidden">
+        <div class="badge">🪙 Coins: <span id="coin-balance">100</span></div>
+        <div class="badge">🔥 Streak: <span id="streak-count">0</span></div>
+        <div class="badge" style="color: var(--accent);">👤 <span id="nav-user-name">Player</span></div>
+        <button class="btn-lock" id="btn-logout" title="Lock your profile and exit session">Lock 🔒</button>
+      </div>
+
+      <!-- Unauthenticated State -->
+      <div id="auth-state-logged-out">
+        <button class="btn-login" id="btn-open-auth">🔑 Login / Register</button>
+      </div>
     </div>
   </header>
 
   <main>
     <!-- ================================================================= -->
-    <!-- VIEW 1: MODULAR GAMES LOBBY (BOXES)                               -->
+    <!-- VIEW 1: FRONT PAGE (WEBSITE DESCRIPTION & SCROLLABLE GAMES)       -->
     <!-- ================================================================= -->
-    <section id="lobby-view">
-      <div class="lobby-header">
-        <h1>Daily Puzzles Hub</h1>
-        <p>Select a game module to play today's seeded daily challenge or unlimited playground.</p>
+    <section id="front-page-view">
+      <!-- Website Hero & Description -->
+      <div class="hero-section">
+        <span class="hero-tag">Minimalist Daily Puzzle Gaming</span>
+        <h1 class="hero-title">One Daily Puzzle.<br/>Globally Synchronized.</h1>
+        <p class="hero-description">
+          Welcome to Gamify! Every calendar day at 00:00 UTC, a fresh deterministic puzzle is generated directly in your browser. Solve daily challenges to earn coins, maintain your streaks, unlock locked games, and conquer elite difficulty tiers. Your profile stays logged in for 7 days with a secure 4-digit PIN.
+        </p>
+        <div class="feature-pills">
+          <div class="pill-item">⚡ 0-Worker Generation</div>
+          <div class="pill-item">🪙 Daily Coin Economy</div>
+          <div class="pill-item">🔒 Weekly 4-Digit PIN Security</div>
+        </div>
       </div>
 
-      <div class="games-grid" id="games-grid">
-        <!-- Rendered dynamically from modular games registry -->
+      <!-- Scrollable Games Available List -->
+      <div class="games-section">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title"><span>🎮</span> Available Games</h2>
+            <p class="section-subtitle">Browse through our modular puzzle games. Click to play or unlock with earned coins.</p>
+          </div>
+          <span class="scroll-hint">Swipe or Scroll ➔</span>
+        </div>
+
+        <div class="games-scroll-container" id="games-scroll-list">
+          <!-- Rendered dynamically from modular games registry -->
+        </div>
       </div>
     </section>
 
@@ -526,27 +782,30 @@
     <!-- ================================================================= -->
     <section id="game-view" class="hidden">
       <div class="game-top-bar">
-        <button class="back-btn" id="back-to-lobby-btn">
-          ← Back to Games Hub
+        <button class="back-btn" id="back-to-home-btn">
+          ← Back to Front Page
         </button>
         <div id="game-badge" class="badge" style="color: var(--accent);">Daily Active</div>
       </div>
 
+      <!-- Difficulty Tier Tabs -->
       <div class="tabs" id="tier-tabs">
-        <button class="tab-btn active" data-tier="easy">Easy (6 Attempts)</button>
-        <button class="tab-btn" data-tier="medium">Medium (5 Attempts)</button>
-        <button class="tab-btn" data-tier="hard">Hard (4 Attempts)</button>
+        <button class="tab-btn active" data-tier="easy">Easy</button>
+        <button class="tab-btn" data-tier="medium">Medium</button>
+        <button class="tab-btn" data-tier="hard">Hard</button>
         <button class="tab-btn" data-tier="playground">Unlimited Playground</button>
       </div>
 
-      <!-- Locked Tier Banner (when tier is not yet unlocked) -->
+      <!-- Locked Game or Tier Banner -->
       <div id="locked-tier-container" class="locked-view hidden">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔒</div>
-        <h3 id="locked-tier-title" style="margin-bottom: 0.5rem;">Tier Locked</h3>
-        <p id="locked-tier-desc" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
-          Unlock this tier using your earned coins to access tougher challenges and bigger rewards.
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
+        <h3 id="locked-banner-title" style="margin-bottom: 0.5rem; font-size: 1.35rem;">Locked</h3>
+        <p id="locked-banner-desc" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 450px; margin-left: auto; margin-right: auto;">
+          Unlock this challenge using your earned coins to access harder puzzles and bigger rewards.
         </p>
-        <button id="unlock-tier-btn" class="enter-btn">Unlock Tier</button>
+        <button id="unlock-action-btn" class="game-action-btn btn-unlock-gold" style="max-width: 240px; margin: 0 auto;">
+          Unlock with Coins 🪙
+        </button>
       </div>
 
       <!-- Active Game Card Container -->
@@ -561,24 +820,19 @@
           <div id="status" class="status">Attempt 1 of 6</div>
         </div>
 
-        <div id="board" class="board"></div>
+        <!-- Dynamic Game Arena Canvas / Board -->
+        <div id="game-arena-content">
+          <!-- Wordle or Number Grid board rendered dynamically -->
+        </div>
 
-        <div id="keyboard" class="keyboard"></div>
-
-        <div class="rules">
-          <h3>How to Play & Scoring:</h3>
-          <ul>
-            <li>Guess the 5-letter word in the allotted attempts.</li>
-            <li><strong>Scoring:</strong> 1st try = 600 pts, 2nd = 500 pts, 3rd = 400 pts, 4th = 300 pts, 5th = 200 pts, 6th = 100 pts.</li>
-            <li><span style="color:var(--correct-bg); font-weight:bold;">Green:</span> Letter is correct and in the right spot.</li>
-            <li><span style="color:var(--present-bg); font-weight:bold;">Yellow:</span> Letter is in the word but wrong spot.</li>
-            <li><span style="color:var(--text-muted); font-weight:bold;">Dark:</span> Letter is not in the word.</li>
-          </ul>
+        <!-- Rules & Scoring Footer -->
+        <div class="rules" id="game-rules-box">
+          <!-- Populated dynamically based on active game -->
         </div>
       </div>
 
       <!-- Live Leaderboard Container -->
-      <div class="leaderboard-card" style="margin-top: 1rem;">
+      <div class="leaderboard-card" style="margin-top: 1.5rem;">
         <div class="tabs">
           <button class="tab-btn active" id="btn-daily-tab">Today's Daily Leaderboard</button>
           <button class="tab-btn" id="btn-global-tab">Global Averages (20+ Plays)</button>
@@ -587,6 +841,60 @@
       </div>
     </section>
   </main>
+
+  <!-- =================================================================== -->
+  <!-- 4-DIGIT PIN AUTHENTICATION MODAL                                    -->
+  <!-- =================================================================== -->
+  <div id="auth-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close-btn">&times;</button>
+
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" id="tab-login-btn">Unlock with PIN</button>
+        <button class="modal-tab-btn" id="tab-register-btn">Create Profile</button>
+      </div>
+
+      <div id="auth-feedback" class="feedback-banner"></div>
+
+      <!-- LOGIN FORM -->
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" class="form-input" placeholder="e.g. alex" required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="login-pin">4-Digit Security PIN</label>
+          <input type="password" id="login-pin" class="form-input pin-input" inputmode="numeric" maxlength="4" placeholder="••••" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="auth-submit-btn">Unlock Profile 🔓</button>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="register-form" class="hidden">
+        <div class="form-group">
+          <label for="reg-username">Username (Unique handle)</label>
+          <input type="text" id="reg-username" class="form-input" placeholder="e.g. alex_solver" required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="reg-display-name">Display Name (For Leaderboards)</label>
+          <input type="text" id="reg-display-name" class="form-input" placeholder="e.g. Alex The Solver" required />
+        </div>
+        <div class="form-group">
+          <label for="reg-pin">Choose 4-Digit PIN</label>
+          <input type="password" id="reg-pin" class="form-input pin-input" inputmode="numeric" maxlength="4" placeholder="••••" required autocomplete="new-password" />
+        </div>
+        <div class="form-group">
+          <label for="reg-confirm-pin">Confirm 4-Digit PIN</label>
+          <input type="password" id="reg-confirm-pin" class="form-input pin-input" inputmode="numeric" maxlength="4" placeholder="••••" required autocomplete="new-password" />
+        </div>
+        <button type="submit" class="auth-submit-btn">Create Profile & Claim 100 Coins 🪙</button>
+      </form>
+
+      <p class="modal-notice">
+        🔒 Your session stays unlocked for 7 days. Every week, simply re-enter your 4-digit PIN to continue your streaks and coin progress.
+      </p>
+    </div>
+  </div>
 
   <script type="module" src="/src/client/app.js"></script>
 </body>

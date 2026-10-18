@@ -89,8 +89,10 @@ export const gameConfig = {
   id: "number-grid",
   title: "Number Grid Matrix",
   description: "Deduce missing numbers to balance row & column target sums.",
-  badge: "Logic Grid",
+  badge: "100 Coins to Unlock",
   icon: "🔢",
+  isFree: false,
+  gameUnlockCost: 100,
   difficulties: {
     easy: {
       tier: "easy",
