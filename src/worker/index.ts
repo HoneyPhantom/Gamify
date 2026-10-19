@@ -5,6 +5,8 @@ import { handleUnlock } from './controllers/unlock';
 import { handleSubmitScore } from './controllers/submitScore';
 import { handleGetLeaderboard } from './controllers/leaderboard';
 
+import { ensureDbSchema } from './utils/dbInit';
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -39,6 +41,8 @@ export default {
     }
 
     try {
+      // Ensure D1 database schema is ready
+      await ensureDbSchema(env);
       // -------------------------------------------------------------------
       // 1. PIN Credential Auth Endpoints
       // -------------------------------------------------------------------

@@ -229,7 +229,8 @@ export async function handleRegister(body: RegisterRequestBody, env: Env): Promi
 
   // Initialize Game Unlocks:
   // - Wordle: Unlocked by default (Free to Play)
-  // - Number Grid Matrix: LOCKED by default (Requires coins to unlock)
+  // - Number Grid Matrix: LOCKED by default (100 coins)
+  // - Number Trail: LOCKED by default (150 coins)
   await env.DB.batch([
     env.DB.prepare(`
       INSERT INTO user_game_unlocks (id, user_id, game_id, game_unlocked, easy_unlocked, medium_unlocked, hard_unlocked, playground_unlocked)
@@ -239,6 +240,10 @@ export async function handleRegister(body: RegisterRequestBody, env: Env): Promi
       INSERT INTO user_game_unlocks (id, user_id, game_id, game_unlocked, easy_unlocked, medium_unlocked, hard_unlocked, playground_unlocked)
       VALUES (?, ?, 'number-grid', 0, 0, 0, 0, 0)
     `).bind(`${userId}#number-grid`, userId),
+    env.DB.prepare(`
+      INSERT INTO user_game_unlocks (id, user_id, game_id, game_unlocked, easy_unlocked, medium_unlocked, hard_unlocked, playground_unlocked)
+      VALUES (?, ?, 'number-trail', 0, 0, 0, 0, 0)
+    `).bind(`${userId}#number-trail`, userId),
   ]);
 
   const token = await signSessionJwt(
