@@ -153,5 +153,98 @@ export const gameConfig = {
         ...createMatrixPuzzle(rng, size, 0.3)
       };
     }
+  },
+  mount: (container, puzzle, { onWin, showStatus, setRules }) => {
+    const { size, initialGrid, rowTargets, colTargets, maxVal } = puzzle;
+    const startTime = Date.now();
+    let isSolved = false;
+
+    showStatus(`${size}x${size} Matrix Puzzle`, "var(--text-muted)");
+
+    setRules(`
+      <h3>Number Grid Rules:</h3>
+      <ul>
+        <li>Fill empty cells with numbers from <strong>1 to ${maxVal}</strong>.</li>
+        <li>Each row must sum to its target number on the right (→).</li>
+        <li>Each column must sum to its target number at the bottom (↓).</li>
+      </ul>
+    `);
+
+    let html = `
+      <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+        <div class="matrix-grid" style="grid-template-columns: repeat(${size + 1}, 48px); margin: 0 auto;">
+    `;
+
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const val = initialGrid[r][c];
+        if (val !== null) {
+          html += `<div class="matrix-cell" style="opacity: 0.85;">${val}</div>`;
+        } else {
+          html += `
+            <div class="matrix-cell">
+              <input type="number" min="1" max="${maxVal}" class="matrix-input" data-row="${r}" data-col="${c}" />
+            </div>`;
+        }
+      }
+      html += `<div class="matrix-cell target">→ ${rowTargets[r]}</div>`;
+    }
+
+    for (let c = 0; c < size; c++) {
+      html += `<div class="matrix-cell target">↓ ${colTargets[c]}</div>`;
+    }
+    html += `<div class="matrix-cell target">★</div></div>
+      <div style="margin-top: 1.5rem;">
+        <button id="verify-matrix-btn" class="game-action-btn btn-play" style="max-width: 260px;">
+          Verify Solution & Submit
+        </button>
+      </div>
+    </div>`;
+
+    container.innerHTML = html;
+
+    const verifyBtn = container.querySelector('#verify-matrix-btn');
+    const onVerify = () => {
+      if (isSolved) return;
+      const userGrid = [];
+      for (let r = 0; r < size; r++) {
+        const row = [];
+        for (let c = 0; c < size; c++) {
+          const fixedVal = initialGrid[r][c];
+          if (fixedVal !== null) {
+            row.push(fixedVal);
+          } else {
+            const inp = container.querySelector(`input[data-row="${r}"][data-col="${c}"]`);
+            row.push(inp && inp.value ? parseInt(inp.value, 10) : 0);
+          }
+        }
+        userGrid.push(row);
+      }
+
+      const isValid = puzzle.validate(userGrid);
+      if (!isValid) {
+        showStatus("❌ Incorrect solution. Check your target sums!", "var(--danger)");
+        return;
+      }
+
+      isSolved = true;
+      const timeTakenMs = Math.max(1500, Date.now() - startTime);
+      const score = size * 1000 + Math.max(0, 5000 - Math.floor(timeTakenMs / 10));
+
+      showStatus(`🎉 Matrix Solved in ${(timeTakenMs / 1000).toFixed(1)}s! (+${score} pts)`, "var(--correct-bg)");
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Solved! ✓';
+      onWin(score, timeTakenMs);
+    };
+
+    if (verifyBtn) {
+      verifyBtn.addEventListener('click', onVerify);
+    }
+
+    return () => {
+      if (verifyBtn) {
+        verifyBtn.removeEventListener('click', onVerify);
+      }
+    };
   }
 };

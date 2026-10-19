@@ -39,9 +39,30 @@ export async function handleSubmitScore(
   }
 
   // 1. Verify user has unlocked the game and the tier
-  const unlocks = await env.DB.prepare(
+  let unlocks = await env.DB.prepare(
     'SELECT * FROM user_game_unlocks WHERE user_id = ? AND game_id = ?'
   ).bind(user.id, gameId).first<UserGameUnlockRow>();
+
+  if (!unlocks && gameId === 'wordle') {
+    const id = `${user.id}#${gameId}`;
+    await env.DB.prepare(`
+      INSERT INTO user_game_unlocks (id, user_id, game_id, game_unlocked, easy_unlocked, medium_unlocked, hard_unlocked, playground_unlocked)
+      VALUES (?, ?, ?, 1, 1, 0, 0, 0)
+    `).bind(id, user.id, gameId).run();
+
+    unlocks = {
+      id,
+      user_id: user.id,
+      game_id: gameId,
+      game_unlocked: 1,
+      easy_unlocked: 1,
+      medium_unlocked: 0,
+      hard_unlocked: 0,
+      playground_unlocked: 0,
+      unlocked_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  }
 
   if (!unlocks || unlocks.game_unlocked !== 1) {
     return errorResponse(`Access denied: Game '${gameId}' is locked. Unlock it with coins to record scores.`, 403, {

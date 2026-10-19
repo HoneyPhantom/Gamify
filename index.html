@@ -749,10 +749,12 @@
 
     .modal-tabs {
       display: flex;
-      gap: 0.5rem;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 1rem;
+      background: rgba(11, 15, 25, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 4px;
       margin-bottom: 1.5rem;
+      gap: 4px;
     }
 
     .modal-tab-btn {
@@ -760,23 +762,38 @@
       background: transparent;
       border: none;
       color: var(--text-muted);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 700;
-      padding: 0.5rem;
+      padding: 0.65rem 0.5rem;
       border-radius: 8px;
       cursor: pointer;
       text-align: center;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .modal-tab-btn:hover {
+      color: var(--text-color);
     }
     .modal-tab-btn.active {
-      background: rgba(56, 189, 248, 0.15);
-      color: var(--accent);
+      background: var(--accent);
+      color: #0b0f19;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.45rem;
       margin-bottom: 1.25rem;
+    }
+
+    .form-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .form-group label {
@@ -784,6 +801,14 @@
       font-weight: 600;
       color: #cbd5e1;
     }
+
+    .pin-match-indicator {
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .pin-match-indicator.match { color: var(--correct-bg); }
+    .pin-match-indicator.mismatch { color: var(--danger); }
 
     .form-input {
       background: rgba(11, 15, 25, 0.8);
@@ -793,15 +818,74 @@
       color: #fff;
       font-size: 1rem;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .form-input:focus { border-color: var(--accent); }
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
 
-    .pin-input {
-      letter-spacing: 8px;
-      font-size: 1.4rem;
+    /* 4-Digit Security PIN Box Component */
+    .pin-box-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      width: 100%;
+    }
+
+    .pin-digit-boxes {
+      display: flex;
+      gap: 0.6rem;
+      flex: 1;
+      justify-content: space-between;
+    }
+
+    .pin-digit-slot {
+      flex: 1;
+      height: 52px;
+      max-width: 64px;
+      background: rgba(11, 15, 25, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 1.5rem;
       font-weight: 800;
       text-align: center;
+      color: var(--text-color);
+      outline: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      caret-color: var(--accent);
+      user-select: none;
+    }
+
+    .pin-digit-slot:focus {
+      border-color: var(--accent);
+      background: rgba(21, 29, 47, 0.9);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .pin-digit-slot.filled {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .btn-toggle-eye {
+      background: rgba(11, 15, 25, 0.8);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      border-radius: 10px;
+      width: 44px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+    .btn-toggle-eye:hover {
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
     .auth-submit-btn {
@@ -811,38 +895,91 @@
       background: var(--accent);
       color: #0b0f19;
       font-weight: 800;
-      font-size: 1rem;
+      font-size: 0.95rem;
       border: none;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: all 0.2s;
       margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
-    .auth-submit-btn:hover { opacity: 0.9; }
+    .auth-submit-btn:hover:not(:disabled) {
+      opacity: 0.92;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+    }
+    .auth-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(11, 15, 25, 0.2);
+      border-top-color: #0b0f19;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .auth-switch-prompt {
+      margin-top: 1.25rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .link-switch-auth {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-decoration: underline;
+      padding: 0;
+      margin-left: 0.25rem;
+    }
+    .link-switch-auth:hover {
+      color: #fff;
+    }
 
     .modal-notice {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
       text-align: center;
-      margin-top: 1rem;
-      line-height: 1.4;
+      margin-top: 1.25rem;
+      line-height: 1.45;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(36, 50, 76, 0.5);
     }
 
     .feedback-banner {
       padding: 0.75rem 1rem;
       border-radius: 8px;
       font-size: 0.85rem;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
       display: none;
+      align-items: center;
+      gap: 0.5rem;
+      line-height: 1.4;
     }
     .feedback-error {
-      background: rgba(244, 63, 94, 0.15);
-      color: var(--danger);
-      border: 1px solid rgba(244, 63, 94, 0.3);
+      background: rgba(244, 63, 94, 0.12);
+      color: #fda4af;
+      border: 1px solid rgba(244, 63, 94, 0.35);
     }
     .feedback-success {
-      background: rgba(34, 197, 94, 0.15);
-      color: var(--correct-bg);
-      border: 1px solid rgba(34, 197, 94, 0.3);
+      background: rgba(34, 197, 94, 0.12);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.35);
     }
   </style>
 </head>
@@ -976,11 +1113,11 @@
   <!-- =================================================================== -->
   <div id="auth-modal" class="modal-overlay hidden">
     <div class="modal-card">
-      <button class="modal-close" id="modal-close-btn">&times;</button>
+      <button class="modal-close" id="modal-close-btn" title="Close Modal">&times;</button>
 
       <div class="modal-tabs">
-        <button class="modal-tab-btn active" id="tab-login-btn">Unlock with PIN</button>
-        <button class="modal-tab-btn" id="tab-register-btn">Create Profile</button>
+        <button type="button" class="modal-tab-btn active" id="tab-login-btn">🔓 Unlock with PIN</button>
+        <button type="button" class="modal-tab-btn" id="tab-register-btn">✨ Create Profile</button>
       </div>
 
       <div id="auth-feedback" class="feedback-banner"></div>
@@ -991,32 +1128,81 @@
           <label for="login-username">Username</label>
           <input type="text" id="login-username" class="form-input" placeholder="e.g. alex" required autocomplete="username" />
         </div>
+        
         <div class="form-group">
-          <label for="login-pin">4-Digit Security PIN</label>
-          <input type="password" id="login-pin" class="form-input pin-input" inputmode="numeric" maxlength="4" placeholder="••••" required autocomplete="current-password" />
+          <label>4-Digit Security PIN</label>
+          <input type="hidden" id="login-pin" name="pin" />
+          <div class="pin-box-wrapper">
+            <div class="pin-digit-boxes" id="login-pin-boxes" data-target="login-pin">
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="0" autocomplete="off" />
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="1" autocomplete="off" />
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="2" autocomplete="off" />
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="3" autocomplete="off" />
+            </div>
+            <button type="button" class="btn-toggle-eye" data-target="login-pin-boxes" title="Toggle PIN Visibility">👁️</button>
+          </div>
         </div>
-        <button type="submit" class="auth-submit-btn">Unlock Profile 🔓</button>
+
+        <button type="submit" class="auth-submit-btn" id="login-submit-btn">
+          <span class="btn-text">Unlock Profile 🔓</span>
+          <span class="btn-spinner hidden" id="login-spinner"></span>
+        </button>
+
+        <div class="auth-switch-prompt">
+          New here? <button type="button" class="link-switch-auth" id="switch-to-register">Create profile & get 100 coins 🪙</button>
+        </div>
       </form>
 
       <!-- REGISTER FORM -->
       <form id="register-form" class="hidden">
         <div class="form-group">
           <label for="reg-username">Username (Unique handle)</label>
-          <input type="text" id="reg-username" class="form-input" placeholder="e.g. alex_solver" required autocomplete="username" />
+          <input type="text" id="reg-username" class="form-input" placeholder="e.g. alex_solver (letters, numbers, _)" required autocomplete="username" />
         </div>
         <div class="form-group">
           <label for="reg-display-name">Display Name (For Leaderboards)</label>
           <input type="text" id="reg-display-name" class="form-input" placeholder="e.g. Alex The Solver" required />
         </div>
+        
         <div class="form-group">
-          <label for="reg-pin">Choose 4-Digit PIN</label>
-          <input type="password" id="reg-pin" class="form-input pin-input" inputmode="numeric" maxlength="4" placeholder="••••" required autocomplete="new-password" />
+          <label>Choose 4-Digit PIN</label>
+          <input type="hidden" id="reg-pin" name="pin" />
+          <div class="pin-box-wrapper">
+            <div class="pin-digit-boxes" id="reg-pin-boxes" data-target="reg-pin">
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="0" autocomplete="off" />
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="1" autocomplete="off" />
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="2" autocomplete="off" />
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="3" autocomplete="off" />
+            </div>
+            <button type="button" class="btn-toggle-eye" data-target="reg-pin-boxes" title="Toggle PIN Visibility">👁️</button>
+          </div>
         </div>
+
         <div class="form-group">
-          <label for="reg-confirm-pin">Confirm 4-Digit PIN</label>
-          <input type="password" id="reg-confirm-pin" class="form-input pin-input" inputmode="numeric" maxlength="4" placeholder="••••" required autocomplete="new-password" />
+          <div class="form-label-row">
+            <label>Confirm 4-Digit PIN</label>
+            <span class="pin-match-indicator" id="reg-pin-match-status"></span>
+          </div>
+          <input type="hidden" id="reg-confirm-pin" name="confirmPin" />
+          <div class="pin-box-wrapper">
+            <div class="pin-digit-boxes" id="reg-confirm-boxes" data-target="reg-confirm-pin">
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="0" autocomplete="off" />
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="1" autocomplete="off" />
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="2" autocomplete="off" />
+              <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-slot" data-index="3" autocomplete="off" />
+            </div>
+            <button type="button" class="btn-toggle-eye" data-target="reg-confirm-boxes" title="Toggle PIN Visibility">👁️</button>
+          </div>
         </div>
-        <button type="submit" class="auth-submit-btn">Create Profile & Claim 100 Coins 🪙</button>
+
+        <button type="submit" class="auth-submit-btn" id="reg-submit-btn">
+          <span class="btn-text">Create Profile & Claim 100 Coins 🪙</span>
+          <span class="btn-spinner hidden" id="reg-spinner"></span>
+        </button>
+
+        <div class="auth-switch-prompt">
+          Already registered? <button type="button" class="link-switch-auth" id="switch-to-login">Unlock with PIN 🔓</button>
+        </div>
       </form>
 
       <p class="modal-notice">

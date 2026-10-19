@@ -225,5 +225,261 @@ export const gameConfig = {
         ...createNumberTrailPuzzle(rng, rows, cols, Math.floor(rows * cols / 4))
       };
     }
+  },
+  mount: (container, puzzle, { onWin, showStatus, setRules }) => {
+    const { rows, cols, totalCells, grid, maxNumber, startCell, endCell } = puzzle;
+    const startTime = Date.now();
+    let userTrail = [startCell]; // Array of [r, c] starting at 1
+    let isDragging = false;
+    let isSolved = false;
+
+    showStatus(`Step 1/${totalCells} · Connect numbers 1 to ${maxNumber} in order`, "var(--text-muted)");
+
+    setRules(`
+      <h3>Number Trail Rules & Controls:</h3>
+      <ul>
+        <li>Draw a single continuous orthogonal path starting at <strong>Node 1</strong> and ending at <strong>Node ${maxNumber}</strong>.</li>
+        <li><strong>Every blank cell must be visited exactly once.</strong> No diagonal moves and no crossing over cells.</li>
+        <li>Numbered checkpoint nodes must be visited in strict numerical sequence (1 → 2 → 3 ... → ${maxNumber}).</li>
+        <li><strong>Controls:</strong> Drag with mouse/touch or click adjacent valid tiles to extend. Click the previous tile or Undo to backtrack.</li>
+      </ul>
+    `);
+
+    container.innerHTML = `
+      <div class="trail-container">
+        <div class="trail-stats-bar">
+          <span>Visited: <strong id="trail-progress-count">1</strong> / ${totalCells} cells</span>
+          <span>Target: <strong id="trail-target-node" style="color:var(--accent)">Node 2</strong></span>
+          <span>End: <strong>Node ${maxNumber}</strong></span>
+        </div>
+
+        <div id="dead-end-alert" class="dead-end-alert">
+          ⚠️ Dead End! Path trapped with unvisited cells remaining. Click Undo or previous cell to backtrack.
+        </div>
+
+        <div id="trail-board" class="trail-board" style="grid-template-columns: repeat(${cols}, 56px);"></div>
+
+        <div class="trail-controls-bar">
+          <button id="trail-undo-btn" class="btn-trail-action">↶ Undo Step</button>
+          <button id="trail-reset-btn" class="btn-trail-action">↺ Reset Grid</button>
+        </div>
+      </div>
+    `;
+
+    const boardEl = container.querySelector('#trail-board');
+    const progressCountEl = container.querySelector('#trail-progress-count');
+    const targetNodeEl = container.querySelector('#trail-target-node');
+    const deadEndAlert = container.querySelector('#dead-end-alert');
+    const undoBtn = container.querySelector('#trail-undo-btn');
+    const resetBtn = container.querySelector('#trail-reset-btn');
+
+    function getExpectedNextNodeNumber() {
+      let count = 0;
+      for (const [r, c] of userTrail) {
+        if (grid[r][c] !== null) count++;
+      }
+      return count + 1;
+    }
+
+    function renderCells() {
+      boardEl.innerHTML = '';
+      const head = userTrail[userTrail.length - 1];
+      const trailSet = new Map();
+      userTrail.forEach(([r, c], idx) => trailSet.set(`${r},${c}`, idx));
+
+      const nextTarget = getExpectedNextNodeNumber();
+      if (nextTarget <= maxNumber) {
+        targetNodeEl.textContent = `Node ${nextTarget}`;
+        targetNodeEl.style.color = 'var(--accent)';
+      } else {
+        targetNodeEl.textContent = 'All Nodes Hit!';
+        targetNodeEl.style.color = 'var(--correct-bg)';
+      }
+
+      progressCountEl.textContent = userTrail.length;
+
+      // Check dead-end condition
+      let isDeadEnd = false;
+      if (userTrail.length < totalCells && !isSolved) {
+        const [hr, hc] = head;
+        const deltas = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        let hasValidMove = false;
+        for (const [dr, dc] of deltas) {
+          const nr = hr + dr;
+          const nc = hc + dc;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !trailSet.has(`${nr},${nc}`)) {
+            const val = grid[nr][nc];
+            if (val === null || val === nextTarget) {
+              hasValidMove = true;
+              break;
+            }
+          }
+        }
+        isDeadEnd = !hasValidMove;
+      }
+      deadEndAlert.style.display = isDeadEnd ? 'block' : 'none';
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'trail-cell';
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+
+          const val = grid[r][c];
+          const isStart = r === startCell[0] && c === startCell[1];
+          const isEnd = r === endCell[0] && c === endCell[1];
+          const inTrail = trailSet.has(`${r},${c}`);
+          const isHead = r === head[0] && c === head[1];
+
+          if (isStart) cell.classList.add('start-node');
+          else if (isEnd) cell.classList.add('end-node');
+          else if (val !== null) cell.classList.add('checkpoint');
+
+          if (inTrail) cell.classList.add('active-trail');
+          if (isHead) cell.classList.add('trail-head');
+
+          const dist = Math.abs(r - head[0]) + Math.abs(c - head[1]);
+          if (dist === 1 && !inTrail && (val === null || val === nextTarget)) {
+            cell.classList.add('valid-next-hover');
+          }
+
+          if (val !== null) {
+            cell.textContent = val;
+          } else if (inTrail) {
+            cell.textContent = '•';
+          }
+
+          // Mouse & Touch Interaction
+          cell.addEventListener('pointerdown', (e) => {
+            if (isSolved) return;
+            try { cell.setPointerCapture(e.pointerId); } catch {}
+            isDragging = true;
+            handleCellInteraction(r, c);
+          });
+
+          cell.addEventListener('pointerenter', () => {
+            if (isDragging && !isSolved) {
+              handleCellInteraction(r, c);
+            }
+          });
+
+          cell.addEventListener('pointerup', (e) => {
+            try { cell.releasePointerCapture(e.pointerId); } catch {}
+            isDragging = false;
+          });
+
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function handleCellInteraction(r, c) {
+      if (isSolved) return;
+      const head = userTrail[userTrail.length - 1];
+
+      // Clicking immediate previous cell = backtrack
+      if (userTrail.length > 1) {
+        const prev = userTrail[userTrail.length - 2];
+        if (prev[0] === r && prev[1] === c) {
+          userTrail.pop();
+          renderCells();
+          return;
+        }
+      }
+
+      // Must be orthogonal neighbor
+      const dist = Math.abs(r - head[0]) + Math.abs(c - head[1]);
+      if (dist !== 1) return;
+
+      // Must not be already in trail
+      const alreadyInTrail = userTrail.some(([tr, tc]) => tr === r && tc === c);
+      if (alreadyInTrail) return;
+
+      // Strict sequential checkpoint checking
+      const val = grid[r][c];
+      const nextTarget = getExpectedNextNodeNumber();
+      if (val !== null && val !== nextTarget) {
+        showStatus(`⚠️ Out of order! You must visit Node ${nextTarget} next.`, "var(--danger)");
+        setTimeout(() => {
+          if (!isSolved) {
+            showStatus(`Step ${userTrail.length}/${totalCells} · Target Node ${nextTarget}`, "var(--text-muted)");
+          }
+        }, 1200);
+        return;
+      }
+
+      // Add cell to path
+      userTrail.push([r, c]);
+      renderCells();
+
+      // Check Win Condition
+      if (userTrail.length === totalCells) {
+        checkTrailCompletion();
+      }
+    }
+
+    function checkTrailCompletion() {
+      const isValid = puzzle.validate(userTrail);
+      if (!isValid) return;
+
+      isSolved = true;
+      isDragging = false;
+      const timeTakenMs = Math.max(1500, Date.now() - startTime);
+      const score = totalCells * 120 + Math.max(0, 4000 - Math.floor(timeTakenMs / 10));
+
+      showStatus(`🎉 Number Trail Solved! (${(timeTakenMs / 1000).toFixed(1)}s, +${score} pts)`, "var(--correct-bg)");
+
+      container.querySelectorAll('.trail-cell').forEach(el => {
+        el.style.backgroundColor = 'var(--correct-bg)';
+        el.style.borderColor = '#fff';
+        el.style.color = '#fff';
+      });
+
+      onWin(score, timeTakenMs);
+    }
+
+    const onUndo = () => {
+      if (isSolved || userTrail.length <= 1) return;
+      userTrail.pop();
+      renderCells();
+    };
+
+    const onReset = () => {
+      if (isSolved) return;
+      userTrail = [startCell];
+      renderCells();
+    };
+
+    undoBtn.addEventListener('click', onUndo);
+    resetBtn.addEventListener('click', onReset);
+
+    // Touch Dragging Handler for Mobile Devices
+    const onTouchMove = (e) => {
+      if (!isDragging || isSolved) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const target = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.trail-cell');
+      if (target && target.dataset.row !== undefined && target.dataset.col !== undefined) {
+        const r = parseInt(target.dataset.row, 10);
+        const c = parseInt(target.dataset.col, 10);
+        handleCellInteraction(r, c);
+      }
+    };
+    boardEl.addEventListener('touchmove', onTouchMove, { passive: false });
+
+    const onPointerUp = () => {
+      isDragging = false;
+    };
+    window.addEventListener('pointerup', onPointerUp);
+
+    renderCells();
+
+    return () => {
+      undoBtn.removeEventListener('click', onUndo);
+      resetBtn.removeEventListener('click', onReset);
+      boardEl.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('pointerup', onPointerUp);
+    };
   }
 };
