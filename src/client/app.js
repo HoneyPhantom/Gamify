@@ -760,8 +760,9 @@ async function loadLeaderboard() {
   try {
     const data = await api.getLeaderboard(activeGameId);
     renderLeaderboardView(data);
-  } catch {
-    view.innerHTML = '<p style="color: var(--text-muted);">Leaderboard is loading or offline.</p>';
+  } catch (err) {
+    console.error('Leaderboard load error:', err);
+    view.innerHTML = `<p style="color: var(--danger); font-size: 0.85rem;">Failed to load leaderboard: ${err.message || 'Server error'}</p>`;
   }
 }
 
@@ -772,47 +773,69 @@ function renderLeaderboardView(data) {
   if (isGlobal) {
     const rows = data.globalLeaderboard || [];
     if (!rows.length) {
-      view.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No global ranks yet. Complete a game to record your standing!</p>';
+      view.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No players ranked yet for this game. Be the first to play and claim #1!</p>';
       return;
     }
     view.innerHTML = `
       <table class="leaderboard-table">
         <thead>
-          <tr><th>Rank</th><th>Player</th><th>Avg Score</th><th>Total Plays</th><th>Best</th></tr>
+          <tr>
+            <th style="width: 14%;">Rank</th>
+            <th>Player</th>
+            <th style="text-align: right;">Avg Score</th>
+            <th style="text-align: right;" title="Tie Breaker: Total Games Played">Games Played</th>
+            <th style="text-align: right;">Best Score</th>
+          </tr>
         </thead>
         <tbody>
-          ${rows.map((r, i) => `
-            <tr>
-              <td>#${i + 1}</td>
-              <td>${r.display_name}</td>
-              <td><strong>${r.global_average_score}</strong></td>
-              <td>${r.plays_count}</td>
-              <td>${r.best_score}</td>
-            </tr>
-          `).join('')}
+          ${rows.map((r, i) => {
+            const isMe = currentUser && (r.user_id === currentUser.id || r.username === currentUser.username);
+            const rankLabel = i === 0 ? '🥇 #1' : i === 1 ? '🥈 #2' : i === 2 ? '🥉 #3' : `#${i + 1}`;
+            const youTag = isMe ? `<span class="you-badge">You</span>` : '';
+            return `
+              <tr class="${isMe ? 'leaderboard-row-me' : ''}">
+                <td><strong>${rankLabel}</strong></td>
+                <td><strong>${r.display_name || r.username}</strong> ${youTag}</td>
+                <td style="text-align: right;"><strong style="color:var(--accent); font-size:1.05rem;">${r.global_average_score}</strong></td>
+                <td style="text-align: right; font-weight: 700; color: var(--text-muted);">${r.plays_count}</td>
+                <td style="text-align: right;">${r.best_score}</td>
+              </tr>
+            `;
+          }).join('')}
         </tbody>
       </table>`;
   } else {
     const rows = data.dailyLeaderboard || [];
     if (!rows.length) {
-      view.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No daily entries recorded yet today. Be the first to solve!</p>';
+      view.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No daily entries recorded yet today. Solve today\'s challenge to rank!</p>';
       return;
     }
     view.innerHTML = `
       <table class="leaderboard-table">
         <thead>
-          <tr><th>Rank</th><th>Player</th><th>Tier</th><th>Score</th><th>Time</th></tr>
+          <tr>
+            <th style="width: 14%;">Rank</th>
+            <th>Player</th>
+            <th>Tier</th>
+            <th style="text-align: right;">Score</th>
+            <th style="text-align: right;">Time</th>
+          </tr>
         </thead>
         <tbody>
-          ${rows.map((r, i) => `
-            <tr>
-              <td>#${i + 1}</td>
-              <td>${r.display_name}</td>
-              <td>${r.difficulty}</td>
-              <td><strong>${r.score}</strong></td>
-              <td>${(r.time_taken_ms / 1000).toFixed(1)}s</td>
-            </tr>
-          `).join('')}
+          ${rows.map((r, i) => {
+            const isMe = currentUser && (r.user_id === currentUser.id || r.username === currentUser.username);
+            const rankLabel = i === 0 ? '🥇 #1' : i === 1 ? '🥈 #2' : i === 2 ? '🥉 #3' : `#${i + 1}`;
+            const youTag = isMe ? `<span class="you-badge">You</span>` : '';
+            return `
+              <tr class="${isMe ? 'leaderboard-row-me' : ''}">
+                <td><strong>${rankLabel}</strong></td>
+                <td><strong>${r.display_name || r.username}</strong> ${youTag}</td>
+                <td><span style="text-transform:capitalize; padding: 2px 8px; border-radius:6px; background:#f1f5f9; font-weight:700; font-size:0.8rem;">${r.difficulty}</span></td>
+                <td style="text-align: right;"><strong style="color:var(--correct-bg); font-size:1.05rem;">${r.score}</strong></td>
+                <td style="text-align: right;">${(r.time_taken_ms / 1000).toFixed(1)}s</td>
+              </tr>
+            `;
+          }).join('')}
         </tbody>
       </table>`;
   }

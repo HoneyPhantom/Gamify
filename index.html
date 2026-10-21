@@ -717,6 +717,18 @@
     }
     .leaderboard-table th { color: var(--text-muted); font-weight: 700; border-bottom: 2px solid var(--border-color); }
     .leaderboard-table td { border-bottom: 1px solid #f1f5f9; color: var(--text-color); }
+    .leaderboard-row-me { background: rgba(2, 132, 199, 0.07) !important; font-weight: 600; }
+    .you-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #0284c7;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      margin-left: 6px;
+      display: inline-block;
+    }
 
     /* Locked Box */
     .locked-view {
@@ -1135,8 +1147,8 @@
       <!-- Live Leaderboard Container -->
       <div class="leaderboard-card" style="margin-top: 1.5rem;">
         <div class="tabs">
-          <button class="tab-btn active" id="btn-daily-tab">Today's Daily Leaderboard</button>
-          <button class="tab-btn" id="btn-global-tab">Global Standings</button>
+          <button class="tab-btn active" id="btn-global-tab">🏆 Leaderboard (Avg Score)</button>
+          <button class="tab-btn" id="btn-daily-tab">📅 Today's Daily Standings</button>
         </div>
         <div id="leaderboard-view">Loading standings...</div>
       </div>

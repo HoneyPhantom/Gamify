@@ -22,8 +22,8 @@ export async function handleGetLeaderboard(
       dl.score,
       dl.time_taken_ms,
       u.id as user_id,
-      u.display_name,
-      u.avatar_url,
+      COALESCE(u.display_name, u.username) as display_name,
+      u.username,
       u.streak_count
     FROM daily_leaderboard dl
     JOIN users u ON dl.user_id = u.id
@@ -39,19 +39,19 @@ export async function handleGetLeaderboard(
   dailyQuery += ` ORDER BY dl.score DESC, dl.time_taken_ms ASC LIMIT 50`;
 
   // 2. Fetch Global Leaderboard computed efficiently via running aggregates
-  // Formula: total_score / plays_count (displays all players with at least 1 completed game)
+  // Ranking is strictly based on average score, with plays_count (games played) as the tie breaker
   const globalQuery = `
     SELECT 
       ugs.user_id,
-      u.display_name,
-      u.avatar_url,
+      COALESCE(u.display_name, u.username) AS display_name,
+      u.username,
       ugs.plays_count,
       ugs.best_score,
       ROUND(CAST(ugs.total_score AS REAL) / ugs.plays_count, 2) AS global_average_score
     FROM user_game_stats ugs
     JOIN users u ON ugs.user_id = u.id
     WHERE ugs.game_id = ? AND ugs.plays_count >= 1
-    ORDER BY global_average_score DESC, ugs.best_score DESC, ugs.plays_count DESC
+    ORDER BY (CAST(ugs.total_score AS REAL) / ugs.plays_count) DESC, ugs.plays_count DESC, ugs.best_score DESC
     LIMIT 50
   `;
 
