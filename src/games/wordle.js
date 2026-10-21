@@ -112,9 +112,13 @@ export const gameConfig = {
   },
   unlimitedPlayground: {
     tier: "playground",
-    unlockCost: 500,
-    generateRandomPuzzle: () => {
-      const randomWord = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+    unlockCost: 0,
+    generateRandomPuzzle: (prevWord) => {
+      let pool = WORD_LIST;
+      if (prevWord && pool.length > 1) {
+        pool = pool.filter(w => w !== prevWord);
+      }
+      const randomWord = pool[Math.floor(Math.random() * pool.length)];
       return {
         gameId: "wordle",
         difficulty: "playground",

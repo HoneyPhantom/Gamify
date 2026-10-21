@@ -234,7 +234,7 @@ export async function handleRegister(body: RegisterRequestBody, env: Env): Promi
   await env.DB.batch([
     env.DB.prepare(`
       INSERT INTO user_game_unlocks (id, user_id, game_id, game_unlocked, easy_unlocked, medium_unlocked, hard_unlocked, playground_unlocked)
-      VALUES (?, ?, 'wordle', 1, 1, 0, 0, 0)
+      VALUES (?, ?, 'wordle', 1, 1, 0, 0, 1)
     `).bind(`${userId}#wordle`, userId),
     env.DB.prepare(`
       INSERT INTO user_game_unlocks (id, user_id, game_id, game_unlocked, easy_unlocked, medium_unlocked, hard_unlocked, playground_unlocked)

@@ -6,15 +6,14 @@ import { api } from './api.js';
 // =========================================================================
 let currentUser = api.getCachedUser();
 let userUnlocks = {}; // Map of gameId -> unlock record
+let userStats = {}; // Map of gameId -> user_game_stats record { total_score, plays_count, best_score, average_score }
+let todayCompletions = new Set(); // Set of "gameId:difficulty" completed today
 
 let activeGameId = 'wordle';
 let currentTier = 'easy';
 let currentPuzzle = null;
 let startTime = Date.now();
 let activeGameCleanup = null; // Holds the cleanup function of the currently mounted game
-
-let totalScore = 0;
-let gamesWon = 0;
 
 // DOM Elements
 const frontPageView = document.getElementById('front-page-view');
@@ -359,7 +358,10 @@ btnLogout.addEventListener('click', () => {
   api.logout();
   currentUser = null;
   userUnlocks = {};
+  userStats = {};
+  todayCompletions = new Set();
   updateAuthUI();
+  updateScoreDisplay();
   renderGamesScrollList();
   returnToHome();
 });
@@ -380,7 +382,16 @@ async function fetchUserProfile() {
     (res.unlocks || []).forEach(u => {
       userUnlocks[u.game_id] = u;
     });
+    userStats = {};
+    (res.stats || []).forEach(s => {
+      userStats[s.game_id] = s;
+    });
+    todayCompletions = new Set();
+    (res.todayCompletions || []).forEach(c => {
+      todayCompletions.add(`${c.game_id}:${c.difficulty}`);
+    });
     updateAuthUI();
+    updateScoreDisplay();
   } catch (e) {
     console.warn('Profile fetch note:', e.message);
   }
@@ -400,6 +411,7 @@ function isGameUnlocked(gameId) {
 function isTierUnlocked(gameId, tier) {
   if (!isGameUnlocked(gameId)) return false;
   if (tier === 'easy') return true;
+  if (gameId === 'wordle' && tier === 'playground') return true;
   const record = userUnlocks[gameId];
   return record && record[`${tier}_unlocked`] === 1;
 }
@@ -493,6 +505,8 @@ function enterGame(gameId) {
   gameView.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  updateScoreDisplay();
+
   // Reset to easy tier
   currentTier = 'easy';
   document.querySelectorAll('#tier-tabs .tab-btn').forEach(btn => {
@@ -529,7 +543,7 @@ tierTabs.addEventListener('click', (e) => {
   loadCurrentPuzzle();
 });
 
-function loadCurrentPuzzle() {
+function loadCurrentPuzzle(isNewPlayground = false) {
   const dateStr = getTodayDateStr();
 
   // 1. Check if game itself is unlocked
@@ -574,21 +588,62 @@ function loadCurrentPuzzle() {
   lockedTierContainer.classList.add('hidden');
   activeGameContainer.classList.remove('hidden');
 
-  if (currentTier === 'playground') {
-    currentPuzzle = getPlaygroundPuzzle(activeGameId);
-    gameBadge.textContent = 'Playground Mode (Unranked)';
+  const isPlayground = currentTier === 'playground';
+  const isAlreadyCompletedToday = !isPlayground && todayCompletions.has(`${activeGameId}:${currentTier}`);
+
+  if (activeGameCleanup) {
+    try { activeGameCleanup(); } catch (err) { console.warn('Game cleanup note:', err); }
+    activeGameCleanup = null;
+  }
+
+  // 3. If daily tier is already completed today, show celebration view
+  if (isAlreadyCompletedToday) {
+    gameBadge.textContent = `Daily ${currentTier.toUpperCase()} (${dateStr}) · Completed`;
+    statusEl.textContent = 'Completed for today';
+    statusEl.style.color = 'var(--correct-bg)';
+    newGameBtn.style.display = 'none';
+
+    gameArenaContent.innerHTML = `
+      <div class="daily-completed-view">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎉</div>
+        <h3 style="font-size: 1.4rem; color: #166534; margin-bottom: 0.5rem;">
+          Daily ${currentTier.toUpperCase()} Challenge Solved!
+        </h3>
+        <p style="color: #15803d; font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+          You have already conquered today's ${currentTier} daily challenge and claimed your rewards. Daily puzzles refresh every midnight UTC.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <button id="btn-jump-playground" class="game-action-btn btn-play" style="max-width: 280px;">
+            Play Unlimited Playground 🎲
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btn-jump-playground')?.addEventListener('click', () => {
+      const playgroundTab = document.querySelector('#tier-tabs .tab-btn[data-tier="playground"]');
+      if (playgroundTab) playgroundTab.click();
+    });
+
+    gameRulesBox.innerHTML = `<h3>Daily Challenge Rules</h3><p>Daily puzzles can be solved once per day for coins and daily leaderboard standing. Unlimited practice is available in Playground mode.</p>`;
+    return;
+  }
+
+  // 4. Set up puzzle for play
+  newGameBtn.style.display = 'inline-block';
+  if (isPlayground) {
+    newGameBtn.textContent = '🎲 New Game';
+    // Pass previous puzzle solution so playground produces a different game/word
+    const prevWord = currentPuzzle?.targetWord;
+    currentPuzzle = getPlaygroundPuzzle(activeGameId, prevWord);
+    gameBadge.textContent = 'Playground Mode (Unranked · Unlimited)';
   } else {
+    newGameBtn.textContent = '↺ Reset Puzzle';
     currentPuzzle = getDailyPuzzle(activeGameId, currentTier, dateStr);
     gameBadge.textContent = `Daily ${currentTier.toUpperCase()} (${dateStr})`;
   }
 
   startTime = Date.now();
-
-  // Clean up any previously mounted game listeners/state
-  if (activeGameCleanup) {
-    try { activeGameCleanup(); } catch (err) { console.warn('Game cleanup note:', err); }
-    activeGameCleanup = null;
-  }
 
   // Mount the active game dynamically via plug-and-play lifecycle
   const game = getGameConfig(activeGameId);
@@ -625,10 +680,6 @@ async function unlockSpecificTier(gameId, tier) {
 // 4. UNIFIED GAME WIN & SCORE SYNC
 // =========================================================================
 async function handleGameWin(gameId, tier, earnedPoints, customTimeTakenMs) {
-  totalScore += earnedPoints;
-  gamesWon++;
-  updateScoreDisplay();
-
   const timeTakenMs = customTimeTakenMs || Math.max(1500, Date.now() - startTime);
 
   try {
@@ -640,15 +691,49 @@ async function handleGameWin(gameId, tier, earnedPoints, customTimeTakenMs) {
       dateStr: getTodayDateStr(),
     });
 
+    if (tier !== 'playground') {
+      todayCompletions.add(`${gameId}:${tier}`);
+    }
+
+    if (res.stats) {
+      userStats[gameId] = res.stats;
+    } else {
+      const currentStats = userStats[gameId] || { total_score: 0, plays_count: 0, best_score: 0 };
+      userStats[gameId] = {
+        ...currentStats,
+        total_score: (currentStats.total_score || 0) + earnedPoints,
+        plays_count: (currentStats.plays_count || 0) + 1,
+        best_score: Math.max(currentStats.best_score || 0, earnedPoints),
+      };
+    }
+    updateScoreDisplay();
+
     if (res.coinsAwarded > 0) {
       currentUser.coins = res.currentCoins;
       currentUser.streakCount = res.streakCount;
       updateAuthUI();
       showStatus(`🎉 Solved! +${earnedPoints} Pts & +${res.coinsAwarded} Coins Earned!`, "var(--correct-bg)");
+    } else {
+      showStatus(`🎉 Solved! +${earnedPoints} Pts recorded!`, "var(--correct-bg)");
     }
+
     loadLeaderboard();
+
+    // If it was a daily tier, transition to completed daily screen after celebratory delay
+    if (tier !== 'playground') {
+      setTimeout(() => {
+        loadCurrentPuzzle();
+      }, 1800);
+    }
   } catch (e) {
     console.warn('Score submission sync note:', e.message);
+    if (e.code === 'DAILY_ALREADY_COMPLETED') {
+      todayCompletions.add(`${gameId}:${tier}`);
+      showStatus('Challenge already completed today. Try Playground mode!', 'var(--warning)');
+      setTimeout(() => {
+        loadCurrentPuzzle();
+      }, 1500);
+    }
   }
 }
 
@@ -658,12 +743,13 @@ function showStatus(msg, color) {
 }
 
 function updateScoreDisplay() {
-  totalScoreEl.innerText = totalScore;
-  gamesWonEl.innerText = gamesWon;
+  const stats = userStats[activeGameId] || { total_score: 0, plays_count: 0 };
+  totalScoreEl.innerText = stats.total_score ?? 0;
+  gamesWonEl.innerText = stats.plays_count ?? 0;
 }
 
 newGameBtn.addEventListener('click', () => {
-  loadCurrentPuzzle();
+  loadCurrentPuzzle(currentTier === 'playground');
 });
 
 // =========================================================================
@@ -686,7 +772,7 @@ function renderLeaderboardView(data) {
   if (isGlobal) {
     const rows = data.globalLeaderboard || [];
     if (!rows.length) {
-      view.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No global ranks yet (requires 20+ completed games).</p>';
+      view.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No global ranks yet. Complete a game to record your standing!</p>';
       return;
     }
     view.innerHTML = `

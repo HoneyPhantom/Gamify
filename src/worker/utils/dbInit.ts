@@ -92,5 +92,10 @@ export async function ensureDbSchema(env: Env): Promise<void> {
     }
   }
 
+  // Ensure Wordle playground is unlocked for all users
+  try {
+    await env.DB.prepare("UPDATE user_game_unlocks SET playground_unlocked = 1 WHERE game_id = 'wordle'").run();
+  } catch {}
+
   schemaReady = true;
 }

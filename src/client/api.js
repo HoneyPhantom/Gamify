@@ -138,8 +138,10 @@ class GamifyApiClient {
   }
 
   async getLeaderboard(gameId, difficulty = null) {
-    const query = difficulty ? `?difficulty=${difficulty}` : '';
-    return this.request(`/leaderboard/${gameId}${query}`);
+    const params = new URLSearchParams();
+    if (difficulty) params.set('difficulty', difficulty);
+    params.set('_t', Date.now().toString());
+    return this.request(`/leaderboard/${gameId}?${params.toString()}`);
   }
 }
 

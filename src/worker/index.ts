@@ -4,6 +4,7 @@ import { authenticateRequest, handleRegister, handleLogin } from './auth';
 import { handleUnlock } from './controllers/unlock';
 import { handleSubmitScore } from './controllers/submitScore';
 import { handleGetLeaderboard } from './controllers/leaderboard';
+import { getTodayUTC } from './utils/date';
 
 import { ensureDbSchema } from './utils/dbInit';
 
@@ -84,18 +85,31 @@ export default {
         const auth = await authenticateRequest(request, env);
         if ('error' in auth) return auth.error;
 
-        const [user, unlocks] = await Promise.all([
+        const todayStr = getTodayUTC();
+        const [user, unlocks, stats, todayCompletions] = await Promise.all([
           env.DB.prepare('SELECT id, username, display_name, coins, streak_count, last_played_date, last_login_at FROM users WHERE id = ?')
             .bind(auth.user.id).first(),
           env.DB.prepare('SELECT * FROM user_game_unlocks WHERE user_id = ?')
             .bind(auth.user.id).all(),
+          env.DB.prepare('SELECT game_id, total_score, plays_count, best_score, ROUND(CAST(total_score AS REAL) / plays_count, 2) AS average_score FROM user_game_stats WHERE user_id = ?')
+            .bind(auth.user.id).all(),
+          env.DB.prepare('SELECT game_id, difficulty FROM daily_completions WHERE user_id = ? AND played_date = ?')
+            .bind(auth.user.id, todayStr).all(),
         ]);
 
-        return jsonResponse({
-          success: true,
-          user,
-          unlocks: unlocks.results || [],
-        });
+        return jsonResponse(
+          {
+            success: true,
+            user,
+            unlocks: unlocks.results || [],
+            stats: stats.results || [],
+            todayCompletions: todayCompletions.results || [],
+          },
+          200,
+          {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+          }
+        );
       }
 
       // -------------------------------------------------------------------

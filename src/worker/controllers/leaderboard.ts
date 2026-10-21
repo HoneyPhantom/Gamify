@@ -39,7 +39,7 @@ export async function handleGetLeaderboard(
   dailyQuery += ` ORDER BY dl.score DESC, dl.time_taken_ms ASC LIMIT 50`;
 
   // 2. Fetch Global Leaderboard computed efficiently via running aggregates
-  // Formula: total_score / plays_count (strictly filtering for plays_count >= 20)
+  // Formula: total_score / plays_count (displays all players with at least 1 completed game)
   const globalQuery = `
     SELECT 
       ugs.user_id,
@@ -50,8 +50,8 @@ export async function handleGetLeaderboard(
       ROUND(CAST(ugs.total_score AS REAL) / ugs.plays_count, 2) AS global_average_score
     FROM user_game_stats ugs
     JOIN users u ON ugs.user_id = u.id
-    WHERE ugs.game_id = ? AND ugs.plays_count >= 20
-    ORDER BY global_average_score DESC, ugs.plays_count DESC
+    WHERE ugs.game_id = ? AND ugs.plays_count >= 1
+    ORDER BY global_average_score DESC, ugs.best_score DESC, ugs.plays_count DESC
     LIMIT 50
   `;
 
@@ -70,14 +70,13 @@ export async function handleGetLeaderboard(
       globalLeaderboard: globalResult.results || [],
       meta: {
         dailyCount: dailyResult.results?.length ?? 0,
-        globalMinPlaysThreshold: 20,
+        globalMinPlaysThreshold: 1,
         globalCount: globalResult.results?.length ?? 0,
       },
     },
     200,
     {
-      // Edge cache header: cache leaderboard at edge for 60 seconds
-      'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=120',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
     }
   );
 }

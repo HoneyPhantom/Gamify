@@ -47,7 +47,7 @@ export async function handleSubmitScore(
     const id = `${user.id}#${gameId}`;
     await env.DB.prepare(`
       INSERT INTO user_game_unlocks (id, user_id, game_id, game_unlocked, easy_unlocked, medium_unlocked, hard_unlocked, playground_unlocked)
-      VALUES (?, ?, ?, 1, 1, 0, 0, 0)
+      VALUES (?, ?, ?, 1, 1, 0, 0, 1)
     `).bind(id, user.id, gameId).run();
 
     unlocks = {
@@ -58,7 +58,7 @@ export async function handleSubmitScore(
       easy_unlocked: 1,
       medium_unlocked: 0,
       hard_unlocked: 0,
-      playground_unlocked: 0,
+      playground_unlocked: 1,
       unlocked_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -78,7 +78,8 @@ export async function handleSubmitScore(
   };
 
   const col = columnMap[difficulty];
-  if (!col || unlocks[col] !== 1) {
+  const isWordlePlayground = gameId === 'wordle' && difficulty === 'playground';
+  if (!isWordlePlayground && (!col || unlocks[col] !== 1)) {
     return errorResponse(`Access denied: Tier '${difficulty}' is not unlocked for this game.`, 403, {
       code: 'TIER_LOCKED',
     });
@@ -90,7 +91,7 @@ export async function handleSubmitScore(
     return errorResponse('User profile not found', 404);
   }
 
-  // 3. Check daily reward eligibility (Idempotency)
+  // 3. Check daily reward eligibility & limit daily plays to once per day
   let coinsToAward = 0;
   let isFirstDailyCompletion = false;
   let newStreak = currentUser.streak_count;
@@ -101,11 +102,15 @@ export async function handleSubmitScore(
       WHERE user_id = ? AND game_id = ? AND difficulty = ? AND played_date = ?
     `).bind(user.id, gameId, difficulty, playedDate).first<{ id: string }>();
 
-    if (!existingCompletion) {
-      isFirstDailyCompletion = true;
-      coinsToAward = REWARD_COINS[difficulty] || 0;
-      newStreak = calculateNextStreak(currentUser.last_played_date, currentUser.streak_count, playedDate);
+    if (existingCompletion) {
+      return errorResponse(`You have already completed the ${difficulty} daily challenge for today. Daily tiers can only be played once per day. Enjoy unlimited plays in Playground mode!`, 400, {
+        code: 'DAILY_ALREADY_COMPLETED',
+      });
     }
+
+    isFirstDailyCompletion = true;
+    coinsToAward = REWARD_COINS[difficulty] || 0;
+    newStreak = calculateNextStreak(currentUser.last_played_date, currentUser.streak_count, playedDate);
   }
 
   // 4. Prepare atomic batch statements
