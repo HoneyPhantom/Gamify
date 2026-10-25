@@ -1,6 +1,7 @@
 import { Env } from '../types';
 import { jsonResponse, errorResponse } from '../utils/response';
 import { getTodayUTC } from '../utils/date';
+import { authenticateRequest } from '../auth';
 
 export async function handleGetLeaderboard(
   request: Request,
@@ -55,10 +56,43 @@ export async function handleGetLeaderboard(
     LIMIT 50
   `;
 
-  // Execute both queries concurrently
-  const [dailyResult, globalResult] = await Promise.all([
+  // 3. Optional Friends Leaderboard if caller is authenticated
+  let friendsPromise: Promise<unknown[]> = Promise.resolve([]);
+  const authHeader = request.headers.get('Authorization');
+  if (authHeader) {
+    friendsPromise = (async () => {
+      try {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return [];
+        const friendsQuery = `
+          SELECT 
+            ugs.user_id,
+            COALESCE(u.display_name, u.username) AS display_name,
+            u.username,
+            ugs.plays_count,
+            ugs.best_score,
+            ROUND(CAST(ugs.total_score AS REAL) / ugs.plays_count, 2) AS global_average_score
+          FROM user_game_stats ugs
+          JOIN users u ON ugs.user_id = u.id
+          WHERE ugs.game_id = ? 
+            AND (ugs.user_id = ? OR ugs.user_id IN (SELECT friend_id FROM user_friends WHERE user_id = ?))
+            AND ugs.plays_count >= 1
+          ORDER BY (CAST(ugs.total_score AS REAL) / ugs.plays_count) DESC, ugs.plays_count DESC, ugs.best_score DESC
+          LIMIT 50
+        `;
+        const res = await env.DB.prepare(friendsQuery).bind(gameId, auth.user.id, auth.user.id).all();
+        return res.results || [];
+      } catch {
+        return [];
+      }
+    })();
+  }
+
+  // Execute all queries concurrently
+  const [dailyResult, globalResult, friendsResult] = await Promise.all([
     env.DB.prepare(dailyQuery).bind(...dailyParams).all(),
     env.DB.prepare(globalQuery).bind(gameId).all(),
+    friendsPromise,
   ]);
 
   return jsonResponse(
@@ -68,10 +102,12 @@ export async function handleGetLeaderboard(
       date: todayStr,
       dailyLeaderboard: dailyResult.results || [],
       globalLeaderboard: globalResult.results || [],
+      friendsLeaderboard: friendsResult || [],
       meta: {
         dailyCount: dailyResult.results?.length ?? 0,
         globalMinPlaysThreshold: 1,
         globalCount: globalResult.results?.length ?? 0,
+        friendsCount: (friendsResult as unknown[])?.length ?? 0,
       },
     },
     200,

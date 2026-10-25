@@ -6,8 +6,9 @@ import { errorResponse } from './utils/response';
  * Pure native Web Crypto API with 0 external dependencies for sub-millisecond execution.
  */
 
-// 7 days in seconds for weekly expiration
-export const WEEKLY_SESSION_EXPIRY_SEC = 7 * 24 * 60 * 60; // 604800 seconds
+// Long-lived permanent session (1 year) - no weekly forced re-login required
+export const SESSION_EXPIRY_SEC = 365 * 24 * 60 * 60; // 31,536,000 seconds
+export const WEEKLY_SESSION_EXPIRY_SEC = SESSION_EXPIRY_SEC; // Backward compatibility alias
 
 function base64UrlEncode(str: string | Uint8Array): string {
   const binary = typeof str === 'string' ? new TextEncoder().encode(str) : str;
@@ -84,12 +85,12 @@ async function getHmacKey(secret: string): Promise<CryptoKey> {
 }
 
 /**
- * Signs a compact session JWT strictly expiring in 7 days
+ * Signs a compact session JWT with long-lived lifetime
  */
 export async function signSessionJwt(
   payload: Record<string, unknown>,
   secret: string,
-  expiresInSec = WEEKLY_SESSION_EXPIRY_SEC
+  expiresInSec = SESSION_EXPIRY_SEC
 ): Promise<string> {
   const header = { alg: 'HS256', typ: 'JWT' };
   const now = Math.floor(Date.now() / 1000);

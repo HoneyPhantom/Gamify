@@ -166,6 +166,7 @@ export const gameConfig = {
   description: "Connect numbers in strict sequence with one continuous path visiting every cell.",
   badge: "Locked · 150 Coins",
   icon: "〰️",
+  thumbnail: "/images/number-trail.png",
   isFree: false,
   gameUnlockCost: 150,
   difficulties: {
@@ -281,8 +282,20 @@ export const gameConfig = {
       return count + 1;
     }
 
+    const cellElements = [];
+    for (let r = 0; r < rows; r++) {
+      cellElements[r] = [];
+      for (let c = 0; c < cols; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'trail-cell';
+        cell.dataset.row = String(r);
+        cell.dataset.col = String(c);
+        boardEl.appendChild(cell);
+        cellElements[r][c] = cell;
+      }
+    }
+
     function renderCells() {
-      boardEl.innerHTML = '';
       const head = userTrail[userTrail.length - 1];
       const trailSet = new Map();
       userTrail.forEach(([r, c], idx) => trailSet.set(`${r},${c}`, idx));
@@ -296,7 +309,7 @@ export const gameConfig = {
         targetNodeEl.style.color = 'var(--correct-bg)';
       }
 
-      progressCountEl.textContent = userTrail.length;
+      progressCountEl.textContent = String(userTrail.length);
 
       // Check dead-end condition
       let isDeadEnd = false;
@@ -321,17 +334,14 @@ export const gameConfig = {
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const cell = document.createElement('div');
-          cell.className = 'trail-cell';
-          cell.dataset.row = r;
-          cell.dataset.col = c;
-
+          const cell = cellElements[r][c];
           const val = grid[r][c];
           const isStart = r === startCell[0] && c === startCell[1];
           const isEnd = r === endCell[0] && c === endCell[1];
           const inTrail = trailSet.has(`${r},${c}`);
           const isHead = r === head[0] && c === head[1];
 
+          cell.className = 'trail-cell';
           if (isStart) cell.classList.add('start-node');
           else if (isEnd) cell.classList.add('end-node');
           else if (val !== null) cell.classList.add('checkpoint');
@@ -345,31 +355,12 @@ export const gameConfig = {
           }
 
           if (val !== null) {
-            cell.textContent = val;
+            cell.textContent = String(val);
           } else if (inTrail) {
             cell.textContent = '•';
+          } else {
+            cell.textContent = '';
           }
-
-          // Mouse & Touch Interaction
-          cell.addEventListener('pointerdown', (e) => {
-            if (isSolved) return;
-            try { cell.setPointerCapture(e.pointerId); } catch {}
-            isDragging = true;
-            handleCellInteraction(r, c);
-          });
-
-          cell.addEventListener('pointerenter', () => {
-            if (isDragging && !isSolved) {
-              handleCellInteraction(r, c);
-            }
-          });
-
-          cell.addEventListener('pointerup', (e) => {
-            try { cell.releasePointerCapture(e.pointerId); } catch {}
-            isDragging = false;
-          });
-
-          boardEl.appendChild(cell);
         }
       }
     }
@@ -378,7 +369,10 @@ export const gameConfig = {
       if (isSolved) return;
       const head = userTrail[userTrail.length - 1];
 
-      // Clicking immediate previous cell = backtrack
+      // If already at head, no-op
+      if (head[0] === r && head[1] === c) return;
+
+      // Clicking or dragging into immediate previous cell = backtrack
       if (userTrail.length > 1) {
         const prev = userTrail[userTrail.length - 2];
         if (prev[0] === r && prev[1] === c) {
@@ -454,32 +448,78 @@ export const gameConfig = {
     undoBtn.addEventListener('click', onUndo);
     resetBtn.addEventListener('click', onReset);
 
-    // Touch Dragging Handler for Mobile Devices
-    const onTouchMove = (e) => {
-      if (!isDragging || isSolved) return;
-      e.preventDefault();
-      const touch = e.touches[0];
-      const target = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.trail-cell');
+    function getCoordsFromPoint(clientX, clientY) {
+      const el = document.elementFromPoint(clientX, clientY);
+      const target = el?.closest('.trail-cell');
       if (target && target.dataset.row !== undefined && target.dataset.col !== undefined) {
-        const r = parseInt(target.dataset.row, 10);
-        const c = parseInt(target.dataset.col, 10);
-        handleCellInteraction(r, c);
+        return [parseInt(target.dataset.row, 10), parseInt(target.dataset.col, 10)];
+      }
+      return null;
+    }
+
+    // Pointer events for dragging
+    const onPointerDown = (e) => {
+      if (isSolved) return;
+      const coords = getCoordsFromPoint(e.clientX, e.clientY);
+      if (coords) {
+        isDragging = true;
+        handleCellInteraction(coords[0], coords[1]);
       }
     };
-    boardEl.addEventListener('touchmove', onTouchMove, { passive: false });
+
+    const onPointerMove = (e) => {
+      if (!isDragging || isSolved) return;
+      const coords = getCoordsFromPoint(e.clientX, e.clientY);
+      if (coords) {
+        handleCellInteraction(coords[0], coords[1]);
+      }
+    };
 
     const onPointerUp = () => {
       isDragging = false;
     };
+
+    // Touch events to prevent scrolling while drawing
+    const onTouchStart = (e) => {
+      if (isSolved) return;
+      const touch = e.touches[0];
+      const coords = getCoordsFromPoint(touch.clientX, touch.clientY);
+      if (coords) {
+        isDragging = true;
+        handleCellInteraction(coords[0], coords[1]);
+        if (e.cancelable) e.preventDefault();
+      }
+    };
+
+    const onTouchMove = (e) => {
+      if (!isDragging || isSolved) return;
+      if (e.cancelable) e.preventDefault();
+      const touch = e.touches[0];
+      const coords = getCoordsFromPoint(touch.clientX, touch.clientY);
+      if (coords) {
+        handleCellInteraction(coords[0], coords[1]);
+      }
+    };
+
+    boardEl.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
+
+    boardEl.addEventListener('touchstart', onTouchStart, { passive: false });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onPointerUp);
 
     renderCells();
 
     return () => {
       undoBtn.removeEventListener('click', onUndo);
       resetBtn.removeEventListener('click', onReset);
-      boardEl.removeEventListener('touchmove', onTouchMove);
+      boardEl.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
+      boardEl.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onPointerUp);
     };
   }
 };

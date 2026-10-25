@@ -116,16 +116,18 @@ export async function handleSubmitScore(
   // 4. Prepare atomic batch statements
   const batchStatements: D1PreparedStatement[] = [];
 
-  // A. Upsert User Game Running Aggregates (SUM and COUNT)
+  // A. Upsert User Game Running Aggregates (SUM and COUNT) and per-game streaks
   batchStatements.push(
     env.DB.prepare(`
-      INSERT INTO user_game_stats (user_id, game_id, total_score, plays_count, best_score, updated_at)
-      VALUES (?, ?, ?, 1, ?, DATETIME('now'))
+      INSERT INTO user_game_stats (user_id, game_id, total_score, plays_count, best_score, best_streak, current_streak, updated_at)
+      VALUES (?, ?, ?, 1, ?, 1, 1, CURRENT_TIMESTAMP)
       ON CONFLICT(user_id, game_id) DO UPDATE SET
         total_score = user_game_stats.total_score + excluded.total_score,
         plays_count = user_game_stats.plays_count + 1,
         best_score = MAX(user_game_stats.best_score, excluded.best_score),
-        updated_at = DATETIME('now')
+        current_streak = user_game_stats.current_streak + 1,
+        best_streak = MAX(user_game_stats.best_streak, user_game_stats.current_streak + 1),
+        updated_at = CURRENT_TIMESTAMP
     `).bind(user.id, gameId, score, score)
   );
 
@@ -135,7 +137,7 @@ export async function handleSubmitScore(
     batchStatements.push(
       env.DB.prepare(`
         INSERT INTO daily_completions (id, user_id, game_id, difficulty, played_date, coins_awarded, completed_at)
-        VALUES (?, ?, ?, ?, ?, ?, DATETIME('now'))
+        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `).bind(completionId, user.id, gameId, difficulty, playedDate, coinsToAward)
     );
 
@@ -145,7 +147,7 @@ export async function handleSubmitScore(
         SET coins = coins + ?, 
             streak_count = ?, 
             last_played_date = ?, 
-            updated_at = DATETIME('now')
+            updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `).bind(coinsToAward, newStreak, playedDate, user.id)
     );
@@ -155,7 +157,7 @@ export async function handleSubmitScore(
     batchStatements.push(
       env.DB.prepare(`
         INSERT INTO daily_leaderboard (id, game_id, difficulty, user_id, score, time_taken_ms, played_date, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, DATETIME('now'))
+        VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         ON CONFLICT(game_id, difficulty, user_id, played_date) DO UPDATE SET
           score = CASE WHEN excluded.score > daily_leaderboard.score THEN excluded.score ELSE daily_leaderboard.score END,
           time_taken_ms = CASE WHEN excluded.time_taken_ms < daily_leaderboard.time_taken_ms THEN excluded.time_taken_ms ELSE daily_leaderboard.time_taken_ms END
@@ -169,7 +171,7 @@ export async function handleSubmitScore(
   // Fetch updated aggregates and balance
   const [updatedStats, updatedUser] = await Promise.all([
     env.DB.prepare(`
-      SELECT total_score, plays_count, best_score, 
+      SELECT total_score, plays_count, best_score, best_streak, current_streak,
              ROUND(CAST(total_score AS REAL) / plays_count, 2) as average_score
       FROM user_game_stats 
       WHERE user_id = ? AND game_id = ?

@@ -46,6 +46,7 @@ export interface UserRow {
   id: string;
   username: string;
   display_name: string;
+  about?: string;
   pin_hash: string;
   pin_salt: string;
   coins: number;
@@ -75,5 +76,19 @@ export interface UserGameStatsRow {
   total_score: number;
   plays_count: number;
   best_score: number;
+  best_streak?: number;
+  current_streak?: number;
   updated_at: string;
+}
+
+export interface UserFriendRow {
+  user_id: string;
+  friend_id: string;
+  created_at: string;
+}
+
+export interface PublicUserProfile {
+  username: string;
+  displayName: string;
+  about: string;
 }

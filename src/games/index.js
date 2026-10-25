@@ -52,6 +52,7 @@ export function getAllGames() {
     description: game.description || "",
     badge: game.badge || "Daily Puzzle",
     icon: game.icon || "🎮",
+    thumbnail: game.thumbnail || null,
     isFree: game.isFree ?? true,
     gameUnlockCost: game.gameUnlockCost || 0,
     difficulties: Object.keys(game.difficulties).map(tier => ({

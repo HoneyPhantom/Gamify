@@ -6,7 +6,7 @@ import { api } from './api.js';
 // =========================================================================
 let currentUser = api.getCachedUser();
 let userUnlocks = {}; // Map of gameId -> unlock record
-let userStats = {}; // Map of gameId -> user_game_stats record { total_score, plays_count, best_score, average_score }
+let userStats = {}; // Map of gameId -> user_game_stats record { total_score, plays_count, best_score, average_score, best_streak }
 let todayCompletions = new Set(); // Set of "gameId:difficulty" completed today
 
 let activeGameId = 'wordle';
@@ -14,6 +14,9 @@ let currentTier = 'easy';
 let currentPuzzle = null;
 let startTime = Date.now();
 let activeGameCleanup = null; // Holds the cleanup function of the currently mounted game
+
+let currentFriendsCache = [];
+let currentPublicUser = null;
 
 // DOM Elements
 const frontPageView = document.getElementById('front-page-view');
@@ -38,7 +41,6 @@ const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
 const authFeedback = document.getElementById('auth-feedback');
 const loginUsernameInput = document.getElementById('login-username');
-const loginPinInput = document.getElementById('login-pin');
 
 const lockedTierContainer = document.getElementById('locked-tier-container');
 const lockedBannerTitle = document.getElementById('locked-banner-title');
@@ -53,6 +55,40 @@ const gamesWonEl = document.getElementById('games-won');
 const gameArenaContent = document.getElementById('game-arena-content');
 const gameRulesBox = document.getElementById('game-rules-box');
 const newGameBtn = document.getElementById('new-game-btn');
+
+// Search & Profile DOM Elements
+const gameSearchInput = document.getElementById('game-search-input');
+const playerSearchInput = document.getElementById('player-search-input');
+const playerSearchDropdown = document.getElementById('player-search-dropdown');
+const btnOpenProfile = document.getElementById('btn-open-profile');
+
+const profileModal = document.getElementById('profile-modal');
+const profileModalClose = document.getElementById('profile-modal-close');
+const profileDisplayName = document.getElementById('profile-display-name');
+const profileUsername = document.getElementById('profile-username');
+const profileAboutInput = document.getElementById('profile-about-input');
+const btnSaveProfile = document.getElementById('btn-save-profile');
+const profileStreaksGrid = document.getElementById('profile-streaks-grid');
+const addFriendInput = document.getElementById('add-friend-input');
+const btnAddFriend = document.getElementById('btn-add-friend');
+const profileFriendsList = document.getElementById('profile-friends-list');
+const profileFriendsFeedback = document.getElementById('profile-friends-feedback');
+
+const publicProfileModal = document.getElementById('public-profile-modal');
+const publicProfileClose = document.getElementById('public-profile-close');
+const publicProfileGamertag = document.getElementById('public-profile-gamertag');
+const publicProfileHandle = document.getElementById('public-profile-handle');
+const publicProfileAbout = document.getElementById('public-profile-about');
+const btnToggleFriendPublic = document.getElementById('btn-toggle-friend-public');
+
+const rulesModal = document.getElementById('rules-modal');
+const rulesModalClose = document.getElementById('rules-modal-close');
+const rulesModalContent = document.getElementById('rules-modal-content');
+const btnOpenRules = document.getElementById('btn-open-rules');
+
+const btnGlobalTab = document.getElementById('btn-global-tab');
+const btnFriendsTab = document.getElementById('btn-friends-tab');
+const btnDailyTab = document.getElementById('btn-daily-tab');
 
 // =========================================================================
 // 1. AUTHENTICATION & INTERACTIVE 4-DIGIT PIN SYSTEM
@@ -84,7 +120,7 @@ function setupPinInputs() {
 
     slots.forEach((slot, idx) => {
       // Numerical filtering and auto-advance
-      slot.addEventListener('input', (e) => {
+      slot.addEventListener('input', () => {
         const val = slot.value.replace(/\D/g, '');
         slot.value = val ? val[val.length - 1] : '';
         syncValue();
@@ -139,21 +175,21 @@ function setupPinInputs() {
 function updatePinMatchIndicator() {
   const regPin = document.getElementById('reg-pin')?.value || '';
   const confirmPin = document.getElementById('reg-confirm-pin')?.value || '';
-  const statusEl = document.getElementById('reg-pin-match-status');
-  if (!statusEl) return;
+  const matchStatusEl = document.getElementById('reg-pin-match-status');
+  if (!matchStatusEl) return;
 
   if (!confirmPin) {
-    statusEl.textContent = '';
-    statusEl.className = 'pin-match-indicator';
+    matchStatusEl.textContent = '';
+    matchStatusEl.className = 'pin-match-indicator';
     return;
   }
 
   if (regPin === confirmPin && regPin.length === 4) {
-    statusEl.textContent = '✓ PINs Match';
-    statusEl.className = 'pin-match-indicator match';
+    matchStatusEl.textContent = '✓ PINs Match';
+    matchStatusEl.className = 'pin-match-indicator match';
   } else {
-    statusEl.textContent = '⚠️ PINs do not match';
-    statusEl.className = 'pin-match-indicator mismatch';
+    matchStatusEl.textContent = '⚠️ PINs do not match';
+    matchStatusEl.className = 'pin-match-indicator mismatch';
   }
 }
 
@@ -172,7 +208,7 @@ function clearPinBoxes(containerId, targetId) {
 }
 
 function updateAuthUI() {
-  if (currentUser && !api.isSessionExpired()) {
+  if (currentUser && api.token) {
     authStateLoggedIn.classList.remove('hidden');
     authStateLoggedOut.classList.add('hidden');
     coinBalanceEl.textContent = currentUser.coins ?? 100;
@@ -231,12 +267,12 @@ function showAuthFeedback(msg, type = 'error') {
   authFeedback.style.display = 'flex';
 }
 
-// Session Expiration Handler (7-day rule)
+// Session Expiration Handler
 api.onSessionExpired = (username) => {
   currentUser = null;
   updateAuthUI();
   renderGamesScrollList();
-  openAuthModal('login', username || '', '🔒 Your 7-day session has expired. Enter your 4-digit PIN to continue.');
+  openAuthModal('login', username || '', '🔒 Enter your 4-digit PIN to continue your streaks and coin progress.');
 };
 
 // Modal Tab Switchers
@@ -368,7 +404,7 @@ btnLogout.addEventListener('click', () => {
 
 // Fetch Profile & Unlocks from Server
 async function fetchUserProfile() {
-  if (!api.token || api.isSessionExpired()) return;
+  if (!api.token) return;
   try {
     const res = await api.getMe();
     currentUser = {
@@ -377,6 +413,7 @@ async function fetchUserProfile() {
       streakCount: res.user.streak_count,
       displayName: res.user.display_name,
       username: res.user.username,
+      about: res.user.about || '',
     };
     userUnlocks = {};
     (res.unlocks || []).forEach(u => {
@@ -398,8 +435,9 @@ async function fetchUserProfile() {
 }
 
 // =========================================================================
-// 2. FRONT PAGE & MODULAR GAMES SCROLL LIST
+// 2. FRONT PAGE & MODULAR GAMES SCROLL LIST (Instant Search & Thumbnails)
 // =========================================================================
+
 function isGameUnlocked(gameId) {
   const games = getAllGames();
   const game = games.find(g => g.id === gameId);
@@ -416,9 +454,25 @@ function isTierUnlocked(gameId, tier) {
   return record && record[`${tier}_unlocked`] === 1;
 }
 
-function renderGamesScrollList() {
-  const games = getAllGames();
+function renderGamesScrollList(searchQuery = '') {
+  let games = getAllGames();
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    games = games.filter(g =>
+      (g.title || '').toLowerCase().includes(q) ||
+      (g.description || '').toLowerCase().includes(q)
+    );
+  }
   gamesScrollList.innerHTML = '';
+
+  if (games.length === 0) {
+    gamesScrollList.innerHTML = `
+      <div style="padding: 2.5rem 1rem; color: var(--text-muted); text-align: center; width: 100%; font-weight: 600;">
+        No games matching "${searchQuery}"
+      </div>
+    `;
+    return;
+  }
 
   games.forEach(game => {
     const unlocked = isGameUnlocked(game.id);
@@ -439,7 +493,7 @@ function renderGamesScrollList() {
     card.innerHTML = `
       <div>
         <div class="game-card-top">
-          <div class="game-card-icon">${game.icon || '🎮'}</div>
+          <img src="${game.thumbnail || '/images/gamify-logo.png'}" class="game-box-thumb" alt="${game.title}" />
           ${statusHtml}
         </div>
         <h3 class="game-card-title">${game.title}</h3>
@@ -461,9 +515,14 @@ function renderGamesScrollList() {
   });
 }
 
+// Client-side instant game search (0 Worker calls)
+gameSearchInput?.addEventListener('input', () => {
+  renderGamesScrollList(gameSearchInput.value.trim());
+});
+
 async function handleGameCardClick(game) {
   // If not logged in, prompt user to log in or create profile
-  if (!currentUser || api.isSessionExpired()) {
+  if (!currentUser) {
     openAuthModal('login', '', 'Please create a profile or unlock with your 4-digit PIN to play and save your coins & streaks.');
     return;
   }
@@ -491,7 +550,7 @@ async function unlockGameBase(gameId, cost) {
     userUnlocks[gameId] = res.unlocks;
     currentUser.coins = res.remainingCoins;
     updateAuthUI();
-    renderGamesScrollList();
+    renderGamesScrollList(gameSearchInput?.value?.trim() || '');
     alert(`🎉 ${res.message}`);
     enterGame(gameId);
   } catch (err) {
@@ -524,7 +583,7 @@ function returnToHome() {
   }
   gameView.classList.add('hidden');
   frontPageView.classList.remove('hidden');
-  renderGamesScrollList();
+  renderGamesScrollList(gameSearchInput?.value?.trim() || '');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -534,6 +593,7 @@ brandLogo.addEventListener('click', returnToHome);
 // =========================================================================
 // 3. TIER MANAGEMENT & UNLOCKS
 // =========================================================================
+
 tierTabs.addEventListener('click', (e) => {
   const btn = e.target.closest('.tab-btn');
   if (!btn) return;
@@ -633,7 +693,6 @@ function loadCurrentPuzzle(isNewPlayground = false) {
   newGameBtn.style.display = 'inline-block';
   if (isPlayground) {
     newGameBtn.textContent = '🎲 New Game';
-    // Pass previous puzzle solution so playground produces a different game/word
     const prevWord = currentPuzzle?.targetWord;
     currentPuzzle = getPlaygroundPuzzle(activeGameId, prevWord);
     gameBadge.textContent = 'Playground Mode (Unranked · Unlimited)';
@@ -679,6 +738,7 @@ async function unlockSpecificTier(gameId, tier) {
 // =========================================================================
 // 4. UNIFIED GAME WIN & SCORE SYNC
 // =========================================================================
+
 async function handleGameWin(gameId, tier, earnedPoints, customTimeTakenMs) {
   const timeTakenMs = customTimeTakenMs || Math.max(1500, Date.now() - startTime);
 
@@ -698,7 +758,7 @@ async function handleGameWin(gameId, tier, earnedPoints, customTimeTakenMs) {
     if (res.stats) {
       userStats[gameId] = res.stats;
     } else {
-      const currentStats = userStats[gameId] || { total_score: 0, plays_count: 0, best_score: 0 };
+      const currentStats = userStats[gameId] || { total_score: 0, plays_count: 0, best_score: 0, best_streak: 0 };
       userStats[gameId] = {
         ...currentStats,
         total_score: (currentStats.total_score || 0) + earnedPoints,
@@ -752,9 +812,20 @@ newGameBtn.addEventListener('click', () => {
   loadCurrentPuzzle(currentTier === 'playground');
 });
 
+// Rules Modal Trigger
+btnOpenRules?.addEventListener('click', () => {
+  rulesModalContent.innerHTML = gameRulesBox.innerHTML || '<p>Solve the puzzle according to standard rules.</p>';
+  rulesModal.classList.remove('hidden');
+});
+rulesModalClose?.addEventListener('click', () => rulesModal.classList.add('hidden'));
+rulesModal?.addEventListener('click', (e) => {
+  if (e.target === rulesModal) rulesModal.classList.add('hidden');
+});
+
 // =========================================================================
-// 5. LIVE LEADERBOARDS
+// 5. LIVE LEADERBOARDS (Global, Friends, Daily)
 // =========================================================================
+
 async function loadLeaderboard() {
   const view = document.getElementById('leaderboard-view');
   try {
@@ -768,12 +839,17 @@ async function loadLeaderboard() {
 
 function renderLeaderboardView(data) {
   const view = document.getElementById('leaderboard-view');
-  const isGlobal = document.getElementById('btn-global-tab').classList.contains('active');
+  const isGlobal = btnGlobalTab.classList.contains('active');
+  const isFriends = btnFriendsTab?.classList.contains('active');
 
-  if (isGlobal) {
-    const rows = data.globalLeaderboard || [];
+  if (isGlobal || isFriends) {
+    const rows = (isFriends ? data.friendsLeaderboard : data.globalLeaderboard) || [];
     if (!rows.length) {
-      view.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No players ranked yet for this game. Be the first to play and claim #1!</p>';
+      view.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">${
+        isFriends
+          ? 'No friends ranked yet. Add friends from your profile to compare scores!'
+          : 'No players ranked yet for this game. Be the first to play and claim #1!'
+      }</p>`;
       return;
     }
     view.innerHTML = `
@@ -795,7 +871,12 @@ function renderLeaderboardView(data) {
             return `
               <tr class="${isMe ? 'leaderboard-row-me' : ''}">
                 <td><strong>${rankLabel}</strong></td>
-                <td><strong>${r.display_name || r.username}</strong> ${youTag}</td>
+                <td>
+                  <strong style="cursor: pointer;" class="leaderboard-player-link" data-username="${r.username}">
+                    ${r.display_name || r.username}
+                  </strong>
+                  ${youTag}
+                </td>
                 <td style="text-align: right;"><strong style="color:var(--accent); font-size:1.05rem;">${r.global_average_score}</strong></td>
                 <td style="text-align: right; font-weight: 700; color: var(--text-muted);">${r.plays_count}</td>
                 <td style="text-align: right;">${r.best_score}</td>
@@ -804,6 +885,12 @@ function renderLeaderboardView(data) {
           }).join('')}
         </tbody>
       </table>`;
+
+    view.querySelectorAll('.leaderboard-player-link').forEach(el => {
+      el.addEventListener('click', () => {
+        openPublicProfile(el.dataset.username);
+      });
+    });
   } else {
     const rows = data.dailyLeaderboard || [];
     if (!rows.length) {
@@ -829,7 +916,12 @@ function renderLeaderboardView(data) {
             return `
               <tr class="${isMe ? 'leaderboard-row-me' : ''}">
                 <td><strong>${rankLabel}</strong></td>
-                <td><strong>${r.display_name || r.username}</strong> ${youTag}</td>
+                <td>
+                  <strong style="cursor: pointer;" class="leaderboard-player-link" data-username="${r.username}">
+                    ${r.display_name || r.username}
+                  </strong>
+                  ${youTag}
+                </td>
                 <td><span style="text-transform:capitalize; padding: 2px 8px; border-radius:6px; background:#f1f5f9; font-weight:700; font-size:0.8rem;">${r.difficulty}</span></td>
                 <td style="text-align: right;"><strong style="color:var(--correct-bg); font-size:1.05rem;">${r.score}</strong></td>
                 <td style="text-align: right;">${(r.time_taken_ms / 1000).toFixed(1)}s</td>
@@ -838,24 +930,337 @@ function renderLeaderboardView(data) {
           }).join('')}
         </tbody>
       </table>`;
+
+    view.querySelectorAll('.leaderboard-player-link').forEach(el => {
+      el.addEventListener('click', () => {
+        openPublicProfile(el.dataset.username);
+      });
+    });
   }
 }
 
-document.getElementById('btn-daily-tab').addEventListener('click', (e) => {
+btnGlobalTab?.addEventListener('click', (e) => {
   e.target.classList.add('active');
-  document.getElementById('btn-global-tab').classList.remove('active');
+  btnFriendsTab?.classList.remove('active');
+  btnDailyTab?.classList.remove('active');
   loadLeaderboard();
 });
 
-document.getElementById('btn-global-tab').addEventListener('click', (e) => {
+btnFriendsTab?.addEventListener('click', (e) => {
   e.target.classList.add('active');
-  document.getElementById('btn-daily-tab').classList.remove('active');
+  btnGlobalTab?.classList.remove('active');
+  btnDailyTab?.classList.remove('active');
+  loadLeaderboard();
+});
+
+btnDailyTab?.addEventListener('click', (e) => {
+  e.target.classList.add('active');
+  btnGlobalTab?.classList.remove('active');
+  btnFriendsTab?.classList.remove('active');
   loadLeaderboard();
 });
 
 // =========================================================================
-// 6. INITIAL BOOTSTRAP
+// 6. PROFILE, BEST STREAKS, AND FRIENDS SYSTEM
 // =========================================================================
+
+async function loadFriendsList() {
+  if (!currentUser) return;
+  try {
+    const res = await api.getFriends();
+    currentFriendsCache = res.friends || [];
+    renderFriendsList(currentFriendsCache);
+  } catch (err) {
+    console.warn('Failed to load friends:', err);
+  }
+}
+
+function renderFriendsList(friends) {
+  if (!profileFriendsList) return;
+  if (!friends || friends.length === 0) {
+    profileFriendsList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.82rem; text-align: center; padding: 0.5rem;">No friends added yet. Enter a username above to add your friends!</p>';
+    return;
+  }
+
+  profileFriendsList.innerHTML = friends.map(f => `
+    <div class="friend-item">
+      <span class="friend-name" data-username="${f.username}">
+        ${f.display_name || f.username} <span style="font-weight:normal; color:var(--text-muted); font-size:0.75rem;">(@${f.username})</span>
+      </span>
+      <button class="btn-remove-friend" data-id="${f.friend_id}" title="Remove friend">&times; Remove</button>
+    </div>
+  `).join('');
+
+  profileFriendsList.querySelectorAll('.friend-name').forEach(el => {
+    el.addEventListener('click', () => {
+      openPublicProfile(el.dataset.username);
+    });
+  });
+
+  profileFriendsList.querySelectorAll('.btn-remove-friend').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const friendId = el.dataset.id;
+      try {
+        await api.removeFriend(friendId);
+        await loadFriendsList();
+      } catch (err) {
+        alert(err.message || 'Failed to remove friend');
+      }
+    });
+  });
+}
+
+function openProfileModal() {
+  if (!currentUser) {
+    openAuthModal('login');
+    return;
+  }
+
+  profileDisplayName.textContent = currentUser.displayName || currentUser.username;
+  profileUsername.textContent = `@${currentUser.username}`;
+  profileAboutInput.value = currentUser.about || '';
+  profileFriendsFeedback.style.display = 'none';
+
+  // Render best streaks maintained per game
+  const games = getAllGames();
+  profileStreaksGrid.innerHTML = games.map(g => {
+    const stats = userStats[g.id] || {};
+    const bestStreak = stats.best_streak ?? stats.current_streak ?? 0;
+    return `
+      <div class="streak-card">
+        <div class="game-label">${g.title}</div>
+        <div class="streak-val">🔥 ${bestStreak}</div>
+      </div>
+    `;
+  }).join('');
+
+  loadFriendsList();
+  profileModal.classList.remove('hidden');
+}
+
+btnOpenProfile?.addEventListener('click', openProfileModal);
+profileModalClose?.addEventListener('click', () => profileModal.classList.add('hidden'));
+profileModal?.addEventListener('click', (e) => {
+  if (e.target === profileModal) profileModal.classList.add('hidden');
+});
+
+// Save About Description
+btnSaveProfile?.addEventListener('click', async () => {
+  const about = profileAboutInput.value.trim();
+  try {
+    btnSaveProfile.disabled = true;
+    btnSaveProfile.textContent = 'Saving...';
+    const res = await api.updateProfile(currentUser.displayName, about);
+    currentUser.about = res.user.about;
+    currentUser.displayName = res.user.display_name;
+    api.setSession(api.token, currentUser);
+    btnSaveProfile.textContent = 'Saved ✓';
+    setTimeout(() => {
+      btnSaveProfile.textContent = 'Save About';
+      btnSaveProfile.disabled = false;
+    }, 1500);
+  } catch (err) {
+    alert(err.message || 'Failed to update profile');
+    btnSaveProfile.disabled = false;
+    btnSaveProfile.textContent = 'Save About';
+  }
+});
+
+// Add Friend inside profile
+btnAddFriend?.addEventListener('click', async () => {
+  const friendUsername = addFriendInput.value.trim();
+  if (!friendUsername) return;
+  try {
+    btnAddFriend.disabled = true;
+    await api.addFriend(friendUsername);
+    addFriendInput.value = '';
+    profileFriendsFeedback.textContent = `✓ Added @${friendUsername} as a friend!`;
+    profileFriendsFeedback.style.color = 'var(--correct-bg)';
+    profileFriendsFeedback.style.display = 'block';
+    await loadFriendsList();
+  } catch (err) {
+    profileFriendsFeedback.textContent = `⚠️ ${err.message}`;
+    profileFriendsFeedback.style.color = 'var(--danger)';
+    profileFriendsFeedback.style.display = 'block';
+  } finally {
+    btnAddFriend.disabled = false;
+  }
+});
+
+// Public Player Profile (Shows only Gamertag & Description)
+async function openPublicProfile(username) {
+  try {
+    const res = await api.getUserProfile(username);
+    currentPublicUser = res.profile;
+
+    publicProfileGamertag.textContent = currentPublicUser.display_name || currentPublicUser.username;
+    publicProfileHandle.textContent = `@${currentPublicUser.username}`;
+    publicProfileAbout.textContent = currentPublicUser.about || 'No description provided yet.';
+
+    const isFriend = currentFriendsCache.some(f => f.username === currentPublicUser.username);
+    const isSelf = currentUser && currentUser.username === currentPublicUser.username;
+
+    if (isSelf) {
+      btnToggleFriendPublic.style.display = 'none';
+    } else {
+      btnToggleFriendPublic.style.display = 'block';
+      if (isFriend) {
+        btnToggleFriendPublic.textContent = 'Remove Friend';
+        btnToggleFriendPublic.className = 'btn-lock';
+        btnToggleFriendPublic.style.width = '100%';
+      } else {
+        btnToggleFriendPublic.textContent = 'Add Friend';
+        btnToggleFriendPublic.className = 'btn-login';
+        btnToggleFriendPublic.style.width = '100%';
+      }
+    }
+
+    publicProfileModal.classList.remove('hidden');
+  } catch (err) {
+    alert(err.message || 'Could not find player');
+  }
+}
+
+publicProfileClose?.addEventListener('click', () => publicProfileModal.classList.add('hidden'));
+publicProfileModal?.addEventListener('click', (e) => {
+  if (e.target === publicProfileModal) publicProfileModal.classList.add('hidden');
+});
+
+btnToggleFriendPublic?.addEventListener('click', async () => {
+  if (!currentPublicUser) return;
+  const isFriend = currentFriendsCache.some(f => f.username === currentPublicUser.username);
+  try {
+    if (isFriend) {
+      const match = currentFriendsCache.find(f => f.username === currentPublicUser.username);
+      if (match) await api.removeFriend(match.friend_id);
+    } else {
+      await api.addFriend(currentPublicUser.username);
+    }
+    await loadFriendsList();
+    openPublicProfile(currentPublicUser.username);
+  } catch (err) {
+    alert(err.message || 'Action failed');
+  }
+});
+
+// Player Search in Header beside Logo
+let playerSearchTimeout = null;
+playerSearchInput?.addEventListener('input', () => {
+  const q = playerSearchInput.value.trim();
+  clearTimeout(playerSearchTimeout);
+
+  if (!q || q.length < 2) {
+    playerSearchDropdown.innerHTML = '';
+    playerSearchDropdown.classList.add('hidden');
+    return;
+  }
+
+  playerSearchTimeout = setTimeout(async () => {
+    try {
+      const res = await api.searchUsers(q);
+      const users = res.users || [];
+      if (users.length === 0) {
+        playerSearchDropdown.innerHTML = '<div style="padding:0.75rem; font-size:0.8rem; color:var(--text-muted); text-align:center;">No players found</div>';
+      } else {
+        playerSearchDropdown.innerHTML = users.map(u => `
+          <div class="player-search-item" data-username="${u.username}">
+            <span class="player-name">${u.display_name || u.username}</span>
+            <span class="player-handle">@${u.username}</span>
+          </div>
+        `).join('');
+
+        playerSearchDropdown.querySelectorAll('.player-search-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const username = item.dataset.username;
+            playerSearchDropdown.classList.add('hidden');
+            playerSearchInput.value = '';
+            openPublicProfile(username);
+          });
+        });
+      }
+      playerSearchDropdown.classList.remove('hidden');
+    } catch (err) {
+      console.warn('Player search error:', err);
+    }
+  }, 250);
+});
+
+// Hide dropdown on click outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.player-search-wrapper')) {
+    playerSearchDropdown?.classList.add('hidden');
+  }
+});
+
+// =========================================================================
+// 7. ANDROID HOME SCREEN (PWA INSTALL) SYSTEM
+// =========================================================================
+let deferredInstallPrompt = null;
+const btnAddToHome = document.getElementById('btn-add-to-home');
+const pwaInstallMsg = document.getElementById('pwa-install-msg');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  if (pwaInstallMsg) {
+    pwaInstallMsg.textContent = '🎉 Gamify was added to your home screen!';
+    pwaInstallMsg.style.display = 'block';
+    pwaInstallMsg.style.background = '#dcfce7';
+    pwaInstallMsg.style.color = '#15803d';
+  }
+});
+
+btnAddToHome?.addEventListener('click', async () => {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+      if (pwaInstallMsg) {
+        pwaInstallMsg.textContent = '🎉 Adding Gamify icon to your home screen...';
+        pwaInstallMsg.style.display = 'block';
+        pwaInstallMsg.style.background = '#dcfce7';
+        pwaInstallMsg.style.color = '#15803d';
+      }
+    }
+    deferredInstallPrompt = null;
+  } else {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isStandalone) {
+      if (pwaInstallMsg) {
+        pwaInstallMsg.textContent = '✅ Gamify is already installed on your home screen!';
+        pwaInstallMsg.style.display = 'block';
+        pwaInstallMsg.style.background = '#dcfce7';
+        pwaInstallMsg.style.color = '#15803d';
+      }
+    } else {
+      if (pwaInstallMsg) {
+        pwaInstallMsg.innerHTML = '📲 <strong>To install on Android:</strong> Tap your browser menu (<strong>⋮</strong> three dots at the top-right) and select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.';
+        pwaInstallMsg.style.display = 'block';
+        pwaInstallMsg.style.background = '#e0f2fe';
+        pwaInstallMsg.style.color = '#0369a1';
+      }
+    }
+  }
+});
+
+// Register Service Worker for PWA compliance & offline caching
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      console.log('ServiceWorker registration note:', err);
+    });
+  });
+}
+
+// =========================================================================
+// 8. INITIAL BOOTSTRAP
+// =========================================================================
+
 async function bootstrap() {
   setupPinInputs();
   updateAuthUI();

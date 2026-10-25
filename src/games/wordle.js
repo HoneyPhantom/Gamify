@@ -52,6 +52,7 @@ export const gameConfig = {
   description: "Guess the hidden 5-letter word in 6 attempts.",
   badge: "Free to Play",
   icon: "🔤",
+  thumbnail: "/images/wordle.png",
   isFree: true,
   gameUnlockCost: 0,
   difficulties: {
@@ -157,6 +158,15 @@ export const gameConfig = {
     const board = container.querySelector('#wordle-board');
     const kb = container.querySelector('#wordle-keyboard');
 
+    function updateCursor() {
+      container.querySelectorAll('.cell.active-cursor').forEach(el => el.classList.remove('active-cursor'));
+      if (!isGameOver && currentRow < maxAttempts) {
+        const activeCol = Math.min(Math.max(0, currentCol), 4);
+        const activeCell = container.querySelector(`#wordle-cell-${currentRow}-${activeCol}`);
+        if (activeCell) activeCell.classList.add('active-cursor');
+      }
+    }
+
     function renderBoard() {
       board.innerHTML = "";
       for (let r = 0; r < maxAttempts; r++) {
@@ -167,10 +177,17 @@ export const gameConfig = {
           cellEl.className = "cell";
           cellEl.id = `wordle-cell-${r}-${c}`;
           cellEl.innerText = guesses[r][c] || "";
+          cellEl.addEventListener("click", () => {
+            if (!isGameOver && r === currentRow) {
+              currentCol = c;
+              updateCursor();
+            }
+          });
           rowEl.appendChild(cellEl);
         }
         board.appendChild(rowEl);
       }
+      updateCursor();
     }
 
     function renderKeyboard() {
@@ -203,6 +220,7 @@ export const gameConfig = {
           guesses[currentRow][currentCol] = "";
           const cell = container.querySelector(`#wordle-cell-${currentRow}-${currentCol}`);
           if (cell) cell.innerText = "";
+          updateCursor();
         }
       } else if (/^[A-Z]$/.test(key)) {
         if (currentCol < 5 && currentRow < maxAttempts) {
@@ -214,6 +232,7 @@ export const gameConfig = {
             setTimeout(() => cell.classList.remove("pop"), 100);
           }
           currentCol++;
+          updateCursor();
         }
       }
     }
@@ -249,16 +268,19 @@ export const gameConfig = {
         const earnedPoints = (maxAttempts - currentRow) * 100;
         showStatus(`🎉 Solved in ${currentRow + 1} tries! (+${earnedPoints} pts)`, "var(--correct-bg)");
         isGameOver = true;
+        updateCursor();
         onWin(earnedPoints);
         return;
       }
 
       currentRow++;
       currentCol = 0;
+      updateCursor();
 
       if (currentRow >= maxAttempts) {
         showStatus(`Game Over! Word was: ${targetWord}`, "var(--danger)");
         isGameOver = true;
+        updateCursor();
       } else {
         showStatus(`Attempt ${currentRow + 1} of ${maxAttempts}`, "var(--text-muted)");
       }

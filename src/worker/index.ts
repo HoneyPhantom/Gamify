@@ -4,6 +4,14 @@ import { authenticateRequest, handleRegister, handleLogin } from './auth';
 import { handleUnlock } from './controllers/unlock';
 import { handleSubmitScore } from './controllers/submitScore';
 import { handleGetLeaderboard } from './controllers/leaderboard';
+import {
+  handleGetFriends,
+  handleAddFriend,
+  handleRemoveFriend,
+  handleSearchUsers,
+  handleGetUserProfile,
+  handleUpdateProfile,
+} from './controllers/friends';
 import { getTodayUTC } from './utils/date';
 
 import { ensureDbSchema } from './utils/dbInit';
@@ -87,11 +95,11 @@ export default {
 
         const todayStr = getTodayUTC();
         const [user, unlocks, stats, todayCompletions] = await Promise.all([
-          env.DB.prepare('SELECT id, username, display_name, coins, streak_count, last_played_date, last_login_at FROM users WHERE id = ?')
+          env.DB.prepare('SELECT id, username, display_name, COALESCE(about, "Puzzle solver climbing to the top!") as about, coins, streak_count, last_played_date, last_login_at FROM users WHERE id = ?')
             .bind(auth.user.id).first(),
           env.DB.prepare('SELECT * FROM user_game_unlocks WHERE user_id = ?')
             .bind(auth.user.id).all(),
-          env.DB.prepare('SELECT game_id, total_score, plays_count, best_score, ROUND(CAST(total_score AS REAL) / plays_count, 2) AS average_score FROM user_game_stats WHERE user_id = ?')
+          env.DB.prepare('SELECT game_id, total_score, plays_count, best_score, best_streak, current_streak, ROUND(CAST(total_score AS REAL) / plays_count, 2) AS average_score FROM user_game_stats WHERE user_id = ?')
             .bind(auth.user.id).all(),
           env.DB.prepare('SELECT game_id, difficulty FROM daily_completions WHERE user_id = ? AND played_date = ?')
             .bind(auth.user.id, todayStr).all(),
@@ -113,7 +121,43 @@ export default {
       }
 
       // -------------------------------------------------------------------
-      // 4. Game & Tier Unlock Mutation: POST /api/unlock (Protected)
+      // 4. Friends & Player Search Endpoints
+      // -------------------------------------------------------------------
+      if (method === 'GET' && url.pathname === '/api/friends') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+        return await handleGetFriends(request, env, auth.user);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/friends/add') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+        return await handleAddFriend(request, env, auth.user);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/friends/remove') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+        return await handleRemoveFriend(request, env, auth.user);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/users/search') {
+        return await handleSearchUsers(request, env);
+      }
+
+      const userProfileMatch = url.pathname.match(/^\/api\/users\/([^/]+)$/);
+      if (method === 'GET' && userProfileMatch && userProfileMatch[1] !== 'search') {
+        return await handleGetUserProfile(request, env, decodeURIComponent(userProfileMatch[1]));
+      }
+
+      if (method === 'PUT' && url.pathname === '/api/user/profile') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+        return await handleUpdateProfile(request, env, auth.user);
+      }
+
+      // -------------------------------------------------------------------
+      // 5. Game & Tier Unlock Mutation: POST /api/unlock (Protected)
       // -------------------------------------------------------------------
       if (method === 'POST' && url.pathname === '/api/unlock') {
         const auth = await authenticateRequest(request, env);
@@ -123,7 +167,7 @@ export default {
       }
 
       // -------------------------------------------------------------------
-      // 5. Score Submission Mutation: POST /api/submit-score (Protected)
+      // 6. Score Submission Mutation: POST /api/submit-score (Protected)
       // -------------------------------------------------------------------
       if (method === 'POST' && url.pathname === '/api/submit-score') {
         const auth = await authenticateRequest(request, env);

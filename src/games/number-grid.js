@@ -91,6 +91,7 @@ export const gameConfig = {
   description: "Deduce missing numbers to balance row & column target sums.",
   badge: "100 Coins to Unlock",
   icon: "🔢",
+  thumbnail: "/images/number-grid.png",
   isFree: false,
   gameUnlockCost: 100,
   difficulties: {

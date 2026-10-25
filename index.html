@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gamify — Minimalist Daily Puzzle Universe</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0284c7" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="apple-touch-icon" href="/images/gamify-logo.png" />
+  <link rel="icon" type="image/png" href="/images/gamify-logo.png" />
   <style>
     :root {
       --bg-color: #ffffff;
@@ -53,6 +60,12 @@
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     }
 
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
     .brand {
       font-size: 1.25rem;
       font-weight: 800;
@@ -64,6 +77,67 @@
       gap: 0.6rem;
       user-select: none;
     }
+
+    .brand-logo-img {
+      height: 38px;
+      width: auto;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    .player-search-wrapper {
+      position: relative;
+      width: 220px;
+    }
+    @media (max-width: 680px) {
+      .player-search-wrapper { width: 140px; }
+    }
+
+    .player-search-input {
+      width: 100%;
+      padding: 0.42rem 0.85rem;
+      font-size: 0.85rem;
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      background: #f8fafc;
+      color: var(--text-color);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .player-search-input:focus {
+      border-color: var(--accent);
+      background: #ffffff;
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+
+    .player-search-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+      max-height: 240px;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .player-search-item {
+      padding: 0.6rem 0.85rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.15s;
+    }
+    .player-search-item:last-child { border-bottom: none; }
+    .player-search-item:hover { background: #f0f9ff; }
+    .player-search-item .player-name { font-weight: 700; color: var(--text-color); }
+    .player-search-item .player-handle { font-size: 0.75rem; color: var(--text-muted); }
 
     .nav-actions {
       display: flex;
@@ -82,6 +156,25 @@
       background: #f1f5f9;
       border: 1px solid var(--border-color);
       color: var(--text-color);
+    }
+
+    .btn-profile {
+      background: #f1f5f9;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.35rem 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .btn-profile:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
     }
 
     .btn-login {
@@ -124,66 +217,54 @@
     .hidden { display: none !important; }
 
     /* =========================================================================
-       FRONT PAGE HERO & DESCRIPTION
+       FRONT PAGE HERO & DESCRIPTION (CLEAN)
        ========================================================================= */
-    .hero-section {
+    .hero-clean {
       text-align: center;
-      padding: 2.5rem 1rem 1rem 1rem;
-      max-width: 800px;
+      padding: 3rem 1rem 1.75rem 1rem;
+      max-width: 600px;
       margin: 0 auto;
     }
 
-    .hero-tag {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--accent);
-      background: rgba(2, 132, 199, 0.08);
-      border: 1px solid rgba(2, 132, 199, 0.2);
-      padding: 0.3rem 0.85rem;
-      border-radius: 9999px;
-      margin-bottom: 1.25rem;
+    .hero-title-clean {
+      font-size: clamp(2.5rem, 6vw, 3.5rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
     }
 
-    .hero-title {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      margin-bottom: 1.25rem;
-      background: linear-gradient(135deg, #0f172a 35%, #0284c7 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-description {
-      font-size: 1.05rem;
-      line-height: 1.65;
-      color: var(--text-muted);
-      margin-bottom: 2rem;
-    }
-
-    .feature-pills {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .pill-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.85rem;
+    .hero-tagline {
+      font-size: 1.15rem;
       font-weight: 600;
-      color: #334155;
-      background: #ffffff;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+      white-space: pre-line;
+    }
+
+    .game-search-bar {
+      max-width: 440px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .game-search-bar input {
+      width: 100%;
+      padding: 0.8rem 1.4rem;
+      font-size: 0.95rem;
       border: 1px solid var(--border-color);
-      padding: 0.4rem 0.9rem;
       border-radius: 9999px;
-      box-shadow: 0 2px 8px rgba(148, 163, 184, 0.1);
+      background: #ffffff;
+      color: var(--text-color);
+      box-shadow: 0 4px 14px rgba(148, 163, 184, 0.12);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .game-search-bar input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
     }
 
     /* =========================================================================
@@ -282,6 +363,15 @@
     .game-card-icon {
       font-size: 2.8rem;
       line-height: 1;
+    }
+
+    .game-box-thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     .game-status-badge {
@@ -458,6 +548,26 @@
     }
     button.reset-btn:hover { opacity: 0.92; transform: translateY(-1px); }
 
+    .btn-rules {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-rules:hover {
+      background: #f1f5f9;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
     .status {
       font-weight: 700;
       font-size: 0.95rem;
@@ -490,6 +600,16 @@
     .cell.correct { background-color: var(--correct-bg); border-color: var(--correct-bg); color: #fff; }
     .cell.present { background-color: var(--present-bg); border-color: var(--present-bg); color: #fff; }
     .cell.absent { background-color: var(--absent-bg); border-color: var(--absent-bg); color: #fff; }
+    .cell.active-cursor {
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 0 2px var(--accent-glow);
+      animation: cursorPulse 1.2s infinite ease-in-out;
+      cursor: text;
+    }
+    @keyframes cursorPulse {
+      0%, 100% { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25); }
+      50% { border-color: #38bdf8; box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.45); }
+    }
 
     /* Wordle Keyboard */
     .keyboard { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 480px; }
@@ -1028,15 +1148,193 @@
       color: #15803d;
       border: 1px solid #bbf7d0;
     }
+
+    /* Profile, Friends & Streaks Styles */
+    .profile-info-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1.25rem;
+    }
+    .profile-avatar-large {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+    .profile-header-details h3 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-color);
+    }
+    .profile-header-details p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .profile-section-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-color);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .streaks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .streak-card {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+    }
+    .streak-card .game-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .streak-card .streak-val {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #ea580c;
+      margin-top: 0.25rem;
+    }
+    .friends-box {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-top: 0.5rem;
+    }
+    .add-friend-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .add-friend-row input {
+      flex: 1;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.85rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: #ffffff;
+      outline: none;
+    }
+    .add-friend-row input:focus {
+      border-color: var(--accent);
+    }
+    .add-friend-row button {
+      padding: 0.55rem 1rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .friends-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .friend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+    }
+    .friend-item .friend-name {
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--accent);
+    }
+    .friend-item .friend-name:hover {
+      text-decoration: underline;
+    }
+    .btn-remove-friend {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .btn-remove-friend:hover {
+      color: var(--danger);
+      background: #fee2e2;
+    }
+    .public-profile-desc {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1rem;
+      font-size: 0.92rem;
+      color: var(--text-color);
+      line-height: 1.5;
+      margin: 1rem 0;
+      min-height: 60px;
+      word-break: break-word;
+    }
+
+    .btn-install-pwa {
+      width: 100%;
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      color: var(--text-color);
+      text-align: left;
+    }
+    .btn-install-pwa:hover {
+      background: #f0f9ff;
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+    }
   </style>
 </head>
 <body>
 
   <!-- Top Sticky Navigation Bar -->
   <header class="site-header">
-    <div class="brand" id="brand-logo">
-      <span>🎮</span>
-      <span>GAMIFY</span>
+    <div class="header-left">
+      <div class="brand" id="brand-logo">
+        <img src="/images/gamify-logo.png" alt="Gamify" class="brand-logo-img" />
+        <span>Gamify</span>
+      </div>
+      <div class="player-search-wrapper">
+        <input type="text" id="player-search-input" class="player-search-input" placeholder="🔍 Search player..." autocomplete="off" />
+        <div id="player-search-dropdown" class="player-search-dropdown hidden"></div>
+      </div>
     </div>
 
     <div class="nav-actions">
@@ -1044,7 +1342,7 @@
       <div id="auth-state-logged-in" class="nav-actions hidden">
         <div class="badge">🪙 Coins: <span id="coin-balance">100</span></div>
         <div class="badge">🔥 Streak: <span id="streak-count">0</span></div>
-        <div class="badge" style="color: var(--accent);">👤 <span id="nav-user-name">Player</span></div>
+        <button class="btn-profile" id="btn-open-profile" title="View your profile, streaks & friends">👤 <span id="nav-user-name">Player</span></button>
         <button class="btn-lock" id="btn-logout" title="Lock your profile and exit session">Lock 🔒</button>
       </div>
 
@@ -1061,16 +1359,11 @@
     <!-- ================================================================= -->
     <section id="front-page-view">
       <!-- Website Hero & Description -->
-      <div class="hero-section">
-        <span class="hero-tag">Minimalist Daily Puzzle Gaming</span>
-        <h1 class="hero-title">One Daily Puzzle.<br/>Globally Synchronized.</h1>
-        <p class="hero-description">
-          Welcome to Gamify! Every calendar day at 00:00 UTC, a fresh deterministic puzzle is generated directly in your browser. Solve daily challenges to earn coins, maintain your streaks, unlock locked games, and conquer elite difficulty tiers. Your profile stays logged in for 7 days with a secure 4-digit PIN.
-        </p>
-        <div class="feature-pills">
-          <div class="pill-item">⚡ 0-Worker Generation</div>
-          <div class="pill-item">🪙 Daily Coin Economy</div>
-          <div class="pill-item">🔒 Weekly 4-Digit PIN Security</div>
+      <div class="hero-section hero-clean">
+        <h1 class="hero-title-clean">Gamify</h1>
+        <p class="hero-tagline">Solve puzzles to be at top</p>
+        <div class="game-search-bar">
+          <input type="text" id="game-search-input" placeholder="🔍 Search games..." autocomplete="off" />
         </div>
       </div>
 
@@ -1129,17 +1422,20 @@
         </div>
 
         <div class="controls">
-          <button class="reset-btn" id="new-game-btn">New Game</button>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="reset-btn" id="new-game-btn">New Game</button>
+            <button type="button" class="btn-rules" id="btn-open-rules">📖 Game Rules</button>
+          </div>
           <div id="status" class="status">Attempt 1 of 6</div>
         </div>
 
         <!-- Dynamic Game Arena Canvas / Board -->
         <div id="game-arena-content">
-          <!-- Wordle or Number Grid board rendered dynamically -->
+          <!-- Wordle, Number Grid, or Number Trail board rendered dynamically -->
         </div>
 
-        <!-- Rules & Scoring Footer -->
-        <div class="rules" id="game-rules-box">
+        <!-- Hidden container to retain rules text for the modal -->
+        <div class="rules hidden" id="game-rules-box">
           <!-- Populated dynamically based on active game -->
         </div>
       </div>
@@ -1147,7 +1443,8 @@
       <!-- Live Leaderboard Container -->
       <div class="leaderboard-card" style="margin-top: 1.5rem;">
         <div class="tabs">
-          <button class="tab-btn active" id="btn-global-tab">🏆 Leaderboard (Avg Score)</button>
+          <button class="tab-btn active" id="btn-global-tab">🏆 Global Standings</button>
+          <button class="tab-btn" id="btn-friends-tab">👥 Friends Leaderboard</button>
           <button class="tab-btn" id="btn-daily-tab">📅 Today's Daily Standings</button>
         </div>
         <div id="leaderboard-view">Loading standings...</div>
@@ -1253,8 +1550,98 @@
       </form>
 
       <p class="modal-notice">
-        🔒 Your session stays unlocked for 7 days. Every week, simply re-enter your 4-digit PIN to continue your streaks and coin progress.
+        🔒 Your session remains permanently unlocked on this device. Enter your 4-digit PIN whenever you lock your profile.
       </p>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- USER PROFILE & FRIENDS MODAL                                        -->
+  <!-- =================================================================== -->
+  <div id="profile-modal" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 500px;">
+      <button class="modal-close" id="profile-modal-close" title="Close Modal">&times;</button>
+      
+      <div class="profile-info-header">
+        <div class="profile-avatar-large">🎮</div>
+        <div class="profile-header-details">
+          <h3 id="profile-display-name">Player</h3>
+          <p id="profile-username">@player</p>
+        </div>
+      </div>
+
+      <!-- Editable About Description -->
+      <div class="form-group">
+        <label for="profile-about-input">About Me</label>
+        <textarea id="profile-about-input" class="form-input" rows="2" placeholder="Tell other players about yourself..."></textarea>
+        <button type="button" id="btn-save-profile" class="btn-login" style="align-self: flex-end; margin-top: 0.4rem; padding: 0.4rem 0.9rem; font-size: 0.82rem;">Save About</button>
+      </div>
+
+      <!-- Best Streaks per Game -->
+      <div style="margin-top: 1.25rem;">
+        <div class="profile-section-title">🔥 Best Streaks Maintained</div>
+        <div class="streaks-grid" id="profile-streaks-grid">
+          <!-- Populated dynamically: Wordle, Number Grid, Number Trail -->
+        </div>
+      </div>
+
+      <!-- Friends List -->
+      <div style="margin-top: 1.25rem;">
+        <div class="profile-section-title">👥 Friends List</div>
+        <div class="friends-box">
+          <div class="add-friend-row">
+            <input type="text" id="add-friend-input" placeholder="Enter player username..." />
+            <button type="button" id="btn-add-friend">Add Friend</button>
+          </div>
+          <div id="profile-friends-feedback" style="font-size: 0.8rem; margin-bottom: 0.5rem; display: none;"></div>
+          <div class="friends-items-list" id="profile-friends-list">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Add to Android Home Screen Option -->
+      <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+        <button type="button" id="btn-add-to-home" class="btn-install-pwa">
+          <span style="font-size: 1.4rem;">📱</span>
+          <div>
+            <div style="font-weight: 800; font-size: 0.9rem; color: var(--text-color);">Add to Home Screen</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">Tap to install the Gamify app icon on your Android home screen</div>
+          </div>
+        </button>
+        <div id="pwa-install-msg" style="display: none; font-size: 0.8rem; margin-top: 0.5rem; padding: 0.6rem 0.8rem; border-radius: 8px; line-height: 1.4;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- PUBLIC PLAYER PROFILE MODAL (Shows only Gamertag & Description)     -->
+  <!-- =================================================================== -->
+  <div id="public-profile-modal" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 420px; text-align: center;">
+      <button class="modal-close" id="public-profile-close" title="Close Modal">&times;</button>
+      
+      <div class="profile-avatar-large" style="margin: 0 auto 1rem auto;">👤</div>
+      <h3 id="public-profile-gamertag" style="font-size: 1.4rem; font-weight: 800; color: var(--text-color);">Gamertag</h3>
+      <p id="public-profile-handle" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem;">@username</p>
+      
+      <div style="text-align: left; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">About:</div>
+      <div class="public-profile-desc" id="public-profile-about">No description provided yet.</div>
+
+      <div id="public-profile-actions" style="margin-top: 1.25rem;">
+        <button id="btn-toggle-friend-public" class="btn-login" style="width: 100%;">Add Friend</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- GAME RULES MODAL                                                    -->
+  <!-- =================================================================== -->
+  <div id="rules-modal" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 520px;">
+      <button class="modal-close" id="rules-modal-close" title="Close Modal">&times;</button>
+      <div class="profile-section-title" style="font-size: 1.2rem; margin-bottom: 1rem;">📖 Game Rules & Controls</div>
+      <div id="rules-modal-content" style="line-height: 1.6; font-size: 0.95rem; color: var(--text-color);"></div>
     </div>
   </div>
 
