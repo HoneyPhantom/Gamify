@@ -11,6 +11,23 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="apple-touch-icon" href="/images/gamify-logo.png" />
   <link rel="icon" type="image/png" href="/images/gamify-logo.png" />
+  <script>
+    // Self-healing cache eviction for stuck browsers
+    if ('caches' in window) {
+      caches.keys().then(function(keys) {
+        keys.forEach(function(k) {
+          if (k.includes('v1') || k.includes('v2')) {
+            caches.delete(k).catch(function() {});
+          }
+        });
+      });
+    }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        regs.forEach(function(r) { r.update().catch(function() {}); });
+      });
+    }
+  </script>
   <style>
     :root {
       --bg-color: #ffffff;

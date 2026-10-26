@@ -32,7 +32,34 @@ export default {
     // -------------------------------------------------------------------
     if (!url.pathname.startsWith('/api')) {
       if (env.ASSETS) {
-        return await env.ASSETS.fetch(request);
+        const assetRes = await env.ASSETS.fetch(request);
+        const pathname = url.pathname;
+
+        // Never allow browsers or intermediate caches to cache HTML or the service worker
+        if (pathname === '/' || pathname === '/index.html' || pathname === '/sw.js') {
+          const freshHeaders = new Headers(assetRes.headers);
+          freshHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+          freshHeaders.set('Pragma', 'no-cache');
+          freshHeaders.set('Expires', '0');
+          return new Response(assetRes.body, {
+            status: assetRes.status,
+            statusText: assetRes.statusText,
+            headers: freshHeaders,
+          });
+        }
+
+        // Hashed Vite assets can be safely cached long-term
+        if (pathname.startsWith('/assets/')) {
+          const freshHeaders = new Headers(assetRes.headers);
+          freshHeaders.set('Cache-Control', 'public, max-age=31536000, immutable');
+          return new Response(assetRes.body, {
+            status: assetRes.status,
+            statusText: assetRes.statusText,
+            headers: freshHeaders,
+          });
+        }
+
+        return assetRes;
       }
       
       // Fallback if static assets binding is not yet attached
