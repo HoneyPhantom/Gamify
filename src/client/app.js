@@ -1717,12 +1717,14 @@ newGameBtn.addEventListener('click', () => {
 
 // Rules Modal Trigger
 btnOpenRules?.addEventListener('click', () => {
-  rulesModalContent.innerHTML = gameRulesBox.innerHTML || '<p>Solve the puzzle according to standard rules.</p>';
-  rulesModal.classList.remove('hidden');
+  if (rulesModalContent) {
+    rulesModalContent.innerHTML = gameRulesBox?.innerHTML || '<p>Solve the puzzle according to standard rules.</p>';
+  }
+  rulesModal?.classList.remove('hidden');
 });
-rulesModalClose?.addEventListener('click', () => rulesModal.classList.add('hidden'));
+rulesModalClose?.addEventListener('click', () => rulesModal?.classList.add('hidden'));
 rulesModal?.addEventListener('click', (e) => {
-  if (e.target === rulesModal) rulesModal.classList.add('hidden');
+  if (e.target === rulesModal) rulesModal?.classList.add('hidden');
 });
 
 // =========================================================================
@@ -2317,13 +2319,34 @@ if ('serviceWorker' in navigator) {
 // =========================================================================
 
 async function bootstrap() {
-  setupPinInputs();
-  updateAuthUI();
-  await fetchUserProfile();
-  updateDailySweepUI();
-  renderGamesScrollList();
-  loadChallenges();
-  loadActivityFeed();
+  try {
+    setupPinInputs();
+    updateAuthUI();
+    renderGamesScrollList();
+    updateDailySweepUI();
+  } catch (err) {
+    console.error('Initial DOM setup error:', err);
+  }
+
+  try {
+    await fetchUserProfile();
+    updateDailySweepUI();
+    renderGamesScrollList();
+  } catch (err) {
+    console.warn('Profile bootstrap note:', err);
+  }
+
+  try {
+    loadChallenges();
+  } catch (err) {
+    console.warn('Challenges bootstrap note:', err);
+  }
+
+  try {
+    loadActivityFeed();
+  } catch (err) {
+    console.warn('Activity feed bootstrap note:', err);
+  }
 }
 
 bootstrap();
