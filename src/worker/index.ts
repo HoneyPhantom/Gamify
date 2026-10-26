@@ -3,15 +3,13 @@ import { CORS_HEADERS, jsonResponse, errorResponse } from './utils/response';
 import { authenticateRequest, handleRegister, handleLogin } from './auth';
 import { handleUnlock } from './controllers/unlock';
 import { handleSubmitScore } from './controllers/submitScore';
+import { handleUseHint } from './controllers/hint';
 import { handleGetLeaderboard } from './controllers/leaderboard';
-import {
-  handleGetFriends,
-  handleAddFriend,
-  handleRemoveFriend,
-  handleSearchUsers,
-  handleGetUserProfile,
-  handleUpdateProfile,
-} from './controllers/friends';
+import { handleGetFriends, handleAddFriend, handleRemoveFriend, handleSearchUsers, handleGetUserProfile, handleUpdateProfile } from './controllers/friends';
+import { handleGetShop, handleBuyCosmetic, handleEquipCosmetic } from './controllers/shop';
+import { handleCreateChallenge, handleGetChallenges, handleRespondChallenge } from './controllers/challenges';
+import { handleGetActivityFeed } from './controllers/activityFeed';
+import { calculateLevel } from './utils/level';
 import { getTodayUTC } from './utils/date';
 
 import { ensureDbSchema } from './utils/dbInit';
@@ -94,24 +92,43 @@ export default {
         if ('error' in auth) return auth.error;
 
         const todayStr = getTodayUTC();
-        const [user, unlocks, stats, todayCompletions] = await Promise.all([
-          env.DB.prepare('SELECT id, username, display_name, COALESCE(about, "Puzzle solver climbing to the top!") as about, coins, streak_count, last_played_date, last_login_at FROM users WHERE id = ?')
-            .bind(auth.user.id).first(),
+        const [user, unlocks, stats, todayCompletions, badges, activityResult] = await Promise.all([
+          env.DB.prepare('SELECT id, username, display_name, COALESCE(about, "Puzzle solver climbing to the top!") as about, coins, streak_count, COALESCE(xp, 0) as xp, COALESCE(selected_frame, "default") as selected_frame, COALESCE(selected_title, "") as selected_title, last_played_date, last_login_at FROM users WHERE id = ?')
+            .bind(auth.user.id).first<any>(),
           env.DB.prepare('SELECT * FROM user_game_unlocks WHERE user_id = ?')
             .bind(auth.user.id).all(),
           env.DB.prepare('SELECT game_id, total_score, plays_count, best_score, best_streak, current_streak, ROUND(CAST(total_score AS REAL) / plays_count, 2) AS average_score FROM user_game_stats WHERE user_id = ?')
             .bind(auth.user.id).all(),
           env.DB.prepare('SELECT game_id, difficulty FROM daily_completions WHERE user_id = ? AND played_date = ?')
             .bind(auth.user.id, todayStr).all(),
+          env.DB.prepare('SELECT badge_id FROM user_badges WHERE user_id = ?')
+            .bind(auth.user.id).all(),
+          env.DB.prepare(`
+            SELECT played_date, COUNT(*) as completions_count
+            FROM daily_completions
+            WHERE user_id = ? AND game_id != 'daily_sweep'
+            GROUP BY played_date
+            ORDER BY played_date DESC
+            LIMIT 30
+          `).bind(auth.user.id).all<{ played_date: string; completions_count: number }>(),
         ]);
+
+        const levelInfo = calculateLevel(user?.xp || 0);
+        const activityMap: Record<string, number> = {};
+        (activityResult.results || []).forEach(r => {
+          activityMap[r.played_date] = r.completions_count;
+        });
 
         return jsonResponse(
           {
             success: true,
             user,
+            levelInfo,
+            activityHistory: activityMap,
             unlocks: unlocks.results || [],
             stats: stats.results || [],
             todayCompletions: todayCompletions.results || [],
+            badges: (badges.results || []).map((b: any) => b.badge_id),
           },
           200,
           {
@@ -174,6 +191,71 @@ export default {
         if ('error' in auth) return auth.error;
 
         return await handleSubmitScore(request, env, auth.user);
+      }
+
+      // -------------------------------------------------------------------
+      // 7. Puzzle Hint Purchase Mutation: POST /api/games/hint (Protected)
+      // -------------------------------------------------------------------
+      if (method === 'POST' && url.pathname === '/api/games/hint') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+
+        return await handleUseHint(request, env, auth.user);
+      }
+
+      // -------------------------------------------------------------------
+      // 8. Cosmetic Shop Routes (Protected)
+      // -------------------------------------------------------------------
+      if (method === 'GET' && url.pathname === '/api/shop') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+
+        return await handleGetShop(request, env, auth.user);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/shop/buy') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+
+        return await handleBuyCosmetic(request, env, auth.user);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/shop/equip') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+
+        return await handleEquipCosmetic(request, env, auth.user);
+      }
+
+      // -------------------------------------------------------------------
+      // 9. PvP Challenges & Activity Feed Routes (Protected)
+      // -------------------------------------------------------------------
+      if (method === 'POST' && url.pathname === '/api/challenges/create') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+
+        return await handleCreateChallenge(request, env, auth.user);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/challenges') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+
+        return await handleGetChallenges(request, env, auth.user);
+      }
+
+      if (method === 'POST' && url.pathname === '/api/challenges/respond') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+
+        return await handleRespondChallenge(request, env, auth.user);
+      }
+
+      if (method === 'GET' && url.pathname === '/api/friends/feed') {
+        const auth = await authenticateRequest(request, env);
+        if ('error' in auth) return auth.error;
+
+        return await handleGetActivityFeed(request, env, auth.user);
       }
 
       // 404 Route Not Found

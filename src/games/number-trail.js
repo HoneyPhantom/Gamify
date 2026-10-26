@@ -258,7 +258,7 @@ export const gameConfig = {
           ⚠️ Dead End! Path trapped with unvisited cells remaining. Click Undo or previous cell to backtrack.
         </div>
 
-        <div id="trail-board" class="trail-board" style="grid-template-columns: repeat(${cols}, 56px);"></div>
+        <div id="trail-board" class="trail-board" style="grid-template-columns: repeat(${cols}, var(--trail-cell-size, 54px));"></div>
 
         <div class="trail-controls-bar">
           <button id="trail-undo-btn" class="btn-trail-action">↶ Undo Step</button>

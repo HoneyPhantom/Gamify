@@ -335,8 +335,8 @@
       scroll-snap-align: start;
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-radius: 18px;
-      padding: 1.75rem;
+      border-radius: 20px;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -350,28 +350,63 @@
       transform: translateY(-4px);
       border-color: #93c5fd;
       box-shadow: 0 14px 28px rgba(148, 163, 184, 0.2);
-      background: var(--card-hover);
     }
 
-    .game-card-top {
+    /* Game Image fully occupying card top */
+    .game-cover-container {
+      position: relative;
+      width: 100%;
+      height: 175px;
+      background: #f1f5f9;
+      overflow: hidden;
+    }
+
+    .game-cover-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.35s ease;
+    }
+
+    .game-card-box:hover .game-cover-img {
+      transform: scale(1.05);
+    }
+
+    .game-card-overlay-top {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1.25rem;
+      align-items: center;
+      z-index: 2;
+      pointer-events: none;
     }
 
-    .game-card-icon {
-      font-size: 2.8rem;
-      line-height: 1;
+    /* Current Streak Pill on Top Left */
+    .game-streak-pill {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      color: #fb923c;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 0.32rem 0.7rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(251, 146, 60, 0.45);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
     }
 
-    .game-box-thumb {
-      width: 52px;
-      height: 52px;
-      border-radius: 12px;
-      object-fit: cover;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    .game-card-body {
+      padding: 1.25rem 1.4rem 1.4rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      justify-content: space-between;
     }
 
     .game-status-badge {
@@ -639,6 +674,25 @@
     .key.present { background-color: var(--present-bg) !important; color: #fff; }
     .key.absent { background-color: var(--absent-bg) !important; color: #fff; }
 
+    /* Wordle Share Result Button */
+    .wordle-share-btn {
+      display: block;
+      margin: 12px auto 4px auto;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: opacity 0.18s, transform 0.12s;
+      box-shadow: 0 2px 8px rgba(2,132,199,0.25);
+    }
+    .wordle-share-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .wordle-share-btn:active { transform: scale(0.97); }
+
     /* Number Grid Matrix Display */
     .matrix-grid {
       display: inline-grid;
@@ -700,6 +754,7 @@
     }
 
     .trail-board {
+      --trail-cell-size: 54px;
       display: inline-grid;
       gap: 8px;
       padding: 14px;
@@ -711,8 +766,8 @@
     }
 
     .trail-cell {
-      width: 56px;
-      height: 56px;
+      width: var(--trail-cell-size, 54px);
+      height: var(--trail-cell-size, 54px);
       background: #ffffff;
       border: 2px solid var(--border-color);
       border-radius: 12px;
@@ -819,6 +874,333 @@
     .rules h3 { margin: 0 0 6px 0; color: var(--text-color); font-size: 0.9rem; }
     .rules ul { margin: 0; padding-left: 18px; }
     .rules li { margin-bottom: 4px; }
+
+    /* Hint Button & Hinted Cell Styles */
+    .btn-hint-amber {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      border: none;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+    }
+    .btn-hint-amber:hover { opacity: 0.9; transform: translateY(-1px); }
+    .matrix-input.hinted-cell {
+      background: #fef08a !important;
+      color: #854d0e !important;
+      font-weight: 900 !important;
+      border-radius: 6px;
+      box-shadow: inset 0 0 0 1px #eab308;
+    }
+
+    /* Daily Sweep Challenge Banner */
+    .daily-sweep-card {
+      background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+      border: 1.5px solid #86efac;
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
+      margin: 1.25rem auto 0.5rem auto;
+      max-width: 600px;
+      width: 100%;
+      box-sizing: border-box;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.08);
+      text-align: left;
+    }
+    .sweep-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
+    }
+    .sweep-title {
+      font-weight: 800;
+      font-size: 1rem;
+      color: #166534;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .sweep-bonus-tag {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.78rem;
+      border: 1px solid #fde68a;
+    }
+    .sweep-desc {
+      font-size: 0.82rem;
+      color: #15803d;
+      margin: 0 0 0.75rem 0;
+      line-height: 1.4;
+    }
+    .sweep-progress-bar {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: space-between;
+    }
+    .sweep-game-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #166534;
+      transition: all 0.2s;
+    }
+    .sweep-game-pill.completed {
+      background: #dcfce7;
+      border-color: #4ade80;
+      color: #14532d;
+      box-shadow: 0 2px 6px rgba(34, 197, 94, 0.15);
+    }
+    .sweep-pill-status { font-size: 0.95rem; }
+
+    /* Achievements & Badges Grid */
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 0.65rem;
+      margin-top: 0.75rem;
+    }
+    .badge-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .badge-card.unlocked {
+      border-color: #fde047;
+      background: #fefce8;
+      box-shadow: 0 4px 10px rgba(234, 179, 8, 0.12);
+    }
+    .badge-card.locked {
+      opacity: 0.5;
+      filter: grayscale(1);
+      background: #f8fafc;
+    }
+    .badge-icon { font-size: 1.7rem; margin-bottom: 0.25rem; }
+    .badge-name { font-size: 0.78rem; font-weight: 800; color: var(--text-color); margin-bottom: 0.2rem; }
+    .badge-desc { font-size: 0.68rem; color: var(--text-muted); line-height: 1.25; }
+
+    /* Button Shop */
+    .btn-shop {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6) !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.25);
+    }
+    .btn-shop:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* XP Progression Bar */
+    .xp-progress-box {
+      margin-top: 0.6rem;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 6px 12px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .xp-level-badge {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #b45309;
+      display: flex;
+      justify-content: space-between;
+    }
+    .xp-bar-bg {
+      height: 7px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 4px 0;
+    }
+    .xp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #eab308);
+      transition: width 0.3s ease;
+    }
+    .xp-text {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* Daily Activity Calendar Heatmap */
+    .calendar-heatmap {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+      margin-top: 0.5rem;
+    }
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 5px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.15s;
+    }
+    .heatmap-cell:hover { transform: scale(1.15); z-index: 2; }
+    .heatmap-cell.l0 { background: #f1f5f9; }
+    .heatmap-cell.l1 { background: #bbf7d0; border-color: #86efac; }
+    .heatmap-cell.l2 { background: #4ade80; border-color: #22c55e; }
+    .heatmap-cell.l3 { background: #16a34a; border-color: #15803d; }
+    .heatmap-legend {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: 0.4rem;
+    }
+    .legend-cell { width: 11px; height: 11px; border-radius: 2px; }
+    .legend-cell.l0 { background: #f1f5f9; border: 1px solid #cbd5e1; }
+    .legend-cell.l1 { background: #bbf7d0; }
+    .legend-cell.l2 { background: #4ade80; }
+    .legend-cell.l3 { background: #16a34a; }
+
+    /* Avatar Frames */
+    .frame-frame_cyan { box-shadow: 0 0 0 3px #06b6d4, 0 0 12px rgba(6, 182, 212, 0.6) !important; border-radius: 50%; }
+    .frame-frame_gold { box-shadow: 0 0 0 3px #eab308, 0 0 12px rgba(234, 179, 8, 0.6) !important; border-radius: 50%; }
+    .frame-frame_purple { box-shadow: 0 0 0 3px #a855f7, 0 0 12px rgba(168, 85, 247, 0.6) !important; border-radius: 50%; }
+    .frame-frame_ruby { box-shadow: 0 0 0 3px #ef4444, 0 0 12px rgba(239, 68, 68, 0.6) !important; border-radius: 50%; }
+
+    /* Player Custom Titles */
+    .player-custom-title {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #7c3aed;
+      background: #ede9fe;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-top: 3px;
+    }
+
+    /* Cosmetic Shop Modal Styles */
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem;
+      max-height: 420px;
+      overflow-y: auto;
+      padding: 4px;
+      margin-top: 0.75rem;
+    }
+    .shop-card {
+      background: #ffffff;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+    .shop-card.equipped {
+      border-color: #22c55e;
+      background: #f0fdf4;
+    }
+    .shop-card-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 64px;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-bottom: 0.4rem;
+    }
+    .shop-card-title { font-weight: 800; font-size: 0.95rem; color: var(--text-color); }
+    .shop-card-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; }
+    .shop-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem; }
+
+    /* PvP Challenges & Activity Feed Styles */
+    .btn-challenge {
+      background: linear-gradient(135deg, #f59e0b, #ef4444) !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+    }
+    .btn-challenge:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    .activity-feed-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      max-height: 280px;
+      overflow-y: auto;
+      padding: 2px;
+    }
+    .feed-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0.65rem 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      transition: all 0.2s;
+    }
+    .feed-card:hover { transform: translateX(2px); border-color: var(--accent); }
+    .feed-card-icon { font-size: 1.35rem; flex-shrink: 0; }
+    .feed-card-content { flex: 1; font-size: 0.85rem; line-height: 1.35; color: var(--text-color); }
+    .feed-card-time { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+
+    .challenge-card {
+      background: #ffffff;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .challenge-card.pending { border-color: #f59e0b; background: #fffbeb; }
+    .challenge-card.won { border-color: #22c55e; background: #f0fdf4; }
+    .challenge-card.lost { border-color: #ef4444; background: #fef2f2; }
+    .challenge-active-banner {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #ffffff;
+      padding: 0.6rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-weight: 800;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    }
 
     /* Leaderboard Container */
     .leaderboard-card {
@@ -1320,6 +1702,173 @@
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
     }
+
+    /* =========================================================================
+       MOBILE & TABLET RESPONSIVE ENHANCEMENTS
+       ========================================================================= */
+    @media (max-width: 640px) {
+      header.site-header {
+        padding: 0.65rem 0.85rem;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+      }
+      .header-left {
+        gap: 0.6rem;
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .brand {
+        font-size: 1.1rem;
+        gap: 0.4rem;
+      }
+      .brand-logo-img {
+        height: 30px;
+      }
+      .player-search-wrapper {
+        flex: 1;
+        max-width: 150px;
+        min-width: 100px;
+      }
+      .player-search-input {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.78rem;
+      }
+      .nav-actions {
+        gap: 0.35rem;
+        flex-wrap: wrap;
+      }
+      .badge {
+        padding: 0.28rem 0.55rem;
+        font-size: 0.75rem;
+      }
+      .btn-profile {
+        padding: 0.28rem 0.55rem;
+        font-size: 0.75rem;
+      }
+      .btn-lock {
+        padding: 0.28rem 0.5rem;
+        font-size: 0.75rem;
+      }
+      main {
+        padding: 0 0.85rem;
+        margin: 1rem auto 2.5rem auto;
+        gap: 1.75rem;
+      }
+      .hero-clean {
+        padding: 1.75rem 0.5rem 1rem 0.5rem;
+      }
+      .hero-title-clean {
+        font-size: 2.25rem;
+      }
+      .hero-tagline {
+        font-size: 0.95rem;
+        margin-bottom: 1.25rem;
+      }
+      .game-search-bar input {
+        padding: 0.65rem 1.15rem;
+        font-size: 0.88rem;
+      }
+      .games-scroll-container {
+        gap: 1rem;
+        padding: 0.25rem 0.25rem 1rem 0.25rem;
+      }
+      .game-card-box {
+        flex: 0 0 280px;
+        border-radius: 16px;
+      }
+      .game-cover-container {
+        height: 150px;
+      }
+      .game-card-body {
+        padding: 1rem 1.15rem 1.25rem 1.15rem;
+      }
+      .game-card-title {
+        font-size: 1.25rem;
+      }
+      .game-card-desc {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+      }
+      .modal-card {
+        padding: 1.25rem 1rem;
+        max-width: 95vw;
+        border-radius: 16px;
+      }
+      .game-card {
+        padding: 16px 12px;
+        border-radius: 14px;
+      }
+      .score-board {
+        padding: 8px 10px;
+        font-size: 0.82rem;
+      }
+      /* Wordle mobile responsiveness */
+      .board {
+        gap: 4px;
+      }
+      .row {
+        gap: 4px;
+      }
+      .cell {
+        width: 44px;
+        height: 44px;
+        font-size: 1.35rem;
+        border-radius: 6px;
+      }
+      .key {
+        height: 42px;
+        min-width: 26px;
+        font-size: 0.78rem;
+      }
+      .key.wide {
+        flex: 1.3;
+        font-size: 0.7rem;
+      }
+      /* Number Grid mobile responsiveness */
+      .matrix-cell {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+      }
+      .matrix-target {
+        width: 44px;
+        height: 44px;
+        font-size: 0.9rem;
+      }
+      /* Number Trail mobile responsiveness */
+      .trail-board {
+        padding: 8px;
+        gap: 6px;
+      }
+      .trail-cell {
+        width: 46px;
+        height: 46px;
+        font-size: 1.15rem;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .cell {
+        width: 38px;
+        height: 38px;
+        font-size: 1.2rem;
+      }
+      .key {
+        height: 38px;
+        min-width: 22px;
+        font-size: 0.72rem;
+      }
+      .matrix-cell, .matrix-target {
+        width: 38px;
+        height: 38px;
+        font-size: 0.95rem;
+      }
+      .trail-cell {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1342,6 +1891,9 @@
       <div id="auth-state-logged-in" class="nav-actions hidden">
         <div class="badge">🪙 Coins: <span id="coin-balance">100</span></div>
         <div class="badge">🔥 Streak: <span id="streak-count">0</span></div>
+        <div class="badge" id="header-xp-badge" style="background:#fef3c7; border-color:#fde68a; color:#92400e;">⭐ <span id="header-user-level">Lvl 1</span></div>
+        <button class="btn-challenge" id="btn-open-challenges" title="Head-to-Head Challenges">🎯 <span id="header-challenges-badge">Challenges</span></button>
+        <button class="btn-shop" id="btn-open-shop" title="Cosmetic Shop">🛍️ Shop</button>
         <button class="btn-profile" id="btn-open-profile" title="View your profile, streaks & friends">👤 <span id="nav-user-name">Player</span></button>
         <button class="btn-lock" id="btn-logout" title="Lock your profile and exit session">Lock 🔒</button>
       </div>
@@ -1364,6 +1916,40 @@
         <p class="hero-tagline">Solve puzzles to be at top</p>
         <div class="game-search-bar">
           <input type="text" id="game-search-input" placeholder="🔍 Search games..." autocomplete="off" />
+        </div>
+
+        <!-- Daily Sweep Challenge Tracker Card -->
+        <div id="daily-sweep-card" class="daily-sweep-card">
+          <div class="sweep-header">
+            <span class="sweep-title">🏆 Daily Sweep Challenge</span>
+            <span id="sweep-bonus-tag" class="sweep-bonus-tag">+50 Bonus Coins 🪙</span>
+          </div>
+          <p id="sweep-status-desc" class="sweep-desc">Conquer today's daily puzzle in all 3 games to claim the Daily Sweep Bonus!</p>
+          <div class="sweep-progress-bar">
+            <div id="sweep-item-wordle" class="sweep-game-pill">
+              <span class="sweep-pill-name">🔤 Wordle</span>
+              <span id="sweep-status-wordle" class="sweep-pill-status">⏳</span>
+            </div>
+            <div id="sweep-item-number-grid" class="sweep-game-pill">
+              <span class="sweep-pill-name">🔢 Number Grid</span>
+              <span id="sweep-status-number-grid" class="sweep-pill-status">⏳</span>
+            </div>
+            <div id="sweep-item-number-trail" class="sweep-game-pill">
+              <span class="sweep-pill-name">🗺️ Number Trail</span>
+              <span id="sweep-status-number-trail" class="sweep-pill-status">⏳</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Friends Live Activity Feed -->
+        <div id="friends-activity-feed-section" style="max-width: 600px; margin: 1.25rem auto 0 auto; width: 100%; text-align: left;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+            <div class="profile-section-title" style="margin: 0; font-size: 1.1rem;">⚡ Friends Activity</div>
+            <button type="button" id="btn-refresh-feed" class="btn-lock" style="font-size: 0.75rem; padding: 0.25rem 0.6rem; cursor: pointer;">Refresh ↻</button>
+          </div>
+          <div id="friends-activity-feed" class="activity-feed-container">
+            <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 0.75rem;">Loading activity feed...</div>
+          </div>
         </div>
       </div>
 
@@ -1416,9 +2002,17 @@
 
       <!-- Active Game Card Container -->
       <div id="active-game-container" class="game-card">
+        <!-- Active Challenge Playing Banner -->
+        <div id="active-challenge-banner" class="challenge-active-banner hidden">
+          <span id="active-challenge-text">⚔️ Head-to-Head Challenge: Beat Target Score!</span>
+          <button id="btn-cancel-challenge-play" type="button" style="background: rgba(0,0,0,0.25); border: none; color: #fff; border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 0.75rem;">Exit Challenge</button>
+        </div>
+
         <div class="score-board">
           <div>Total Score: <span id="total-score">0</span></div>
           <div>Games Won: <span id="games-won">0</span></div>
+          <div>⏱️ Timer: <span id="game-timer" style="color:var(--accent); font-family:monospace; font-weight:800;">00:00</span></div>
+          <div>⚡ Speed: <span id="speed-bonus-indicator" style="color:var(--correct-bg); font-weight:800;">+50 Pts</span></div>
         </div>
 
         <div class="controls">
@@ -1446,6 +2040,7 @@
           <button class="tab-btn active" id="btn-global-tab">🏆 Global Standings</button>
           <button class="tab-btn" id="btn-friends-tab">👥 Friends Leaderboard</button>
           <button class="tab-btn" id="btn-daily-tab">📅 Today's Daily Standings</button>
+          <button class="tab-btn" id="btn-tournament-tab">⚔️ Weekly Tournament</button>
         </div>
         <div id="leaderboard-view">Loading standings...</div>
       </div>
@@ -1563,10 +2158,21 @@
       <button class="modal-close" id="profile-modal-close" title="Close Modal">&times;</button>
       
       <div class="profile-info-header">
-        <div class="profile-avatar-large">🎮</div>
-        <div class="profile-header-details">
-          <h3 id="profile-display-name">Player</h3>
-          <p id="profile-username">@player</p>
+        <div class="profile-avatar-large" id="profile-avatar">🎮</div>
+        <div class="profile-header-details" style="width: 100%;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <h3 id="profile-display-name" style="margin: 0;">Player</h3>
+            <span id="profile-custom-title" class="player-custom-title hidden">Title</span>
+          </div>
+          <p id="profile-username" style="margin: 0.2rem 0;">@player</p>
+          <div class="xp-progress-box">
+            <div class="xp-level-badge">
+              <span id="profile-user-level">Lvl 1</span>
+              <span id="profile-level-title" style="color:var(--text-muted); font-weight:600;">Novice</span>
+            </div>
+            <div class="xp-bar-bg"><div class="xp-bar-fill" id="profile-xp-fill" style="width: 0%;"></div></div>
+            <div class="xp-text" id="profile-xp-text">0 / 25 XP</div>
+          </div>
         </div>
       </div>
 
@@ -1582,6 +2188,28 @@
         <div class="profile-section-title">🔥 Best Streaks Maintained</div>
         <div class="streaks-grid" id="profile-streaks-grid">
           <!-- Populated dynamically: Wordle, Number Grid, Number Trail -->
+        </div>
+      </div>
+
+      <!-- Daily Activity Heatmap -->
+      <div style="margin-top: 1.25rem;">
+        <div class="profile-section-title">📅 Daily Activity (Last 30 Days)</div>
+        <div class="calendar-heatmap" id="profile-heatmap"></div>
+        <div class="heatmap-legend">
+          <span style="font-size: 0.72rem; color: var(--text-muted);">Less</span>
+          <span class="legend-cell l0"></span>
+          <span class="legend-cell l1"></span>
+          <span class="legend-cell l2"></span>
+          <span class="legend-cell l3"></span>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">More</span>
+        </div>
+      </div>
+
+      <!-- Badges & Achievements -->
+      <div style="margin-top: 1.25rem;">
+        <div class="profile-section-title">🏅 Badges & Achievements</div>
+        <div class="badges-grid" id="profile-badges-grid">
+          <!-- Populated dynamically -->
         </div>
       </div>
 
@@ -1618,30 +2246,142 @@
   <!-- PUBLIC PLAYER PROFILE MODAL (Shows only Gamertag & Description)     -->
   <!-- =================================================================== -->
   <div id="public-profile-modal" class="modal-overlay hidden">
-    <div class="modal-card" style="max-width: 420px; text-align: center;">
+    <div class="modal-card" style="max-width: 440px; text-align: center;">
       <button class="modal-close" id="public-profile-close" title="Close Modal">&times;</button>
       
-      <div class="profile-avatar-large" style="margin: 0 auto 1rem auto;">👤</div>
-      <h3 id="public-profile-gamertag" style="font-size: 1.4rem; font-weight: 800; color: var(--text-color);">Gamertag</h3>
-      <p id="public-profile-handle" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 1rem;">@username</p>
+      <div class="profile-avatar-large" id="public-profile-avatar" style="margin: 0 auto 0.6rem auto;">👤</div>
+      <h3 id="public-profile-gamertag" style="font-size: 1.4rem; font-weight: 800; color: var(--text-color); margin-bottom: 0.2rem;">Gamertag</h3>
+      <div style="margin-bottom: 0.35rem;"><span id="public-profile-custom-title" class="player-custom-title hidden">Title</span></div>
+      <p id="public-profile-handle" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.4rem;">@username</p>
+      <div class="badge" id="public-profile-level-badge" style="background:#fef3c7; border-color:#fde68a; color:#92400e; margin: 0 auto 1rem auto; display: inline-flex;">⭐ <span id="public-profile-level">Lvl 1 · Novice</span></div>
       
       <div style="text-align: left; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">About:</div>
       <div class="public-profile-desc" id="public-profile-about">No description provided yet.</div>
 
-      <div id="public-profile-actions" style="margin-top: 1.25rem;">
+      <!-- Best Streaks Maintained -->
+      <div style="text-align: left; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
+        🔥 Best Streaks Maintained:
+      </div>
+      <div class="streaks-grid" id="public-profile-streaks-grid">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Daily Activity Heatmap -->
+      <div style="text-align: left; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
+        📅 Daily Activity (Last 30 Days):
+      </div>
+      <div class="calendar-heatmap" id="public-profile-heatmap"></div>
+
+      <!-- Badges & Achievements -->
+      <div style="text-align: left; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
+        🏅 Badges & Achievements:
+      </div>
+      <div class="badges-grid" id="public-profile-badges-grid">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div id="public-profile-actions" style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <button id="btn-challenge-public" class="btn-challenge" style="width: 100%; justify-content: center;">🎯 Challenge Player</button>
         <button id="btn-toggle-friend-public" class="btn-login" style="width: 100%;">Add Friend</button>
       </div>
     </div>
   </div>
 
   <!-- =================================================================== -->
-  <!-- GAME RULES MODAL                                                    -->
+  <!-- COSMETIC SHOP MODAL                                                 -->
   <!-- =================================================================== -->
-  <div id="rules-modal" class="modal-overlay hidden">
-    <div class="modal-card" style="max-width: 520px;">
-      <button class="modal-close" id="rules-modal-close" title="Close Modal">&times;</button>
-      <div class="profile-section-title" style="font-size: 1.2rem; margin-bottom: 1rem;">📖 Game Rules & Controls</div>
-      <div id="rules-modal-content" style="line-height: 1.6; font-size: 0.95rem; color: var(--text-color);"></div>
+  <div id="shop-modal" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 580px;">
+      <button class="modal-close" id="shop-modal-close" title="Close Modal">&times;</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <div class="profile-section-title" style="margin: 0; font-size: 1.25rem;">🛍️ Cosmetic Shop</div>
+        <div class="badge" style="background:#fef3c7; border-color:#fde68a; color:#92400e; font-size: 0.88rem;">🪙 Coins: <span id="shop-coin-balance">0</span></div>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0; margin-bottom: 1rem;">
+        Spend earned coins on stylish avatar frames and prestigious gamertag titles!
+      </p>
+
+      <div class="tabs" id="shop-tabs" style="margin-bottom: 0.75rem;">
+        <button class="tab-btn active" data-tab="frame">Avatar Frames</button>
+        <button class="tab-btn" data-tab="title">Player Titles</button>
+      </div>
+
+      <div id="shop-items-container" class="shop-grid">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- BADGE UNLOCKED CELEBRATION MODAL                                    -->
+  <!-- =================================================================== -->
+  <div id="badge-unlock-modal" class="modal-overlay hidden" style="z-index: 9999;">
+    <div class="modal-card" style="max-width: 360px; text-align: center; border: 2px solid #fde047;">
+      <div id="badge-unlock-icon" style="font-size: 3.5rem; margin-bottom: 0.4rem;">🏆</div>
+      <div style="font-size: 0.78rem; font-weight: 800; color: #d97706; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">Achievement Unlocked!</div>
+      <h3 id="badge-unlock-name" style="font-size: 1.35rem; font-weight: 800; color: var(--text-color); margin-bottom: 0.4rem;">Wordsmith</h3>
+      <p id="badge-unlock-desc" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1.25rem;">Solve 5 Wordle puzzles</p>
+      <button id="badge-unlock-close" class="game-action-btn btn-play" style="width: 100%;">Awesome! 🚀</button>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- CHALLENGES MODAL (PvP System)                                      -->
+  <!-- =================================================================== -->
+  <div id="challenges-modal" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 540px;">
+      <button class="modal-close" id="challenges-modal-close" title="Close Modal">&times;</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <div class="profile-section-title" style="margin: 0; font-size: 1.25rem;">🎯 Head-to-Head Challenges</div>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0; margin-bottom: 1rem;">
+        Challenge your friends to beat your high scores! Winners earn <strong>+35 Coins</strong> & <strong>+50 XP</strong>!
+      </p>
+      <div class="tabs" id="challenges-tabs" style="margin-bottom: 0.75rem;">
+        <button class="tab-btn active" data-tab="incoming">Received (<span id="challenges-pending-count">0</span>)</button>
+        <button class="tab-btn" data-tab="sent">Sent Challenges</button>
+      </div>
+      <div id="challenges-items-container" style="max-height: 380px; overflow-y: auto;">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- CREATE CHALLENGE MODAL                                              -->
+  <!-- =================================================================== -->
+  <div id="create-challenge-modal" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 440px;">
+      <button class="modal-close" id="create-challenge-modal-close" title="Close Modal">&times;</button>
+      <div class="profile-section-title" style="margin: 0; font-size: 1.25rem; margin-bottom: 0.75rem;">🎯 Send a Challenge</div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0; margin-bottom: 1rem;">
+        Pick a game and set a target score for your opponent to beat.
+      </p>
+      <form id="create-challenge-form">
+        <div class="form-group">
+          <label for="challenge-opponent-input">Opponent Username</label>
+          <input type="text" id="challenge-opponent-input" class="form-input" required readonly />
+        </div>
+        <div class="form-group">
+          <label for="challenge-game-select">Select Game</label>
+          <select id="challenge-game-select" class="form-input"></select>
+        </div>
+        <div class="form-group">
+          <label for="challenge-tier-select">Select Difficulty</label>
+          <select id="challenge-tier-select" class="form-input">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="challenge-target-score">Target Score to Beat</label>
+          <input type="number" id="challenge-target-score" class="form-input" min="100" max="5000" value="650" required />
+        </div>
+        <button type="submit" class="auth-submit-btn" id="btn-submit-challenge">
+          Send Challenge 🎯
+        </button>
+      </form>
     </div>
   </div>
 

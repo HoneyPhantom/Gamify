@@ -6,6 +6,8 @@ export const GAME_UNLOCK_COSTS: Record<string, number> = {
   'wordle': 0,         // Free to play
   'number-grid': 100,  // Locked base game: 100 coins
   'number-trail': 150, // Locked base game: 150 coins
+  'sudoku': 150,       // Locked base game: 150 coins
+  'memory-match': 150, // Locked base game: 150 coins
 };
 
 export const TIER_COSTS: Record<string, number> = {

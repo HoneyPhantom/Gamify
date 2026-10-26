@@ -59,6 +59,7 @@ function createMatrixPuzzle(rng, size, revealRatio) {
     rowTargets,
     colTargets,
     initialGrid,
+    solution: solution.map(row => [...row]),
     // Solution verification checksum (SHA-256 or FNV hash of stringified solution)
     solutionHash: rng.random().toString(36).substring(2, 10),
     validate: (userGrid) => {
@@ -155,7 +156,7 @@ export const gameConfig = {
       };
     }
   },
-  mount: (container, puzzle, { onWin, showStatus, setRules }) => {
+  mount: (container, puzzle, { onWin, showStatus, setRules, onHint }) => {
     const { size, initialGrid, rowTargets, colTargets, maxVal } = puzzle;
     const startTime = Date.now();
     let isSolved = false;
@@ -168,6 +169,7 @@ export const gameConfig = {
         <li>Fill empty cells with numbers from <strong>1 to ${maxVal}</strong>.</li>
         <li>Each row must sum to its target number on the right (→).</li>
         <li>Each column must sum to its target number at the bottom (↓).</li>
+        <li><strong>💡 Hint:</strong> Spend 10 coins to reveal a correct cell value.</li>
       </ul>
     `);
 
@@ -195,9 +197,12 @@ export const gameConfig = {
       html += `<div class="matrix-cell target">↓ ${colTargets[c]}</div>`;
     }
     html += `<div class="matrix-cell target">★</div></div>
-      <div style="margin-top: 1.5rem;">
-        <button id="verify-matrix-btn" class="game-action-btn btn-play" style="max-width: 260px;">
+      <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <button id="verify-matrix-btn" class="game-action-btn btn-play" style="max-width: 220px;">
           Verify Solution & Submit
+        </button>
+        <button id="hint-matrix-btn" class="game-action-btn btn-hint-amber" style="max-width: 170px;">
+          💡 Hint (10 🪙)
         </button>
       </div>
     </div>`;
@@ -205,6 +210,8 @@ export const gameConfig = {
     container.innerHTML = html;
 
     const verifyBtn = container.querySelector('#verify-matrix-btn');
+    const hintBtn = container.querySelector('#hint-matrix-btn');
+
     const onVerify = () => {
       if (isSolved) return;
       const userGrid = [];
@@ -235,16 +242,75 @@ export const gameConfig = {
       showStatus(`🎉 Matrix Solved in ${(timeTakenMs / 1000).toFixed(1)}s! (+${score} pts)`, "var(--correct-bg)");
       verifyBtn.disabled = true;
       verifyBtn.textContent = 'Solved! ✓';
+      if (hintBtn) hintBtn.style.display = 'none';
       onWin(score, timeTakenMs);
+    };
+
+    const onHintClick = async () => {
+      if (isSolved) return;
+      if (!puzzle.solution) {
+        showStatus("Hints not available for this puzzle.", "var(--text-muted)");
+        return;
+      }
+
+      // Collect candidate empty/unrevealed cells
+      const candidates = [];
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (initialGrid[r][c] === null) {
+            const inp = container.querySelector(`input[data-row="${r}"][data-col="${c}"]`);
+            if (inp && !inp.disabled && (!inp.value || parseInt(inp.value, 10) !== puzzle.solution[r][c])) {
+              candidates.push({ r, c, inp, val: puzzle.solution[r][c] });
+            }
+          }
+        }
+      }
+
+      if (candidates.length === 0) {
+        showStatus("All cells are already filled with correct values! Click Verify Solution.", "var(--correct-bg)");
+        return;
+      }
+
+      try {
+        if (hintBtn) {
+          hintBtn.disabled = true;
+          hintBtn.textContent = 'Unlocking Hint...';
+        }
+
+        if (typeof onHint === 'function') {
+          await onHint('number-grid');
+        }
+
+        // Pick a random candidate cell to reveal
+        const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+        chosen.inp.value = chosen.val;
+        chosen.inp.disabled = true;
+        chosen.inp.classList.add('hinted-cell');
+
+        showStatus(`💡 Hint: Row ${chosen.r + 1}, Col ${chosen.c + 1} is ${chosen.val}! (-10 🪙)`, "var(--accent)");
+      } catch (err) {
+        showStatus(`⚠️ ${err.message || 'Could not purchase hint'}`, "var(--danger)");
+      } finally {
+        if (hintBtn) {
+          hintBtn.disabled = false;
+          hintBtn.textContent = '💡 Hint (10 🪙)';
+        }
+      }
     };
 
     if (verifyBtn) {
       verifyBtn.addEventListener('click', onVerify);
     }
+    if (hintBtn) {
+      hintBtn.addEventListener('click', onHintClick);
+    }
 
     return () => {
       if (verifyBtn) {
         verifyBtn.removeEventListener('click', onVerify);
+      }
+      if (hintBtn) {
+        hintBtn.removeEventListener('click', onHintClick);
       }
     };
   }

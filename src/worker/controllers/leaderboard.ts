@@ -1,6 +1,6 @@
 import { Env } from '../types';
 import { jsonResponse, errorResponse } from '../utils/response';
-import { getTodayUTC } from '../utils/date';
+import { getTodayUTC, getWeekIdUTC } from '../utils/date';
 import { authenticateRequest } from '../auth';
 
 export async function handleGetLeaderboard(
@@ -15,6 +15,7 @@ export async function handleGetLeaderboard(
   const url = new URL(request.url);
   const difficulty = url.searchParams.get('difficulty'); // Optional filter: easy, medium, hard
   const todayStr = url.searchParams.get('date') || getTodayUTC();
+  const currentWeekId = getWeekIdUTC();
 
   // 1. Fetch Today's Daily Leaderboard
   let dailyQuery = `
@@ -25,7 +26,10 @@ export async function handleGetLeaderboard(
       u.id as user_id,
       COALESCE(u.display_name, u.username) as display_name,
       u.username,
-      u.streak_count
+      u.streak_count,
+      u.xp,
+      u.selected_frame,
+      u.selected_title
     FROM daily_leaderboard dl
     JOIN users u ON dl.user_id = u.id
     WHERE dl.game_id = ? AND dl.played_date = ?
@@ -40,12 +44,14 @@ export async function handleGetLeaderboard(
   dailyQuery += ` ORDER BY dl.score DESC, dl.time_taken_ms ASC LIMIT 50`;
 
   // 2. Fetch Global Leaderboard computed efficiently via running aggregates
-  // Ranking is strictly based on average score, with plays_count (games played) as the tie breaker
   const globalQuery = `
     SELECT 
       ugs.user_id,
       COALESCE(u.display_name, u.username) AS display_name,
       u.username,
+      u.xp,
+      u.selected_frame,
+      u.selected_title,
       ugs.plays_count,
       ugs.best_score,
       ROUND(CAST(ugs.total_score AS REAL) / ugs.plays_count, 2) AS global_average_score
@@ -56,7 +62,25 @@ export async function handleGetLeaderboard(
     LIMIT 50
   `;
 
-  // 3. Optional Friends Leaderboard if caller is authenticated
+  // 3. Weekly Tournament Leaderboard for the active week
+  const weeklyQuery = `
+    SELECT 
+      wt.user_id,
+      COALESCE(u.display_name, u.username) AS display_name,
+      u.username,
+      u.xp,
+      u.selected_frame,
+      u.selected_title,
+      wt.points,
+      wt.games_played
+    FROM weekly_tournament wt
+    JOIN users u ON wt.user_id = u.id
+    WHERE wt.week_id = ?
+    ORDER BY wt.points DESC, wt.games_played DESC
+    LIMIT 50
+  `;
+
+  // 4. Optional Friends Leaderboard if caller is authenticated
   let friendsPromise: Promise<unknown[]> = Promise.resolve([]);
   const authHeader = request.headers.get('Authorization');
   if (authHeader) {
@@ -69,6 +93,9 @@ export async function handleGetLeaderboard(
             ugs.user_id,
             COALESCE(u.display_name, u.username) AS display_name,
             u.username,
+            u.xp,
+            u.selected_frame,
+            u.selected_title,
             ugs.plays_count,
             ugs.best_score,
             ROUND(CAST(ugs.total_score AS REAL) / ugs.plays_count, 2) AS global_average_score
@@ -89,9 +116,10 @@ export async function handleGetLeaderboard(
   }
 
   // Execute all queries concurrently
-  const [dailyResult, globalResult, friendsResult] = await Promise.all([
+  const [dailyResult, globalResult, weeklyResult, friendsResult] = await Promise.all([
     env.DB.prepare(dailyQuery).bind(...dailyParams).all(),
     env.DB.prepare(globalQuery).bind(gameId).all(),
+    env.DB.prepare(weeklyQuery).bind(currentWeekId).all(),
     friendsPromise,
   ]);
 
@@ -100,13 +128,16 @@ export async function handleGetLeaderboard(
       success: true,
       gameId,
       date: todayStr,
+      currentWeekId,
       dailyLeaderboard: dailyResult.results || [],
       globalLeaderboard: globalResult.results || [],
+      weeklyTournament: weeklyResult.results || [],
       friendsLeaderboard: friendsResult || [],
       meta: {
         dailyCount: dailyResult.results?.length ?? 0,
         globalMinPlaysThreshold: 1,
         globalCount: globalResult.results?.length ?? 0,
+        weeklyCount: weeklyResult.results?.length ?? 0,
         friendsCount: (friendsResult as unknown[])?.length ?? 0,
       },
     },

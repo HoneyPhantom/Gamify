@@ -97,3 +97,71 @@ CREATE TABLE IF NOT EXISTS daily_leaderboard (
 
 CREATE INDEX IF NOT EXISTS idx_daily_leaderboard_rank 
 ON daily_leaderboard(game_id, difficulty, played_date, score DESC, time_taken_ms ASC);
+
+-- ---------------------------------------------------------------------
+-- 6. User Badges / Achievements Table
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS user_badges (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    badge_id TEXT NOT NULL,
+    unlocked_at TEXT NOT NULL DEFAULT (DATETIME('now')),
+    UNIQUE(user_id, badge_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_badges_lookup ON user_badges(user_id);
+
+-- ---------------------------------------------------------------------
+-- 7. Weekly Tournaments Table
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS weekly_tournament (
+    id TEXT PRIMARY KEY,
+    week_id TEXT NOT NULL,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    points INTEGER NOT NULL DEFAULT 0,
+    games_played INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL DEFAULT (DATETIME('now')),
+    UNIQUE(week_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_weekly_tournament_rank 
+ON weekly_tournament(week_id, points DESC, games_played DESC);
+
+-- ---------------------------------------------------------------------
+-- 8. User Cosmetics Inventory Table
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS user_cosmetics (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    item_id TEXT NOT NULL,
+    item_type TEXT NOT NULL,
+    purchased_at TEXT NOT NULL DEFAULT (DATETIME('now')),
+    UNIQUE(user_id, item_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_cosmetics_user ON user_cosmetics(user_id);
+
+-- ---------------------------------------------------------------------
+-- 9. User PvP Challenges Table
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS user_challenges (
+    id TEXT PRIMARY KEY,
+    from_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    to_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    game_id TEXT NOT NULL,
+    difficulty TEXT NOT NULL,
+    target_score INTEGER NOT NULL,
+    challenger_time_ms INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'pending',
+    opponent_score INTEGER DEFAULT 0,
+    opponent_time_ms INTEGER DEFAULT 0,
+    winner_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL DEFAULT (DATETIME('now')),
+    completed_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_challenges_to_user ON user_challenges(to_user_id, status);
+CREATE INDEX IF NOT EXISTS idx_challenges_from_user ON user_challenges(from_user_id);
+
+
+

@@ -127,7 +127,7 @@ class GamifyApiClient {
   async addFriend(username) {
     return this.request('/friends/add', {
       method: 'POST',
-      body: JSON.stringify({ username }),
+      body: JSON.stringify({ friendUsername: username, username }),
     });
   }
 
@@ -148,9 +148,59 @@ class GamifyApiClient {
 
   async updateProfile(displayName, about) {
     return this.request('/user/profile', {
-      method: 'POST',
+      method: 'PUT',
       body: JSON.stringify({ displayName, about }),
     });
+  }
+
+  async useHint(gameId = 'number-grid') {
+    return this.request('/games/hint', {
+      method: 'POST',
+      body: JSON.stringify({ gameId }),
+    });
+  }
+
+  // Cosmetic Shop
+  async getShop() {
+    return this.request('/shop');
+  }
+
+  async buyCosmetic(itemId) {
+    return this.request('/shop/buy', {
+      method: 'POST',
+      body: JSON.stringify({ itemId }),
+    });
+  }
+
+  async equipCosmetic(payload) {
+    return this.request('/shop/equip', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // PvP Challenges
+  async createChallenge(payload) {
+    return this.request('/challenges/create', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getChallenges() {
+    return this.request('/challenges');
+  }
+
+  async respondChallenge(payload) {
+    return this.request('/challenges/respond', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // Friends Activity Feed
+  async getActivityFeed() {
+    return this.request('/friends/feed');
   }
 }
 

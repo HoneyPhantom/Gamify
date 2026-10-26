@@ -1,5 +1,7 @@
 import { Env, AuthenticatedUser } from '../types';
 import { jsonResponse, errorResponse } from '../utils/response';
+import { checkAndAwardBadges } from '../utils/badges';
+import { calculateLevel } from '../utils/level';
 
 /**
  * Controller for friends system, player username lookup, and profile management.
@@ -35,16 +37,16 @@ export async function handleAddFriend(
   env: Env,
   user: AuthenticatedUser
 ): Promise<Response> {
-  let body: { friendUsername?: string };
+  let body: { friendUsername?: string; username?: string };
   try {
     body = await request.json();
   } catch {
     return errorResponse('Invalid JSON body', 400);
   }
 
-  const rawUsername = body.friendUsername?.trim().toLowerCase();
+  const rawUsername = (body.friendUsername || body.username)?.trim().toLowerCase();
   if (!rawUsername) {
-    return errorResponse('Missing friendUsername', 400);
+    return errorResponse('Missing friend username. Please enter a valid username.', 400);
   }
 
   if (rawUsername === user.username.toLowerCase()) {
@@ -65,6 +67,8 @@ export async function handleAddFriend(
     'INSERT OR IGNORE INTO user_friends (user_id, friend_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)'
   ).bind(user.id, targetUser.id).run();
 
+  const newBadgesUnlocked = await checkAndAwardBadges(env, user.id, {});
+
   return jsonResponse({
     success: true,
     message: `Added @${targetUser.username} to your friends list!`,
@@ -73,6 +77,7 @@ export async function handleAddFriend(
       username: targetUser.username,
       display_name: targetUser.display_name,
     },
+    newBadgesUnlocked,
   });
 }
 
@@ -142,19 +147,48 @@ export async function handleGetUserProfile(
   username: string
 ): Promise<Response> {
   const cleanUsername = username.trim().toLowerCase();
-  const row = await env.DB.prepare(`
-    SELECT 
-      id,
-      username, 
-      display_name, 
-      COALESCE(about, 'Puzzle solver climbing to the top!') as about
-    FROM users 
-    WHERE LOWER(username) = ?
-  `).bind(cleanUsername).first<{ id: string; username: string; display_name: string; about: string }>();
+  const [row, statsResult, badgesResult, activityResult] = await Promise.all([
+    env.DB.prepare(`
+      SELECT 
+        id,
+        username, 
+        display_name, 
+        COALESCE(about, 'Puzzle solver climbing to the top!') as about,
+        COALESCE(xp, 0) as xp,
+        COALESCE(selected_frame, 'default') as selected_frame,
+        COALESCE(selected_title, '') as selected_title
+      FROM users 
+      WHERE LOWER(username) = ?
+    `).bind(cleanUsername).first<{ id: string; username: string; display_name: string; about: string; xp: number; selected_frame: string; selected_title: string }>(),
+    env.DB.prepare(`
+      SELECT game_id, best_streak, current_streak
+      FROM user_game_stats
+      WHERE user_id = (SELECT id FROM users WHERE LOWER(username) = ?)
+    `).bind(cleanUsername).all<{ game_id: string; best_streak: number; current_streak: number }>(),
+    env.DB.prepare(`
+      SELECT badge_id FROM user_badges
+      WHERE user_id = (SELECT id FROM users WHERE LOWER(username) = ?)
+    `).bind(cleanUsername).all<{ badge_id: string }>(),
+    env.DB.prepare(`
+      SELECT played_date, COUNT(*) as completions_count
+      FROM daily_completions
+      WHERE user_id = (SELECT id FROM users WHERE LOWER(username) = ?)
+        AND game_id != 'daily_sweep'
+      GROUP BY played_date
+      ORDER BY played_date DESC
+      LIMIT 30
+    `).bind(cleanUsername).all<{ played_date: string; completions_count: number }>(),
+  ]);
 
   if (!row) {
     return errorResponse(`User '@${username}' not found`, 404);
   }
+
+  const lvl = calculateLevel(row.xp || 0);
+  const activityMap: Record<string, number> = {};
+  (activityResult.results || []).forEach(r => {
+    activityMap[r.played_date] = r.completions_count;
+  });
 
   return jsonResponse({
     success: true,
@@ -162,7 +196,16 @@ export async function handleGetUserProfile(
       id: row.id,
       username: row.username,
       gamertag: row.display_name,
+      displayName: row.display_name,
       about: row.about,
+      xp: row.xp,
+      level: lvl.level,
+      levelTitle: lvl.title,
+      selectedFrame: row.selected_frame || 'default',
+      selectedTitle: row.selected_title || '',
+      streaks: statsResult.results || [],
+      badges: (badgesResult.results || []).map(b => b.badge_id),
+      activityHistory: activityMap,
     },
   });
 }
