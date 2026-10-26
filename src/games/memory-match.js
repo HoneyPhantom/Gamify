@@ -34,7 +34,7 @@ export const gameConfig = {
   description: 'Flip cards and match all emoji pairs with fewest moves and fastest time!',
   badge: 'Brain Trainer',
   icon: '🃏',
-  thumbnail: '/images/gamify-logo.png',
+  thumbnail: '/images/memory-match.png',
   isFree: false,
   gameUnlockCost: 150,
 

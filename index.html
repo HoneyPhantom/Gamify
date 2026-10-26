@@ -305,34 +305,18 @@
       font-weight: 600;
     }
 
-    /* Horizontal & Grid Scrollable Tray */
-    .games-scroll-container {
-      display: flex;
+    /* Responsive Dynamic Games Grid (all games displayed outside, adapting to screen) */
+    .games-scroll-container,
+    .games-grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1.5rem;
-      overflow-x: auto;
-      padding: 0.5rem 0.25rem 1.5rem 0.25rem;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .games-scroll-container::-webkit-scrollbar {
-      height: 8px;
-    }
-    .games-scroll-container::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 9999px;
-    }
-    .games-scroll-container::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 9999px;
-    }
-    .games-scroll-container::-webkit-scrollbar-thumb:hover {
-      background: var(--accent);
+      width: 100%;
+      padding: 0.5rem 0 1.5rem 0;
     }
 
     .game-card-box {
-      flex: 0 0 340px;
-      scroll-snap-align: start;
+      width: 100%;
       background: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 20px;
@@ -1264,21 +1248,27 @@
       background: rgba(15, 23, 42, 0.5);
       backdrop-filter: blur(8px);
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       z-index: 1000;
-      padding: 1rem;
+      padding: 1.5rem 1rem;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .modal-card {
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 20px;
-      max-width: 440px;
+      max-width: 460px;
       width: 100%;
       padding: 2.25rem 2rem;
       box-shadow: 0 20px 45px rgba(15, 23, 42, 0.16);
       position: relative;
+      margin: auto 0;
+      max-height: calc(100vh - 3rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
 
     .modal-close {
@@ -1572,24 +1562,48 @@
       align-items: center;
       gap: 0.4rem;
     }
-    .streaks-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    .streaks-grid,
+    .streaks-scroll-container {
+      display: flex;
       gap: 0.75rem;
+      overflow-x: auto;
+      padding: 0.35rem 0.15rem 0.65rem 0.15rem;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
       margin-bottom: 1.25rem;
     }
+    .streaks-grid::-webkit-scrollbar,
+    .streaks-scroll-container::-webkit-scrollbar {
+      height: 6px;
+    }
+    .streaks-grid::-webkit-scrollbar-thumb,
+    .streaks-scroll-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
     .streak-card {
+      flex: 0 0 130px;
+      scroll-snap-align: start;
       background: #f8fafc;
       border: 1px solid var(--border-color);
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 0.75rem 0.5rem;
       text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: transform 0.15s ease;
+    }
+    .streak-card:hover {
+      transform: translateY(-2px);
+      border-color: #93c5fd;
     }
     .streak-card .game-label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
       font-weight: 700;
       text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .streak-card .streak-val {
       font-size: 1.35rem;
@@ -1768,12 +1782,14 @@
         padding: 0.65rem 1.15rem;
         font-size: 0.88rem;
       }
-      .games-scroll-container {
+      .games-scroll-container,
+      .games-grid-container {
+        grid-template-columns: 1fr;
         gap: 1rem;
-        padding: 0.25rem 0.25rem 1rem 0.25rem;
+        padding: 0.25rem 0 1rem 0;
       }
       .game-card-box {
-        flex: 0 0 280px;
+        width: 100%;
         border-radius: 16px;
       }
       .game-cover-container {
@@ -1892,7 +1908,7 @@
         <div class="badge">🪙 Coins: <span id="coin-balance">100</span></div>
         <div class="badge">🔥 Streak: <span id="streak-count">0</span></div>
         <div class="badge" id="header-xp-badge" style="background:#fef3c7; border-color:#fde68a; color:#92400e;">⭐ <span id="header-user-level">Lvl 1</span></div>
-        <button class="btn-challenge" id="btn-open-challenges" title="Head-to-Head Challenges">🎯 <span id="header-challenges-badge">Challenges</span></button>
+        <button class="btn-challenge" id="btn-open-updates" title="Updates: Challenges & Friends Activity">🔔 <span id="header-updates-badge">Updates</span></button>
         <button class="btn-shop" id="btn-open-shop" title="Cosmetic Shop">🛍️ Shop</button>
         <button class="btn-profile" id="btn-open-profile" title="View your profile, streaks & friends">👤 <span id="nav-user-name">Player</span></button>
         <button class="btn-lock" id="btn-logout" title="Lock your profile and exit session">Lock 🔒</button>
@@ -1940,27 +1956,15 @@
             </div>
           </div>
         </div>
-
-        <!-- Friends Live Activity Feed -->
-        <div id="friends-activity-feed-section" style="max-width: 600px; margin: 1.25rem auto 0 auto; width: 100%; text-align: left;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-            <div class="profile-section-title" style="margin: 0; font-size: 1.1rem;">⚡ Friends Activity</div>
-            <button type="button" id="btn-refresh-feed" class="btn-lock" style="font-size: 0.75rem; padding: 0.25rem 0.6rem; cursor: pointer;">Refresh ↻</button>
-          </div>
-          <div id="friends-activity-feed" class="activity-feed-container">
-            <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 0.75rem;">Loading activity feed...</div>
-          </div>
-        </div>
       </div>
 
-      <!-- Scrollable Games Available List -->
+      <!-- Games Available List (Dynamically Adjusts to Screen) -->
       <div class="games-section">
         <div class="section-header">
           <div>
             <h2 class="section-title"><span>🎮</span> Available Games</h2>
             <p class="section-subtitle">Browse through our modular puzzle games. Click to play or unlock with earned coins.</p>
           </div>
-          <span class="scroll-hint">Swipe or Scroll ➔</span>
         </div>
 
         <div class="games-scroll-container" id="games-scroll-list">
@@ -2191,20 +2195,6 @@
         </div>
       </div>
 
-      <!-- Daily Activity Heatmap -->
-      <div style="margin-top: 1.25rem;">
-        <div class="profile-section-title">📅 Daily Activity (Last 30 Days)</div>
-        <div class="calendar-heatmap" id="profile-heatmap"></div>
-        <div class="heatmap-legend">
-          <span style="font-size: 0.72rem; color: var(--text-muted);">Less</span>
-          <span class="legend-cell l0"></span>
-          <span class="legend-cell l1"></span>
-          <span class="legend-cell l2"></span>
-          <span class="legend-cell l3"></span>
-          <span style="font-size: 0.72rem; color: var(--text-muted);">More</span>
-        </div>
-      </div>
-
       <!-- Badges & Achievements -->
       <div style="margin-top: 1.25rem;">
         <div class="profile-section-title">🏅 Badges & Achievements</div>
@@ -2228,13 +2218,13 @@
         </div>
       </div>
 
-      <!-- Add to Android Home Screen Option -->
+      <!-- Install App Option -->
       <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
         <button type="button" id="btn-add-to-home" class="btn-install-pwa">
-          <span style="font-size: 1.4rem;">📱</span>
+          <span style="font-size: 1.4rem;">📲</span>
           <div>
-            <div style="font-weight: 800; font-size: 0.9rem; color: var(--text-color);">Add to Home Screen</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">Tap to install the Gamify app icon on your Android home screen</div>
+            <div style="font-weight: 800; font-size: 0.9rem; color: var(--text-color);">Install App</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">Install Gamify app on your home screen for quick daily play & offline access</div>
           </div>
         </button>
         <div id="pwa-install-msg" style="display: none; font-size: 0.8rem; margin-top: 0.5rem; padding: 0.6rem 0.8rem; border-radius: 8px; line-height: 1.4;"></div>
@@ -2266,11 +2256,6 @@
         <!-- Populated dynamically -->
       </div>
 
-      <!-- Daily Activity Heatmap -->
-      <div style="text-align: left; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
-        📅 Daily Activity (Last 30 Days):
-      </div>
-      <div class="calendar-heatmap" id="public-profile-heatmap"></div>
 
       <!-- Badges & Achievements -->
       <div style="text-align: left; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
@@ -2326,23 +2311,49 @@
   </div>
 
   <!-- =================================================================== -->
-  <!-- CHALLENGES MODAL (PvP System)                                      -->
+  <!-- UPDATES & SOCIAL MODAL (Challenges & Live Friends Activity)          -->
   <!-- =================================================================== -->
-  <div id="challenges-modal" class="modal-overlay hidden">
+  <div id="updates-modal" class="modal-overlay hidden">
     <div class="modal-card" style="max-width: 540px;">
-      <button class="modal-close" id="challenges-modal-close" title="Close Modal">&times;</button>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-        <div class="profile-section-title" style="margin: 0; font-size: 1.25rem;">🎯 Head-to-Head Challenges</div>
+      <button class="modal-close" id="updates-modal-close" title="Close Modal">&times;</button>
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <span style="font-size: 1.35rem;">🔔</span>
+        <div class="profile-section-title" style="margin: 0; font-size: 1.25rem;">Updates & Social</div>
       </div>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0; margin-bottom: 1rem;">
-        Challenge your friends to beat your high scores! Winners earn <strong>+35 Coins</strong> & <strong>+50 XP</strong>!
-      </p>
-      <div class="tabs" id="challenges-tabs" style="margin-bottom: 0.75rem;">
-        <button class="tab-btn active" data-tab="incoming">Received (<span id="challenges-pending-count">0</span>)</button>
-        <button class="tab-btn" data-tab="sent">Sent Challenges</button>
+
+      <!-- Main Switcher: Challenges vs Activity -->
+      <div class="tabs" id="updates-main-tabs" style="margin-bottom: 1rem;">
+        <button type="button" class="tab-btn active" id="tab-btn-challenges" data-pane="challenges">
+          🎯 Challenges (<span id="challenges-pending-count">0</span>)
+        </button>
+        <button type="button" class="tab-btn" id="tab-btn-activity" data-pane="activity">
+          ⚡ Friends Activity
+        </button>
       </div>
-      <div id="challenges-items-container" style="max-height: 380px; overflow-y: auto;">
-        <!-- Populated dynamically -->
+
+      <!-- Pane 1: Head-to-Head Challenges -->
+      <div id="updates-pane-challenges">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0; margin-bottom: 0.85rem;">
+          Challenge your friends to beat your high scores! Winners earn <strong>+35 Coins</strong> & <strong>+50 XP</strong>!
+        </p>
+        <div class="tabs" id="challenges-tabs" style="margin-bottom: 0.75rem;">
+          <button class="tab-btn active" data-tab="incoming">Received (<span id="challenges-incoming-subcount">0</span>)</button>
+          <button class="tab-btn" data-tab="sent">Sent Challenges</button>
+        </div>
+        <div id="challenges-items-container" style="max-height: 380px; overflow-y: auto;">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Pane 2: Friends Live Activity Feed -->
+      <div id="updates-pane-activity" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-color);">Live Friend Achievements</div>
+          <button type="button" id="btn-refresh-feed" class="btn-lock" style="font-size: 0.75rem; padding: 0.25rem 0.6rem; cursor: pointer;">Refresh ↻</button>
+        </div>
+        <div id="friends-activity-feed" class="activity-feed-container" style="max-height: 380px; overflow-y: auto;">
+          <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1.5rem;">Loading live feed...</div>
+        </div>
       </div>
     </div>
   </div>

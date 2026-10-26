@@ -147,14 +147,22 @@ const shopCoinBalance = document.getElementById('shop-coin-balance');
 const shopTabs = document.getElementById('shop-tabs');
 const shopItemsContainer = document.getElementById('shop-items-container');
 
-// P3 PvP Challenges & Activity Feed DOM Elements
-const btnOpenChallenges = document.getElementById('btn-open-challenges');
-const headerChallengesBadge = document.getElementById('header-challenges-badge');
-const challengesModal = document.getElementById('challenges-modal');
-const challengesModalClose = document.getElementById('challenges-modal-close');
+// Updates (Challenges & Live Friends Activity) DOM Elements
+const btnOpenUpdates = document.getElementById('btn-open-updates') || document.getElementById('btn-open-challenges');
+const btnOpenChallenges = document.getElementById('btn-open-challenges') || document.getElementById('btn-open-updates');
+const headerUpdatesBadge = document.getElementById('header-updates-badge') || document.getElementById('header-challenges-badge');
+const headerChallengesBadge = document.getElementById('header-challenges-badge') || document.getElementById('header-updates-badge');
+const updatesModal = document.getElementById('updates-modal') || document.getElementById('challenges-modal');
+const updatesModalClose = document.getElementById('updates-modal-close') || document.getElementById('challenges-modal-close');
+const challengesModal = updatesModal;
+const challengesModalClose = updatesModalClose;
+const updatesMainTabs = document.getElementById('updates-main-tabs');
+const updatesPaneChallenges = document.getElementById('updates-pane-challenges');
+const updatesPaneActivity = document.getElementById('updates-pane-activity');
 const challengesTabs = document.getElementById('challenges-tabs');
 const challengesItemsContainer = document.getElementById('challenges-items-container');
 const challengesPendingCount = document.getElementById('challenges-pending-count');
+const challengesIncomingSubcount = document.getElementById('challenges-incoming-subcount');
 
 const createChallengeModal = document.getElementById('create-challenge-modal');
 const createChallengeModalClose = document.getElementById('create-challenge-modal-close');
@@ -883,28 +891,8 @@ function applyEquippedCosmetics() {
   }
 }
 
-function renderCalendarHeatmap(containerEl, activityMap = {}) {
-  if (!containerEl) return;
-  containerEl.innerHTML = '';
-
-  const days = [];
-  const now = new Date();
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    const dateStr = d.toISOString().split('T')[0];
-    days.push(dateStr);
-  }
-
-  containerEl.innerHTML = days.map(dateStr => {
-    const count = activityMap[dateStr] || 0;
-    let tier = 'l0';
-    if (count >= 3) tier = 'l3';
-    else if (count === 2) tier = 'l2';
-    else if (count === 1) tier = 'l1';
-
-    const label = `${dateStr}: ${count} puzzle${count === 1 ? '' : 's'} solved`;
-    return `<div class="heatmap-cell ${tier}" title="${label}"></div>`;
-  }).join('');
+function renderCalendarHeatmap() {
+  // Heatmap removed as per user design specification
 }
 
 // Cosmetic Shop State & Logic
@@ -1160,16 +1148,22 @@ async function loadChallenges() {
     const res = await api.getChallenges();
     challengesCache = res;
 
-    if (headerChallengesBadge) {
+    if (headerUpdatesBadge) {
       if (res.pendingCount > 0) {
-        headerChallengesBadge.textContent = `${res.pendingCount} Pending 🔥`;
+        headerUpdatesBadge.textContent = `Updates (${res.pendingCount}) 🔥`;
       } else {
-        headerChallengesBadge.textContent = 'Challenges 🎯';
+        headerUpdatesBadge.textContent = 'Updates 🔔';
       }
+    }
+    if (headerChallengesBadge && headerChallengesBadge !== headerUpdatesBadge) {
+      headerChallengesBadge.textContent = res.pendingCount > 0 ? `${res.pendingCount} Pending 🔥` : 'Challenges 🎯';
     }
 
     if (challengesPendingCount) {
       challengesPendingCount.textContent = res.pendingCount || 0;
+    }
+    if (challengesIncomingSubcount) {
+      challengesIncomingSubcount.textContent = res.pendingCount || 0;
     }
 
     renderChallengesList(activeChallengeTab);
@@ -1335,19 +1329,50 @@ btnCancelChallengePlay?.addEventListener('click', () => {
   showStatus('Challenge exited.', 'var(--text-muted)');
 });
 
-function openChallengesModal() {
+function openUpdatesModal(tab = 'challenges') {
   if (!currentUser) {
     openAuthModal('login');
     return;
   }
-  challengesModal?.classList.remove('hidden');
+  updatesModal?.classList.remove('hidden');
+  switchUpdatesPane(tab);
   loadChallenges();
 }
 
-btnOpenChallenges?.addEventListener('click', openChallengesModal);
-challengesModalClose?.addEventListener('click', () => challengesModal?.classList.add('hidden'));
-challengesModal?.addEventListener('click', (e) => {
-  if (e.target === challengesModal) challengesModal?.classList.add('hidden');
+function switchUpdatesPane(pane) {
+  if (pane === 'activity') {
+    updatesPaneChallenges?.classList.add('hidden');
+    updatesPaneActivity?.classList.remove('hidden');
+    document.getElementById('tab-btn-activity')?.classList.add('active');
+    document.getElementById('tab-btn-challenges')?.classList.remove('active');
+    loadActivityFeed();
+  } else {
+    updatesPaneActivity?.classList.add('hidden');
+    updatesPaneChallenges?.classList.remove('hidden');
+    document.getElementById('tab-btn-challenges')?.classList.add('active');
+    document.getElementById('tab-btn-activity')?.classList.remove('active');
+    renderChallengesList(activeChallengeTab);
+  }
+}
+
+function openChallengesModal() {
+  openUpdatesModal('challenges');
+}
+
+btnOpenUpdates?.addEventListener('click', () => openUpdatesModal());
+if (btnOpenChallenges && btnOpenChallenges !== btnOpenUpdates) {
+  btnOpenChallenges.addEventListener('click', () => openUpdatesModal('challenges'));
+}
+updatesModalClose?.addEventListener('click', () => updatesModal?.classList.add('hidden'));
+updatesModal?.addEventListener('click', (e) => {
+  if (e.target === updatesModal) updatesModal?.classList.add('hidden');
+});
+
+updatesMainTabs?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  const pane = btn.dataset.pane;
+  switchUpdatesPane(pane);
 });
 
 challengesTabs?.addEventListener('click', (e) => {
@@ -2012,27 +2037,20 @@ function openProfileModal() {
   applyEquippedCosmetics();
   updateLevelUI();
 
-  // Render 30-day activity heatmap
-  if (profileHeatmap) {
-    const activityMap = {};
-    (currentUser.activityHistory || []).forEach(r => {
-      activityMap[r.played_date] = r.completions_count;
-    });
-    renderCalendarHeatmap(profileHeatmap, activityMap);
-  }
-
-  // Render best streaks maintained per game
+  // Render best streaks maintained per game in descending order (highest streak first)
   const games = getAllGames();
-  profileStreaksGrid.innerHTML = games.map(g => {
+  const sortedGames = [...games].map(g => {
     const stats = userStats[g.id] || {};
     const bestStreak = stats.best_streak ?? stats.current_streak ?? 0;
-    return `
-      <div class="streak-card">
-        <div class="game-label">${g.title}</div>
-        <div class="streak-val">🔥 ${bestStreak}</div>
-      </div>
-    `;
-  }).join('');
+    return { ...g, bestStreak };
+  }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
+
+  profileStreaksGrid.innerHTML = sortedGames.map(g => `
+    <div class="streak-card">
+      <div class="game-label">${g.title}</div>
+      <div class="streak-val">🔥 ${g.bestStreak}</div>
+    </div>
+  `).join('');
 
   // Render player's badges
   const profileBadgesGrid = document.getElementById('profile-badges-grid');
@@ -2125,11 +2143,6 @@ async function openPublicProfile(username) {
       publicProfileLevel.textContent = `Lvl ${currentPublicUser.level || 1} · ${currentPublicUser.levelTitle || 'Novice'}`;
     }
 
-    // 30-Day Activity Heatmap
-    if (publicProfileHeatmap) {
-      renderCalendarHeatmap(publicProfileHeatmap, currentPublicUser.activityHistory || {});
-    }
-
     const isFriend = currentFriendsCache.some(f => f.username === currentPublicUser.username);
     const isSelf = currentUser && currentUser.username === currentPublicUser.username;
 
@@ -2148,7 +2161,7 @@ async function openPublicProfile(username) {
       }
     }
 
-    // Populate their best streaks in each game
+    // Populate their best streaks in each game in descending order
     const publicStreaksGrid = document.getElementById('public-profile-streaks-grid');
     if (publicStreaksGrid) {
       const allGames = getAllGames();
@@ -2156,15 +2169,17 @@ async function openPublicProfile(username) {
       const streakMap = new Map();
       userStreaks.forEach(s => streakMap.set(s.game_id, s.best_streak ?? 0));
 
-      publicStreaksGrid.innerHTML = allGames.map(g => {
+      const sortedGames = [...allGames].map(g => {
         const best = streakMap.get(g.id) || 0;
-        return `
-          <div class="streak-card">
-            <div class="game-label">${g.title}</div>
-            <div class="streak-val">🔥 ${best}</div>
-          </div>
-        `;
-      }).join('');
+        return { ...g, bestStreak: best };
+      }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
+
+      publicStreaksGrid.innerHTML = sortedGames.map(g => `
+        <div class="streak-card">
+          <div class="game-label">${g.title}</div>
+          <div class="streak-val">🔥 ${g.bestStreak}</div>
+        </div>
+      `).join('');
     }
 
     // Populate their unlocked badges
@@ -2265,7 +2280,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
   if (pwaInstallMsg) {
-    pwaInstallMsg.textContent = '🎉 Gamify was added to your home screen!';
+    pwaInstallMsg.textContent = '🎉 Gamify app installed successfully!';
     pwaInstallMsg.style.display = 'block';
     pwaInstallMsg.style.background = '#dcfce7';
     pwaInstallMsg.style.color = '#15803d';
@@ -2278,7 +2293,7 @@ btnAddToHome?.addEventListener('click', async () => {
     const { outcome } = await deferredInstallPrompt.userChoice;
     if (outcome === 'accepted') {
       if (pwaInstallMsg) {
-        pwaInstallMsg.textContent = '🎉 Adding Gamify icon to your home screen...';
+        pwaInstallMsg.textContent = '🎉 Installing Gamify app...';
         pwaInstallMsg.style.display = 'block';
         pwaInstallMsg.style.background = '#dcfce7';
         pwaInstallMsg.style.color = '#15803d';
@@ -2289,14 +2304,14 @@ btnAddToHome?.addEventListener('click', async () => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     if (isStandalone) {
       if (pwaInstallMsg) {
-        pwaInstallMsg.textContent = '✅ Gamify is already installed on your home screen!';
+        pwaInstallMsg.textContent = '✅ Gamify app is already installed!';
         pwaInstallMsg.style.display = 'block';
         pwaInstallMsg.style.background = '#dcfce7';
         pwaInstallMsg.style.color = '#15803d';
       }
     } else {
       if (pwaInstallMsg) {
-        pwaInstallMsg.innerHTML = '📲 <strong>To install on Android:</strong> Tap your browser menu (<strong>⋮</strong> three dots at the top-right) and select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.';
+        pwaInstallMsg.innerHTML = '📲 <strong>To install:</strong> Tap your browser menu (<strong>⋮</strong>) and select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.';
         pwaInstallMsg.style.display = 'block';
         pwaInstallMsg.style.background = '#e0f2fe';
         pwaInstallMsg.style.color = '#0369a1';

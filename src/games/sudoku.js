@@ -79,7 +79,7 @@ export const gameConfig = {
   description: 'Fill the grid with digits so every row, column, and subgrid contains each number without repeats.',
   badge: 'Logic Master',
   icon: '🔢',
-  thumbnail: '/images/gamify-logo.png',
+  thumbnail: '/images/sudoku.png',
   isFree: false,
   gameUnlockCost: 150,
 
