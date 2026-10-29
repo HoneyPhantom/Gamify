@@ -119,7 +119,7 @@ export default {
         if ('error' in auth) return auth.error;
 
         const todayStr = getTodayUTC();
-        const [user, unlocks, stats, todayCompletions, badges, activityResult] = await Promise.all([
+        const [user, unlocks, stats, todayCompletions, followingResult, followersCountResult, pendingChallengesResult] = await Promise.all([
           env.DB.prepare('SELECT id, username, display_name, COALESCE(about, "Puzzle solver climbing to the top!") as about, coins, streak_count, COALESCE(xp, 0) as xp, COALESCE(selected_frame, "default") as selected_frame, COALESCE(selected_title, "") as selected_title, last_played_date, last_login_at FROM users WHERE id = ?')
             .bind(auth.user.id).first<any>(),
           env.DB.prepare('SELECT * FROM user_game_unlocks WHERE user_id = ?')
@@ -128,34 +128,42 @@ export default {
             .bind(auth.user.id).all(),
           env.DB.prepare('SELECT game_id, difficulty FROM daily_completions WHERE user_id = ? AND played_date = ?')
             .bind(auth.user.id, todayStr).all(),
-          env.DB.prepare('SELECT badge_id FROM user_badges WHERE user_id = ?')
-            .bind(auth.user.id).all(),
           env.DB.prepare(`
-            SELECT played_date, COUNT(*) as completions_count
-            FROM daily_completions
-            WHERE user_id = ? AND game_id != 'daily_sweep'
-            GROUP BY played_date
-            ORDER BY played_date DESC
-            LIMIT 30
-          `).bind(auth.user.id).all<{ played_date: string; completions_count: number }>(),
+            SELECT u.id, u.username, u.display_name, COALESCE(u.about, 'Puzzle solver climbing to the top!') as about
+            FROM user_friends f
+            JOIN users u ON f.friend_id = u.id
+            WHERE f.user_id = ?
+            ORDER BY u.display_name ASC
+          `).bind(auth.user.id).all(),
+          env.DB.prepare('SELECT COUNT(*) as count FROM user_friends WHERE friend_id = ?')
+            .bind(auth.user.id).first<{ count: number }>(),
+          env.DB.prepare(`
+            SELECT 
+              c.id, c.from_user_id, c.game_id, c.difficulty, c.target_score, c.challenger_time_ms, c.status, c.created_at,
+              u.username AS challenger_username, COALESCE(u.display_name, u.username) AS challenger_display_name
+            FROM user_challenges c
+            JOIN users u ON c.from_user_id = u.id
+            WHERE c.to_user_id = ? AND c.status = 'pending'
+            ORDER BY c.created_at DESC
+          `).bind(auth.user.id).all(),
         ]);
 
         const levelInfo = calculateLevel(user?.xp || 0);
-        const activityMap: Record<string, number> = {};
-        (activityResult.results || []).forEach(r => {
-          activityMap[r.played_date] = r.completions_count;
-        });
+        const following = followingResult.results || [];
 
         return jsonResponse(
           {
             success: true,
             user,
             levelInfo,
-            activityHistory: activityMap,
             unlocks: unlocks.results || [],
             stats: stats.results || [],
             todayCompletions: todayCompletions.results || [],
-            badges: (badges.results || []).map((b: any) => b.badge_id),
+            following,
+            followingCount: following.length,
+            followersCount: followersCountResult?.count || 0,
+            pendingChallenges: pendingChallengesResult.results || [],
+            pendingChallengesCount: (pendingChallengesResult.results || []).length,
           },
           200,
           {

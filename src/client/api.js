@@ -131,10 +131,10 @@ class GamifyApiClient {
     });
   }
 
-  async removeFriend(friendId) {
+  async removeFriend(friendId, username = null) {
     return this.request('/friends/remove', {
       method: 'POST',
-      body: JSON.stringify({ friendId }),
+      body: JSON.stringify({ friendId, username }),
     });
   }
 

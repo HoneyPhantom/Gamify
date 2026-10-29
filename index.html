@@ -322,44 +322,39 @@
       font-weight: 600;
     }
 
-    /* Responsive Dynamic Games Grid (all games displayed outside, adapting to screen) */
+    /* Responsive Dynamic Games Grid (Image 1 App-Icon Style) */
     .games-scroll-container,
     .games-grid-container {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 14px;
       width: 100%;
       padding: 0.5rem 0 1.5rem 0;
+      box-sizing: border-box;
     }
 
     .game-card-box {
       width: 100%;
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
+      aspect-ratio: 1 / 1;
+      border-radius: 22px;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      cursor: pointer;
       position: relative;
-      box-shadow: 0 4px 16px rgba(148, 163, 184, 0.12);
+      cursor: pointer;
+      background: #0f172a;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s;
+      user-select: none;
     }
 
     .game-card-box:hover {
-      transform: translateY(-4px);
-      border-color: #93c5fd;
-      box-shadow: 0 14px 28px rgba(148, 163, 184, 0.2);
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
+      border-color: rgba(255, 255, 255, 0.25);
     }
 
-    /* Game Image fully occupying card top */
-    .game-cover-container {
-      position: relative;
-      width: 100%;
-      height: 175px;
-      background: #f1f5f9;
-      overflow: hidden;
+    .game-card-box:active {
+      transform: scale(0.97);
     }
 
     .game-cover-img {
@@ -367,99 +362,377 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 0.35s ease;
+      transition: transform 0.3s ease;
     }
 
     .game-card-box:hover .game-cover-img {
-      transform: scale(1.05);
+      transform: scale(1.06);
     }
 
-    .game-card-overlay-top {
+    /* Top Streak Pill if unlocked */
+    .game-card-streak-pill {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
+      top: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      color: #fb923c;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      border: 1px solid rgba(251, 146, 60, 0.45);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      z-index: 2;
+    }
+
+    /* Top Locked Pill if locked */
+    .game-card-locked-pill {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      color: #fde047;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      border: 1px solid rgba(253, 224, 71, 0.4);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      z-index: 2;
+    }
+
+    /* Bottom Pill Banner with uppercase Game Title */
+    .game-card-bottom-banner {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #ffffff;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 6px 4px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      z-index: 2;
+    }
+
+    /* Image 2 Launcher Screen Styles */
+    .launcher-screen {
+      max-width: 480px;
+      margin: 0 auto;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 0.5rem 2rem 0.5rem;
+    }
+
+    .launcher-top-bar {
+      width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      z-index: 2;
+      margin-bottom: 0.5rem;
+    }
+
+    .launcher-circle-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      font-size: 1.25rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    .launcher-circle-btn:hover {
+      transform: scale(1.08);
+    }
+
+    .launcher-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-color);
+      margin: 0;
+    }
+
+    .launcher-tagline {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      max-width: 380px;
+      margin: 0.3rem auto 2rem auto;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+
+    .launcher-avatar-container {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 4px solid #f1f5f9;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      margin-bottom: 1.25rem;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .launcher-avatar-container:hover {
+      transform: scale(1.06) rotate(3deg);
+    }
+
+    .launcher-difficulty-title {
+      font-size: 1.85rem;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+      color: #ea580c;
+    }
+
+    .launcher-slider-container {
+      width: 100%;
+      max-width: 290px;
+      margin-bottom: 2rem;
+    }
+
+    .launcher-slider-track {
+      width: 100%;
+      height: 40px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      box-sizing: border-box;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .launcher-slider-fill {
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      bottom: 4px;
+      border-radius: 9999px;
+      background: #f59e0b;
+      transition: width 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s;
+    }
+
+    .launcher-slider-knob {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #ffffff;
+      position: absolute;
+      top: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      transition: left 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+      border: 2px solid #ea580c;
+    }
+
+    .launcher-slider-stops {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 18px;
       pointer-events: none;
     }
 
-    /* Current Streak Pill on Top Left */
-    .game-streak-pill {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(8px);
-      color: #fb923c;
-      font-size: 0.78rem;
-      font-weight: 800;
-      padding: 0.32rem 0.7rem;
+    .launcher-slider-stop {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.18);
+    }
+
+    .launcher-slider-hint {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-top: 0.6rem;
+    }
+
+    .launcher-actions-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      max-width: 320px;
+      justify-content: center;
+    }
+
+    .launcher-btn-play {
+      flex: 1;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: #ffffff;
+      border: none;
       border-radius: 9999px;
-      border: 1px solid rgba(251, 146, 60, 0.45);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      font-size: 1.35rem;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      padding: 0.85rem 1.8rem;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+      transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
+      text-transform: uppercase;
+    }
+    .launcher-btn-play:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(234, 88, 12, 0.5);
+      filter: brightness(1.05);
+    }
+    .launcher-btn-play:active {
+      transform: scale(0.98);
+    }
+
+    .launcher-circle-help {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #334155;
+      color: #ffffff;
+      border: none;
+      font-size: 1.4rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+      transition: transform 0.15s, background 0.15s;
+    }
+    .launcher-circle-help:hover {
+      transform: scale(1.08);
+      background: #1e293b;
+    }
+
+    /* Image 3 Clean Rules/Help Modal */
+    .help-dialog-card {
+      max-width: 420px;
+      border-radius: 26px;
+      padding: 1.8rem 1.5rem;
+      text-align: center;
+    }
+
+    .help-dialog-btn-ok {
+      background: #8b5cf6;
+      color: #ffffff;
+      border: none;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 0.75rem 2.8rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      margin-top: 1.25rem;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+      transition: transform 0.15s, background 0.15s;
+    }
+    .help-dialog-btn-ok:hover {
+      transform: translateY(-1px);
+      background: #7c3aed;
+    }
+
+    /* Victory Overlay Clean Modal (No Math) */
+    .solve-victory-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99998;
+    }
+    .solve-victory-card {
+      background: var(--card-bg);
+      border-radius: 28px;
+      padding: 2rem;
+      text-align: center;
+      max-width: 360px;
+      width: 90%;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+      border: 2px solid #86efac;
+      animation: victoryPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes victoryPop {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .solve-victory-score {
+      font-size: 2.75rem;
+      font-weight: 900;
+      color: #10b981;
+      margin: 0.5rem 0 0.25rem 0;
+      font-family: monospace;
+    }
+
+    .solve-victory-coins {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #f59e0b;
+    }
+
+    /* Install button in header */
+    .btn-install-app {
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.4rem 0.85rem;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .btn-install-app:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
     }
 
-    .game-card-body {
-      padding: 1.25rem 1.4rem 1.4rem 1.4rem;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      justify-content: space-between;
-    }
-
-    .game-status-badge {
-      font-size: 0.75rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 0.3rem 0.75rem;
-      border-radius: 9999px;
-      border: 1px solid transparent;
-    }
-
-    .status-free {
-      background: #dcfce7;
-      color: #15803d;
-      border-color: #bbf7d0;
-    }
-
-    .status-locked {
-      background: #fef3c7;
-      color: #b45309;
-      border-color: #fde68a;
-    }
-
-    .status-unlocked {
-      background: #e0f2fe;
-      color: #0369a1;
-      border-color: #bae6fd;
-    }
-
-    .game-card-title {
-      font-size: 1.45rem;
-      font-weight: 800;
-      margin-bottom: 0.5rem;
-      color: var(--text-color);
-    }
-
-    .game-card-desc {
-      font-size: 0.92rem;
-      line-height: 1.5;
-      color: var(--text-muted);
-      margin-bottom: 1.5rem;
-      flex: 1;
-    }
-
-    .game-card-tiers {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
+    /* Full-width sweep card */
+    .daily-sweep-card {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box;
+      margin: 0.5rem 0 1.25rem 0;
     }
 
     .game-action-btn {
@@ -1801,26 +2074,13 @@
       }
       .games-scroll-container,
       .games-grid-container {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 10px;
         padding: 0.25rem 0 1rem 0;
       }
       .game-card-box {
         width: 100%;
-        border-radius: 16px;
-      }
-      .game-cover-container {
-        height: 150px;
-      }
-      .game-card-body {
-        padding: 1rem 1.15rem 1.25rem 1.15rem;
-      }
-      .game-card-title {
-        font-size: 1.25rem;
-      }
-      .game-card-desc {
-        font-size: 0.85rem;
-        margin-bottom: 1rem;
+        border-radius: 18px;
       }
       .modal-card {
         padding: 1.25rem 1rem;
@@ -1925,14 +2185,16 @@
         <div class="badge">🪙 Coins: <span id="coin-balance">100</span></div>
         <div class="badge">🔥 Streak: <span id="streak-count">0</span></div>
         <div class="badge" id="header-xp-badge" style="background:#fef3c7; border-color:#fde68a; color:#92400e;">⭐ <span id="header-user-level">Lvl 1</span></div>
-        <button class="btn-challenge" id="btn-open-updates" title="Updates: Challenges & Friends Activity">🔔 <span id="header-updates-badge">Updates</span></button>
+        <button class="btn-challenge" id="btn-open-updates" title="Challenges">🎯 <span id="header-updates-badge">Challenges</span></button>
         <button class="btn-shop" id="btn-open-shop" title="Cosmetic Shop">🛍️ Shop</button>
-        <button class="btn-profile" id="btn-open-profile" title="View your profile, streaks & friends">👤 <span id="nav-user-name">Player</span></button>
+        <button class="btn-profile" id="btn-open-profile" title="View your profile, streaks & followers">👤 <span id="nav-user-name">Player</span></button>
+        <button class="btn-install-app" id="btn-nav-install-app" title="Install Gamify App">📲 Install</button>
         <button class="btn-lock" id="btn-logout" title="Lock your profile and exit session">Lock 🔒</button>
       </div>
 
       <!-- Unauthenticated State -->
-      <div id="auth-state-logged-out">
+      <div id="auth-state-logged-out" style="display: flex; gap: 0.5rem; align-items: center;">
+        <button class="btn-install-app" id="btn-nav-install-app-loggedout" title="Install Gamify App">📲 Install</button>
         <button class="btn-login" id="btn-open-auth">🔑 Login / Register</button>
       </div>
     </div>
@@ -1940,118 +2202,146 @@
 
   <main>
     <!-- ================================================================= -->
-    <!-- VIEW 1: FRONT PAGE (WEBSITE DESCRIPTION & SCROLLABLE GAMES)       -->
+    <!-- VIEW 1: FRONT PAGE (CLEAN SWEEP CHALLENGE & APP ICON GAMES)       -->
     <!-- ================================================================= -->
     <section id="front-page-view">
-      <!-- Website Hero & Description -->
-      <div class="hero-section hero-clean">
-        <h1 class="hero-title-clean">Gamify</h1>
-        <p class="hero-tagline">Solve puzzles to be at top</p>
-        <div class="game-search-bar">
-          <input type="text" id="game-search-input" placeholder="🔍 Search games..." autocomplete="off" />
-        </div>
+      <!-- Game Search Bar -->
+      <div class="game-search-bar" style="margin-bottom: 0.85rem;">
+        <input type="text" id="game-search-input" placeholder="🔍 Search games..." autocomplete="off" />
+      </div>
 
-        <!-- Daily Sweep Challenge Tracker Card -->
-        <div id="daily-sweep-card" class="daily-sweep-card">
-          <div class="sweep-header">
-            <span class="sweep-title">🏆 Daily Sweep Challenge</span>
-            <span id="sweep-bonus-tag" class="sweep-bonus-tag">+50 Bonus Coins 🪙</span>
+      <!-- Daily Sweep Challenge Tracker Card (Full Width) -->
+      <div id="daily-sweep-card" class="daily-sweep-card">
+        <div class="sweep-header">
+          <span class="sweep-title">🏆 Daily Sweep Challenge</span>
+          <span id="sweep-bonus-tag" class="sweep-bonus-tag">+50 Bonus Coins 🪙</span>
+        </div>
+        <p id="sweep-status-desc" class="sweep-desc">Conquer today's daily puzzle in all 3 games to claim the Daily Sweep Bonus!</p>
+        <div class="sweep-progress-bar">
+          <div id="sweep-item-wordle" class="sweep-game-pill">
+            <span class="sweep-pill-name">🔤 Wordle</span>
+            <span id="sweep-status-wordle" class="sweep-pill-status">⏳</span>
           </div>
-          <p id="sweep-status-desc" class="sweep-desc">Conquer today's daily puzzle in all 3 games to claim the Daily Sweep Bonus!</p>
-          <div class="sweep-progress-bar">
-            <div id="sweep-item-wordle" class="sweep-game-pill">
-              <span class="sweep-pill-name">🔤 Wordle</span>
-              <span id="sweep-status-wordle" class="sweep-pill-status">⏳</span>
-            </div>
-            <div id="sweep-item-number-grid" class="sweep-game-pill">
-              <span class="sweep-pill-name">🔢 Number Grid</span>
-              <span id="sweep-status-number-grid" class="sweep-pill-status">⏳</span>
-            </div>
-            <div id="sweep-item-number-trail" class="sweep-game-pill">
-              <span class="sweep-pill-name">🗺️ Number Trail</span>
-              <span id="sweep-status-number-trail" class="sweep-pill-status">⏳</span>
-            </div>
+          <div id="sweep-item-number-grid" class="sweep-game-pill">
+            <span class="sweep-pill-name">🔢 Number Grid</span>
+            <span id="sweep-status-number-grid" class="sweep-pill-status">⏳</span>
+          </div>
+          <div id="sweep-item-number-trail" class="sweep-game-pill">
+            <span class="sweep-pill-name">🗺️ Number Trail</span>
+            <span id="sweep-status-number-trail" class="sweep-pill-status">⏳</span>
           </div>
         </div>
       </div>
 
-      <!-- Games Available List (Dynamically Adjusts to Screen) -->
-      <div class="games-section">
-        <div class="section-header">
-          <div>
-            <h2 class="section-title"><span>🎮</span> Available Games</h2>
-            <p class="section-subtitle">Browse through our modular puzzle games. Click to play or unlock with earned coins.</p>
-          </div>
-        </div>
-
-        <div class="games-scroll-container" id="games-scroll-list">
-          <!-- Rendered dynamically from modular games registry -->
-        </div>
+      <!-- Games Available List (App-Icon Square Grid like Image 1) -->
+      <div class="games-scroll-container" id="games-scroll-list">
+        <!-- Rendered dynamically from modular games registry -->
       </div>
     </section>
 
     <!-- ================================================================= -->
-    <!-- VIEW 2: ACTIVE GAME ARENA                                         -->
+    <!-- VIEW 2: ACTIVE GAME (IMAGE 2 LAUNCHER & ARENA)                    -->
     <!-- ================================================================= -->
     <section id="game-view" class="hidden">
-      <div class="game-top-bar">
-        <button class="back-btn" id="back-to-home-btn">
-          ← Back to Front Page
-        </button>
-        <div id="game-badge" class="badge" style="color: var(--accent);">Daily Active</div>
-      </div>
-
-      <!-- Difficulty Tier Tabs -->
-      <div class="tabs" id="tier-tabs">
-        <button class="tab-btn active" data-tier="easy">Easy</button>
-        <button class="tab-btn" data-tier="medium">Medium</button>
-        <button class="tab-btn" data-tier="hard">Hard</button>
-        <button class="tab-btn" data-tier="playground">Unlimited Playground</button>
-      </div>
-
-      <!-- Locked Game or Tier Banner -->
-      <div id="locked-tier-container" class="locked-view hidden">
-        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
-        <h3 id="locked-banner-title" style="margin-bottom: 0.5rem; font-size: 1.35rem;">Locked</h3>
-        <p id="locked-banner-desc" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 450px; margin-left: auto; margin-right: auto;">
-          Unlock this challenge using your earned coins to access harder puzzles and bigger rewards.
-        </p>
-        <button id="unlock-action-btn" class="game-action-btn btn-unlock-gold" style="max-width: 240px; margin: 0 auto;">
-          Unlock with Coins 🪙
-        </button>
-      </div>
-
-      <!-- Active Game Card Container -->
-      <div id="active-game-container" class="game-card">
-        <!-- Active Challenge Playing Banner -->
-        <div id="active-challenge-banner" class="challenge-active-banner hidden">
-          <span id="active-challenge-text">⚔️ Head-to-Head Challenge: Beat Target Score!</span>
-          <button id="btn-cancel-challenge-play" type="button" style="background: rgba(0,0,0,0.25); border: none; color: #fff; border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 0.75rem;">Exit Challenge</button>
+      <!-- 2A. Difficulty Launcher Screen (Image 2 style) -->
+      <div id="game-launcher-screen" class="launcher-screen">
+        <div class="launcher-top-bar">
+          <button type="button" class="launcher-circle-btn" id="btn-launcher-back" title="Back to Games">‹</button>
+          <h2 class="launcher-title" id="launcher-game-title">GAME TITLE</h2>
+          <button type="button" class="launcher-circle-btn" id="btn-launcher-help-top" title="Rules & Help">?</button>
         </div>
 
-        <div class="score-board">
-          <div>Total Score: <span id="total-score">0</span></div>
-          <div>Games Won: <span id="games-won">0</span></div>
-          <div>⏱️ Timer: <span id="game-timer" style="color:var(--accent); font-family:monospace; font-weight:800;">00:00</span></div>
-          <div>⚡ Speed: <span id="speed-bonus-indicator" style="color:var(--correct-bg); font-weight:800;">+50 Pts</span></div>
-        </div>
+        <p class="launcher-tagline" id="launcher-game-desc">Game objective description</p>
 
-        <div class="controls">
-          <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <button class="reset-btn" id="new-game-btn">New Game</button>
-            <button type="button" class="btn-rules" id="btn-open-rules">📖 Game Rules</button>
+        <!-- Dynamic Difficulty Emoji Avatar -->
+        <div class="launcher-avatar-container" id="launcher-diff-avatar">😼</div>
+
+        <!-- Difficulty Title -->
+        <div class="launcher-difficulty-title" id="launcher-diff-title">MEDIUM</div>
+
+        <!-- Interactive Capsule Slider (Image 2 style) -->
+        <div class="launcher-slider-container">
+          <div class="launcher-slider-track" id="launcher-slider-track">
+            <div class="launcher-slider-fill" id="launcher-slider-fill"></div>
+            <div class="launcher-slider-stops">
+              <div class="launcher-slider-stop"></div>
+              <div class="launcher-slider-stop"></div>
+              <div class="launcher-slider-stop"></div>
+              <div class="launcher-slider-stop"></div>
+            </div>
+            <div class="launcher-slider-knob" id="launcher-slider-knob"></div>
           </div>
-          <div id="status" class="status">Attempt 1 of 6</div>
+          <div class="launcher-slider-hint">Drag or tap to adjust difficulty</div>
         </div>
 
-        <!-- Dynamic Game Arena Canvas / Board -->
-        <div id="game-arena-content">
-          <!-- Wordle, Number Grid, or Number Trail board rendered dynamically -->
+        <!-- Actions Row: PLAY & HELP (?) -->
+        <div class="launcher-actions-row">
+          <button type="button" class="launcher-btn-play" id="launcher-btn-play">PLAY</button>
+          <button type="button" class="launcher-circle-help" id="launcher-btn-help" title="Game Rules">?</button>
+        </div>
+      </div>
+
+      <!-- 2B. Active Arena Screen (Shown when clicking PLAY) -->
+      <div id="game-arena-screen" class="hidden">
+        <div class="game-top-bar" style="margin-bottom: 0.75rem;">
+          <button class="back-btn" id="btn-back-to-modes">
+            ‹ Change Difficulty
+          </button>
+          <div id="game-badge" class="badge" style="color: var(--accent);">Daily Active</div>
         </div>
 
-        <!-- Hidden container to retain rules text for the modal -->
-        <div class="rules hidden" id="game-rules-box">
-          <!-- Populated dynamically based on active game -->
+        <!-- Hidden legacy tier tabs kept for accessibility/shortcuts -->
+        <div class="tabs hidden" id="tier-tabs">
+          <button class="tab-btn active" data-tier="easy">Easy</button>
+          <button class="tab-btn" data-tier="medium">Medium</button>
+          <button class="tab-btn" data-tier="hard">Hard</button>
+          <button class="tab-btn" data-tier="playground">Unlimited Playground</button>
+        </div>
+
+        <!-- Locked Game or Tier Banner -->
+        <div id="locked-tier-container" class="locked-view hidden">
+          <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
+          <h3 id="locked-banner-title" style="margin-bottom: 0.5rem; font-size: 1.35rem;">Locked</h3>
+          <p id="locked-banner-desc" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 450px; margin-left: auto; margin-right: auto;">
+            Unlock this challenge using your earned coins to access harder puzzles and bigger rewards.
+          </p>
+          <button id="unlock-action-btn" class="game-action-btn btn-unlock-gold" style="max-width: 240px; margin: 0 auto;">
+            Unlock with Coins 🪙
+          </button>
+        </div>
+
+        <!-- Active Game Card Container -->
+        <div id="active-game-container" class="game-card">
+          <!-- Active Challenge Playing Banner -->
+          <div id="active-challenge-banner" class="challenge-active-banner hidden">
+            <span id="active-challenge-text">⚔️ Head-to-Head Challenge: Beat Target Score!</span>
+            <button id="btn-cancel-challenge-play" type="button" style="background: rgba(0,0,0,0.25); border: none; color: #fff; border-radius: 6px; padding: 3px 8px; cursor: pointer; font-size: 0.75rem;">Exit Challenge</button>
+          </div>
+
+          <div class="score-board">
+            <div>Total Score: <span id="total-score">0</span></div>
+            <div>Games Won: <span id="games-won">0</span></div>
+            <div>⏱️ Timer: <span id="game-timer" style="color:var(--accent); font-family:monospace; font-weight:800;">00:00</span></div>
+            <div>⚡ Speed: <span id="speed-bonus-indicator" style="color:var(--correct-bg); font-weight:800;">+50 Pts</span></div>
+          </div>
+
+          <div class="controls">
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <button class="reset-btn" id="new-game-btn">New Game</button>
+              <button type="button" class="btn-rules" id="btn-open-rules">📖 Game Rules</button>
+            </div>
+            <div id="status" class="status">Attempt 1 of 6</div>
+          </div>
+
+          <!-- Dynamic Game Arena Canvas / Board -->
+          <div id="game-arena-content">
+            <!-- Wordle, Number Grid, or Number Trail board rendered dynamically -->
+          </div>
+
+          <!-- Hidden container to retain rules text for the modal -->
+          <div class="rules hidden" id="game-rules-box">
+            <!-- Populated dynamically based on active game -->
+          </div>
         </div>
       </div>
 
@@ -2212,25 +2502,34 @@
         </div>
       </div>
 
-      <!-- Badges & Achievements -->
+      <!-- Followers & Following Section -->
       <div style="margin-top: 1.25rem;">
-        <div class="profile-section-title">🏅 Badges & Achievements</div>
-        <div class="badges-grid" id="profile-badges-grid">
-          <!-- Populated dynamically -->
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 0.75rem;">
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-color);">
+            Followers: <span id="profile-followers-count" style="color:var(--accent);">0</span>
+          </div>
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-color);">
+            Following: <span id="profile-following-count" style="color:var(--accent);">0</span>
+          </div>
         </div>
-      </div>
 
-      <!-- Friends List -->
-      <div style="margin-top: 1.25rem;">
-        <div class="profile-section-title">👥 Friends List</div>
+        <!-- Following vs Followers Tabs -->
+        <div class="tabs" id="follow-tabs" style="margin-bottom: 0.75rem;">
+          <button type="button" class="tab-btn active" id="tab-btn-following" data-tab="following">Following (<span id="tab-following-count">0</span>)</button>
+          <button type="button" class="tab-btn" id="tab-btn-followers" data-tab="followers">Followers (<span id="tab-followers-count">0</span>)</button>
+        </div>
+
         <div class="friends-box">
           <div class="add-friend-row">
-            <input type="text" id="add-friend-input" placeholder="Enter player username..." />
-            <button type="button" id="btn-add-friend">Add Friend</button>
+            <input type="text" id="add-friend-input" placeholder="Follow player by username..." />
+            <button type="button" id="btn-add-friend">Follow</button>
           </div>
           <div id="profile-friends-feedback" style="font-size: 0.8rem; margin-bottom: 0.5rem; display: none;"></div>
-          <div class="friends-items-list" id="profile-friends-list">
-            <!-- Populated dynamically -->
+          <div class="friends-items-list" id="profile-following-list">
+            <!-- Populated dynamically with following -->
+          </div>
+          <div class="friends-items-list hidden" id="profile-followers-list">
+            <!-- Populated dynamically with followers -->
           </div>
         </div>
       </div>
@@ -2241,7 +2540,7 @@
           <span style="font-size: 1.4rem;">📲</span>
           <div>
             <div style="font-weight: 800; font-size: 0.9rem; color: var(--text-color);">Install App</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">Install Gamify app on your home screen for quick daily play & offline access</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">Install Gamify on your home screen for quick daily play & offline access</div>
           </div>
         </button>
         <div id="pwa-install-msg" style="display: none; font-size: 0.8rem; margin-top: 0.5rem; padding: 0.6rem 0.8rem; border-radius: 8px; line-height: 1.4;"></div>
@@ -2250,7 +2549,7 @@
   </div>
 
   <!-- =================================================================== -->
-  <!-- PUBLIC PLAYER PROFILE MODAL (Shows only Gamertag & Description)     -->
+  <!-- PUBLIC PLAYER PROFILE MODAL                                         -->
   <!-- =================================================================== -->
   <div id="public-profile-modal" class="modal-overlay hidden">
     <div class="modal-card" style="max-width: 440px; text-align: center;">
@@ -2260,8 +2559,14 @@
       <h3 id="public-profile-gamertag" style="font-size: 1.4rem; font-weight: 800; color: var(--text-color); margin-bottom: 0.2rem;">Gamertag</h3>
       <div style="margin-bottom: 0.35rem;"><span id="public-profile-custom-title" class="player-custom-title hidden">Title</span></div>
       <p id="public-profile-handle" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.4rem;">@username</p>
-      <div class="badge" id="public-profile-level-badge" style="background:#fef3c7; border-color:#fde68a; color:#92400e; margin: 0 auto 1rem auto; display: inline-flex;">⭐ <span id="public-profile-level">Lvl 1 · Novice</span></div>
+      <div class="badge" id="public-profile-level-badge" style="background:#fef3c7; border-color:#fde68a; color:#92400e; margin: 0 auto 0.75rem auto; display: inline-flex;">⭐ <span id="public-profile-level">Lvl 1 · Novice</span></div>
       
+      <!-- Followers & Following count -->
+      <div style="display: flex; justify-content: center; gap: 1.5rem; margin: 0.35rem 0 0.85rem 0; font-size: 0.92rem; font-weight: 700;">
+        <span style="color:var(--text-muted);">Followers: <strong id="public-profile-followers-count" style="color:var(--accent);">0</strong></span>
+        <span style="color:var(--text-muted);">Following: <strong id="public-profile-following-count" style="color:var(--accent);">0</strong></span>
+      </div>
+
       <div style="text-align: left; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">About:</div>
       <div class="public-profile-desc" id="public-profile-about">No description provided yet.</div>
 
@@ -2273,18 +2578,9 @@
         <!-- Populated dynamically -->
       </div>
 
-
-      <!-- Badges & Achievements -->
-      <div style="text-align: left; margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
-        🏅 Badges & Achievements:
-      </div>
-      <div class="badges-grid" id="public-profile-badges-grid">
-        <!-- Populated dynamically -->
-      </div>
-
       <div id="public-profile-actions" style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
         <button id="btn-challenge-public" class="btn-challenge" style="width: 100%; justify-content: center;">🎯 Challenge Player</button>
-        <button id="btn-toggle-friend-public" class="btn-login" style="width: 100%;">Add Friend</button>
+        <button id="btn-toggle-friend-public" class="btn-login" style="width: 100%;">Follow Player</button>
       </div>
     </div>
   </div>
@@ -2315,43 +2611,19 @@
   </div>
 
   <!-- =================================================================== -->
-  <!-- BADGE UNLOCKED CELEBRATION MODAL                                    -->
-  <!-- =================================================================== -->
-  <div id="badge-unlock-modal" class="modal-overlay hidden" style="z-index: 9999;">
-    <div class="modal-card" style="max-width: 360px; text-align: center; border: 2px solid #fde047;">
-      <div id="badge-unlock-icon" style="font-size: 3.5rem; margin-bottom: 0.4rem;">🏆</div>
-      <div style="font-size: 0.78rem; font-weight: 800; color: #d97706; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem;">Achievement Unlocked!</div>
-      <h3 id="badge-unlock-name" style="font-size: 1.35rem; font-weight: 800; color: var(--text-color); margin-bottom: 0.4rem;">Wordsmith</h3>
-      <p id="badge-unlock-desc" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1.25rem;">Solve 5 Wordle puzzles</p>
-      <button id="badge-unlock-close" class="game-action-btn btn-play" style="width: 100%;">Awesome! 🚀</button>
-    </div>
-  </div>
-
-  <!-- =================================================================== -->
-  <!-- UPDATES & SOCIAL MODAL (Challenges & Live Friends Activity)          -->
+  <!-- CHALLENGES MODAL (Focus on PvP Head-to-Head Challenges)              -->
   <!-- =================================================================== -->
   <div id="updates-modal" class="modal-overlay hidden">
     <div class="modal-card" style="max-width: 540px;">
       <button class="modal-close" id="updates-modal-close" title="Close Modal">&times;</button>
       <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <span style="font-size: 1.35rem;">🔔</span>
-        <div class="profile-section-title" style="margin: 0; font-size: 1.25rem;">Updates & Social</div>
+        <span style="font-size: 1.35rem;">🎯</span>
+        <div class="profile-section-title" style="margin: 0; font-size: 1.25rem;">Head-to-Head Challenges</div>
       </div>
 
-      <!-- Main Switcher: Challenges vs Activity -->
-      <div class="tabs" id="updates-main-tabs" style="margin-bottom: 1rem;">
-        <button type="button" class="tab-btn active" id="tab-btn-challenges" data-pane="challenges">
-          🎯 Challenges (<span id="challenges-pending-count">0</span>)
-        </button>
-        <button type="button" class="tab-btn" id="tab-btn-activity" data-pane="activity">
-          ⚡ Friends Activity
-        </button>
-      </div>
-
-      <!-- Pane 1: Head-to-Head Challenges -->
       <div id="updates-pane-challenges">
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0; margin-bottom: 0.85rem;">
-          Challenge your friends to beat your high scores! Winners earn <strong>+35 Coins</strong> & <strong>+50 XP</strong>!
+          Challenge friends to beat your high scores! Winners earn <strong>+35 Coins</strong> & <strong>+50 XP</strong>!
         </p>
         <div class="tabs" id="challenges-tabs" style="margin-bottom: 0.75rem;">
           <button class="tab-btn active" data-tab="incoming">Received (<span id="challenges-incoming-subcount">0</span>)</button>
@@ -2361,17 +2633,33 @@
           <!-- Populated dynamically -->
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Pane 2: Friends Live Activity Feed -->
-      <div id="updates-pane-activity" class="hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-          <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-color);">Live Friend Achievements</div>
-          <button type="button" id="btn-refresh-feed" class="btn-lock" style="font-size: 0.75rem; padding: 0.25rem 0.6rem; cursor: pointer;">Refresh ↻</button>
-        </div>
-        <div id="friends-activity-feed" class="activity-feed-container" style="max-height: 380px; overflow-y: auto;">
-          <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 1.5rem;">Loading live feed...</div>
-        </div>
+  <!-- =================================================================== -->
+  <!-- IMAGE 3 STYLE CLEAN GAME HELP MODAL                                 -->
+  <!-- =================================================================== -->
+  <div id="help-dialog-modal" class="modal-overlay hidden">
+    <div class="modal-card help-dialog-card">
+      <div style="font-size: 3rem; margin-bottom: 0.4rem;" id="help-dialog-icon">📖</div>
+      <h3 id="help-dialog-title" style="font-size: 1.45rem; font-weight: 900; color: var(--text-color); margin-bottom: 0.75rem;">How to Play</h3>
+      <div id="help-dialog-body" style="font-size: 0.92rem; color: var(--text-color); line-height: 1.6; text-align: left; padding: 0.85rem 1rem; background: #f8fafc; border-radius: 16px; border: 1px solid var(--border-color); max-height: 280px; overflow-y: auto;">
+        <!-- Rules injected dynamically -->
       </div>
+      <button type="button" class="help-dialog-btn-ok" id="btn-help-dialog-ok">OK</button>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- SOLVED VICTORY MODAL (Clean Score + Coins + Confetti Shower)        -->
+  <!-- =================================================================== -->
+  <div id="solve-victory-modal" class="solve-victory-overlay hidden">
+    <div class="solve-victory-card">
+      <div style="font-size: 3.5rem; margin-bottom: 0.25rem;">🏆</div>
+      <h2 style="font-size: 1.55rem; font-weight: 900; color: #166534; margin-bottom: 0.25rem;">Puzzle Solved!</h2>
+      <div class="solve-victory-score" id="solve-victory-score">+120</div>
+      <div class="solve-victory-coins" id="solve-victory-coins">+15 🪙 Coins Earned</div>
+      <button type="button" class="launcher-btn-play" id="btn-solve-victory-ok" style="margin-top: 1.25rem; width: 100%; font-size: 1.1rem; padding: 0.75rem;">CONTINUE</button>
     </div>
   </div>
 

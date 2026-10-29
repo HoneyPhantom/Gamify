@@ -1,35 +1,99 @@
 /**
- * Static Game Loader & Client-Side Registry
+ * Static Game Loader & Lazy Dynamic Registry
  * 
- * Leverages Vite's static asset analyzer (import.meta.glob) to discover and bundle
- * all modular puzzle games at build time with zero server overhead.
+ * Leverages Vite's static asset analyzer (import.meta.glob) to discover and load
+ * modular puzzle games on-demand when clicked, keeping initial bundle size minimal.
  */
 
-// Eagerly imports all game modules matching the pattern in the current folder,
-// excluding index.js and prng.js
-const gameModules = import.meta.glob(['./*.js', './*.ts', '!./index.*', '!./prng.*'], {
-  eager: true
-});
+// Lazy imports all game modules matching the pattern without bundling upfront
+const gameModules = import.meta.glob(['./*.js', '!./index.*', '!./prng.*']);
+const loadedConfigs = new Map();
 
 /**
- * Registry Map: gameId -> gameConfig
+ * Static games metadata catalog for instant card rendering without downloading module JS.
  */
-const registry = new Map();
-
-for (const [path, module] of Object.entries(gameModules)) {
-  const config = module.gameConfig || module.default;
-  if (!config || !config.id) {
-    console.warn(`[GameLoader] Skipping module at ${path}: missing 'gameConfig' or 'id' export.`);
-    continue;
-  }
-  
-  // Validate schema completeness
-  if (!config.difficulties || !config.unlimitedPlayground) {
-    console.warn(`[GameLoader] Module ${config.id} does not conform strictly to Modular Game Spec.`);
-  }
-
-  registry.set(config.id, config);
-}
+const GAMES_CATALOG = [
+  {
+    id: 'wordle',
+    title: 'Wordle',
+    description: 'Guess the hidden 5-letter word in 6 attempts.',
+    badge: 'Free to Play',
+    icon: '🔤',
+    thumbnail: '/images/wordle.png',
+    isFree: true,
+    gameUnlockCost: 0,
+    difficulties: [
+      { tier: 'easy', unlockCost: 0, rewardCoins: 15 },
+      { tier: 'medium', unlockCost: 150, rewardCoins: 35 },
+      { tier: 'hard', unlockCost: 300, rewardCoins: 75 },
+    ],
+    unlimitedPlayground: { unlockCost: 500 },
+  },
+  {
+    id: 'number-grid',
+    title: 'Number Grid',
+    description: 'Deduce missing numbers to balance row & column target sums.',
+    badge: '100 Coins to Unlock',
+    icon: '🔢',
+    thumbnail: '/images/number-grid.png',
+    isFree: false,
+    gameUnlockCost: 100,
+    difficulties: [
+      { tier: 'easy', unlockCost: 50, rewardCoins: 15 },
+      { tier: 'medium', unlockCost: 150, rewardCoins: 35 },
+      { tier: 'hard', unlockCost: 300, rewardCoins: 75 },
+    ],
+    unlimitedPlayground: { unlockCost: 500 },
+  },
+  {
+    id: 'number-trail',
+    title: 'Number Trail',
+    description: 'Connect numbers in sequence with one continuous path visiting every cell.',
+    badge: '150 Coins to Unlock',
+    icon: '〰️',
+    thumbnail: '/images/number-trail.png',
+    isFree: false,
+    gameUnlockCost: 150,
+    difficulties: [
+      { tier: 'easy', unlockCost: 50, rewardCoins: 15 },
+      { tier: 'medium', unlockCost: 150, rewardCoins: 35 },
+      { tier: 'hard', unlockCost: 300, rewardCoins: 75 },
+    ],
+    unlimitedPlayground: { unlockCost: 500 },
+  },
+  {
+    id: 'sudoku',
+    title: 'Sudoku',
+    description: 'Fill the grid with digits so every row, col, and subgrid has unique numbers.',
+    badge: '150 Coins to Unlock',
+    icon: '🔢',
+    thumbnail: '/images/sudoku.png',
+    isFree: false,
+    gameUnlockCost: 150,
+    difficulties: [
+      { tier: 'easy', unlockCost: 0, rewardCoins: 15 },
+      { tier: 'medium', unlockCost: 150, rewardCoins: 35 },
+      { tier: 'hard', unlockCost: 300, rewardCoins: 75 },
+    ],
+    unlimitedPlayground: { unlockCost: 500 },
+  },
+  {
+    id: 'memory-match',
+    title: 'Memory Match',
+    description: 'Flip cards and match all emoji pairs with fewest moves and fastest time!',
+    badge: '150 Coins to Unlock',
+    icon: '🃏',
+    thumbnail: '/images/memory-match.png',
+    isFree: false,
+    gameUnlockCost: 150,
+    difficulties: [
+      { tier: 'easy', unlockCost: 0, rewardCoins: 15 },
+      { tier: 'medium', unlockCost: 150, rewardCoins: 35 },
+      { tier: 'hard', unlockCost: 300, rewardCoins: 75 },
+    ],
+    unlimitedPlayground: { unlockCost: 500 },
+  },
+];
 
 /**
  * Returns today's calendar date in UTC YYYY-MM-DD
@@ -46,46 +110,54 @@ export function getTodayDateStr() {
  * Returns all discovered games with their static metadata (cost, tiers, description)
  */
 export function getAllGames() {
-  return Array.from(registry.values()).map(game => ({
-    id: game.id,
-    title: game.title,
-    description: game.description || "",
-    badge: game.badge || "Daily Puzzle",
-    icon: game.icon || "🎮",
-    thumbnail: game.thumbnail || null,
-    isFree: game.isFree ?? true,
-    gameUnlockCost: game.gameUnlockCost || 0,
-    difficulties: Object.keys(game.difficulties).map(tier => ({
-      tier,
-      unlockCost: game.difficulties[tier].unlockCost,
-      rewardCoins: game.difficulties[tier].rewardCoins || 0
-    })),
-    unlimitedPlayground: {
-      unlockCost: game.unlimitedPlayground.unlockCost
-    }
-  }));
+  return GAMES_CATALOG;
 }
 
 /**
- * Retrieves the full game configuration for a given game ID
+ * Dynamically loads a game module when needed
+ */
+export async function loadGameConfig(gameId) {
+  if (loadedConfigs.has(gameId)) {
+    return loadedConfigs.get(gameId);
+  }
+
+  // Fast path: find matching file by key name
+  for (const [path, loader] of Object.entries(gameModules)) {
+    if (path.includes(gameId)) {
+      const mod = await loader();
+      const config = mod.gameConfig || mod.default;
+      if (config) {
+        loadedConfigs.set(gameId, config);
+        return config;
+      }
+    }
+  }
+
+  // Fallback: try all loaders
+  for (const [path, loader] of Object.entries(gameModules)) {
+    const mod = await loader();
+    const config = mod.gameConfig || mod.default;
+    if (config && config.id) {
+      loadedConfigs.set(config.id, config);
+      if (config.id === gameId) return config;
+    }
+  }
+
+  throw new Error(`Game module for '${gameId}' not found.`);
+}
+
+/**
+ * Retrieves cached game configuration or null if not loaded yet
  */
 export function getGameConfig(gameId) {
-  const game = registry.get(gameId);
-  if (!game) {
-    throw new Error(`Game '${gameId}' not found in static registry.`);
-  }
-  return game;
+  return loadedConfigs.get(gameId) || null;
 }
 
 /**
  * Generates the deterministic daily puzzle client-side with 0 network latency.
- * 
- * @param {string} gameId - e.g., 'number-grid'
- * @param {'easy'|'medium'|'hard'} difficulty 
- * @param {string} [dateStr] - Optional date seed, defaults to current UTC date
  */
-export function getDailyPuzzle(gameId, difficulty, dateStr = getTodayDateStr()) {
-  const game = getGameConfig(gameId);
+export async function getDailyPuzzle(gameId, difficulty, dateStr = getTodayDateStr()) {
+  const game = await loadGameConfig(gameId);
   const diffConfig = game.difficulties[difficulty];
 
   if (!diffConfig) {
@@ -97,12 +169,9 @@ export function getDailyPuzzle(gameId, difficulty, dateStr = getTodayDateStr()) 
 
 /**
  * Generates a non-daily, endless random puzzle for playground mode.
- * 
- * @param {string} gameId 
- * @param  {...any} args 
  */
-export function getPlaygroundPuzzle(gameId, ...args) {
-  const game = getGameConfig(gameId);
+export async function getPlaygroundPuzzle(gameId, ...args) {
+  const game = await loadGameConfig(gameId);
   if (!game.unlimitedPlayground || typeof game.unlimitedPlayground.generateRandomPuzzle !== 'function') {
     throw new Error(`Game '${gameId}' does not support unlimited playground mode.`);
   }
@@ -111,8 +180,9 @@ export function getPlaygroundPuzzle(gameId, ...args) {
 
 export default {
   getAllGames,
+  loadGameConfig,
   getGameConfig,
   getDailyPuzzle,
   getPlaygroundPuzzle,
-  getTodayDateStr
+  getTodayDateStr,
 };

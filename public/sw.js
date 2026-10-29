@@ -1,12 +1,15 @@
 /**
- * Gamify Service Worker - Network-First for Navigation, Stale-While-Revalidate for Assets
- * Guarantees users always receive the newest deployed version when online,
- * while maintaining full offline PWA functionality.
+ * Gamify Service Worker - Aggressive Stale-While-Revalidate Strategy
+ * 
+ * Caches shell HTML, static modules, and game assets so the app loads in 0ms,
+ * while refreshing the cache in the background. Only /api/ endpoints bypass cache.
  */
 
-const CACHE_NAME = 'gamify-v3-networkfirst';
+const CACHE_NAME = 'gamify-sw-v4-swr';
+
 const PRECACHE_ASSETS = [
   '/',
+  '/index.html',
   '/manifest.json',
   '/images/gamify-logo.png',
   '/images/wordle.png',
@@ -20,7 +23,9 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS).catch(() => {});
+      return cache.addAll(PRECACHE_ASSETS).catch((err) => {
+        console.warn('[SW] Precache notice:', err);
+      });
     })
   );
 });
@@ -31,7 +36,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log('[SW] Purging outdated cache:', key);
+            console.log('[SW] Purging old cache:', key);
             return caches.delete(key);
           }
         })
@@ -49,48 +54,43 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // 1. Never intercept or cache API requests
+  // 1. Never cache dynamic worker API requests
   if (url.pathname.startsWith('/api/')) {
     return;
   }
 
-  // 2. Navigation / HTML requests: Network-First (guarantees newest deployed version)
-  const isNav = event.request.mode === 'navigate' ||
-                event.request.destination === 'document' ||
-                url.pathname === '/' ||
-                url.pathname.endsWith('.html');
-
-  if (isNav) {
-    event.respondWith(
-      fetch(event.request, { cache: 'no-cache' })
-        .then((networkRes) => {
-          if (networkRes && networkRes.status === 200) {
-            const clone = networkRes.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return networkRes;
-        })
-        .catch(() => {
-          // If offline, serve from cache
-          return caches.match(event.request).then((cached) => cached || caches.match('/'));
-        })
-    );
+  // 2. Only cache GET requests
+  if (event.request.method !== 'GET') {
     return;
   }
 
-  // 3. Static Assets: Stale-While-Revalidate (instant load + background refresh)
+  // 3. Stale-While-Revalidate for shell HTML and all static assets
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
-            const copy = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
           }
           return networkResponse;
         })
-        .catch(() => null);
+        .catch(() => {
+          // If offline and request is navigation/HTML, fallback to cached root
+          if (
+            event.request.mode === 'navigate' ||
+            event.request.destination === 'document' ||
+            url.pathname === '/' ||
+            url.pathname.endsWith('.html')
+          ) {
+            return caches.match('/').then((root) => root || cachedResponse);
+          }
+          return cachedResponse;
+        });
 
+      // Return instantly from cache if available, else wait for network
       return cachedResponse || fetchPromise;
     })
   );
