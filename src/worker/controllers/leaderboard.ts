@@ -16,6 +16,7 @@ export async function handleGetLeaderboard(
   const difficulty = url.searchParams.get('difficulty'); // Optional filter: easy, medium, hard
   const todayStr = url.searchParams.get('date') || getTodayUTC();
   const currentWeekId = getWeekIdUTC();
+  const requestedWeek = url.searchParams.get('week') || url.searchParams.get('week_id') || currentWeekId;
 
   const isAllGames = gameId === 'all';
 
@@ -160,12 +161,15 @@ export async function handleGetLeaderboard(
   }
 
   // Execute all queries concurrently
-  const [dailyResult, globalResult, weeklyResult, friendsResult] = await Promise.all([
+  const [dailyResult, globalResult, weeklyResult, friendsResult, pastWeeksResult] = await Promise.all([
     env.DB.prepare(dailyQuery).bind(...dailyParams).all(),
     isAllGames ? env.DB.prepare(globalQuery).all() : env.DB.prepare(globalQuery).bind(gameId).all(),
-    env.DB.prepare(weeklyQuery).bind(currentWeekId).all(),
+    env.DB.prepare(weeklyQuery).bind(requestedWeek).all(),
     friendsPromise,
+    env.DB.prepare('SELECT DISTINCT week_id FROM weekly_tournament WHERE week_id != ? ORDER BY week_id DESC LIMIT 10').bind(currentWeekId).all(),
   ]);
+
+  const pastWeeks = (pastWeeksResult.results || []).map((r: any) => r.week_id);
 
   return jsonResponse(
     {
@@ -173,6 +177,8 @@ export async function handleGetLeaderboard(
       gameId,
       date: todayStr,
       currentWeekId,
+      requestedWeek,
+      pastWeeks,
       dailyLeaderboard: dailyResult.results || [],
       globalLeaderboard: globalResult.results || [],
       weeklyTournament: weeklyResult.results || [],

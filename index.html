@@ -376,20 +376,46 @@
       position: absolute;
       top: 8px;
       right: 8px;
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      color: #fb923c;
-      font-size: 0.72rem;
+      font-size: 0.76rem;
       font-weight: 800;
-      padding: 2px 7px;
+      padding: 3px 8px;
       border-radius: 9999px;
-      border: 1px solid rgba(251, 146, 60, 0.45);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
       display: inline-flex;
       align-items: center;
       gap: 3px;
       z-index: 2;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      transition: all 0.2s ease;
+    }
+
+    /* Fire-colored when streak maintained today */
+    .streak-fire-active {
+      color: #ea580c !important;
+      background: #fff7ed !important;
+      border: 1.5px solid #fb923c !important;
+      box-shadow: 0 0 10px rgba(234, 88, 12, 0.35) !important;
+    }
+
+    /* Black and white when not maintained today */
+    .streak-fire-inactive {
+      color: #64748b !important;
+      background: #f1f5f9 !important;
+      border: 1.5px solid #cbd5e1 !important;
+      filter: grayscale(1) !important;
+      opacity: 0.9;
+    }
+
+    .game-card-streak-pill.streak-fire-active {
+      background: rgba(255, 247, 237, 0.95) !important;
+      border: 1.5px solid rgba(251, 146, 60, 0.7) !important;
+    }
+
+    .game-card-streak-pill.streak-fire-inactive {
+      background: rgba(15, 23, 42, 0.85) !important;
+      border: 1.5px solid rgba(148, 163, 184, 0.4) !important;
+      color: #cbd5e1 !important;
     }
 
     /* Top Locked Pill if locked */
@@ -410,29 +436,35 @@
       z-index: 2;
     }
 
-    /* Bottom Pill Banner with uppercase Game Title */
+    /* Bottom Pill Banner with uppercase Game Title (MUCH BIGGER) */
     .game-card-bottom-banner {
       position: absolute;
       bottom: 8px;
       left: 8px;
       right: 8px;
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       color: #ffffff;
       text-align: center;
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      padding: 6px 4px;
-      border-radius: 12px;
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      padding: 9px 6px;
+      border-radius: 14px;
       text-transform: uppercase;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       z-index: 2;
+    }
+    @media (max-width: 480px) {
+      .game-card-bottom-banner {
+        font-size: 0.98rem;
+        padding: 7px 4px;
+      }
     }
 
     /* Image 2 Launcher Screen Styles */
@@ -743,21 +775,38 @@
       }
     }
     .feature-square-card {
-      flex: 1;
       min-width: 0;
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-radius: 18px;
+      border-radius: 20px;
       padding: 1.25rem 1.4rem;
       box-shadow: 0 4px 16px rgba(148, 163, 184, 0.08);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      margin: 0.5rem 0 0.5rem 0;
+      margin: 0.5rem 0;
+      box-sizing: border-box;
+    }
+    .sweep-card {
+      flex: 1.55;
+      overflow: hidden;
+      border-color: rgba(34, 197, 94, 0.35);
+      background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
     }
     .world-wars-card {
-      border-color: rgba(234, 88, 12, 0.3);
+      flex: 1;
+      min-width: 250px;
+      max-width: 320px;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      border-color: rgba(234, 88, 12, 0.35);
       background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+    }
+    @media (max-width: 680px) {
+      .world-wars-card {
+        max-width: 100%;
+        aspect-ratio: auto;
+      }
     }
     .world-wars-preview-row {
       display: flex;
@@ -900,6 +949,17 @@
     }
     .ww-ranked-item:hover {
       background: #334155;
+    }
+    .ww-ranked-item.leaderboard-row-me {
+      background: rgba(245, 158, 11, 0.22) !important;
+      border: 1.5px solid #f59e0b !important;
+    }
+    .ww-ranked-item.leaderboard-row-me strong,
+    .ww-ranked-item.leaderboard-row-me span {
+      color: #ffffff !important;
+    }
+    .ww-ranked-item.leaderboard-row-me .leaderboard-player-link {
+      color: #fbbf24 !important;
     }
     .ww-rank-badge {
       width: 28px;
@@ -1497,22 +1557,38 @@
     }
     .sweep-progress-bar {
       display: flex;
-      gap: 0.6rem;
-      justify-content: space-between;
+      gap: 0.65rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(34, 197, 94, 0.4) transparent;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .sweep-progress-bar::-webkit-scrollbar {
+      height: 4px;
+    }
+    .sweep-progress-bar::-webkit-scrollbar-thumb {
+      background: rgba(34, 197, 94, 0.3);
+      border-radius: 9999px;
     }
     .sweep-game-pill {
-      flex: 1;
+      flex-shrink: 0;
+      min-width: 110px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 6px;
       background: #ffffff;
       border: 1px solid #bbf7d0;
-      border-radius: 10px;
-      padding: 7px 10px;
+      border-radius: 12px;
+      padding: 7px 12px;
       font-size: 0.82rem;
       font-weight: 700;
       color: #166534;
       transition: all 0.2s;
+      white-space: nowrap;
     }
     .sweep-game-pill.completed {
       background: #dcfce7;
@@ -2488,33 +2564,33 @@
     <section id="front-page-view">
       <!-- Hero Features Row: Daily Sweep (50%) + World Wars (50%) -->
       <div class="hero-features-row">
-        <!-- Daily Sweep Challenge Tracker Card -->
-        <div id="daily-sweep-card" class="feature-square-card">
+        <!-- Daily Sweep Challenge Tracker Card (Rectangular Banner) -->
+        <div id="daily-sweep-card" class="feature-square-card sweep-card">
           <div class="sweep-header">
             <span class="sweep-title">🏆 Daily Sweep</span>
             <span id="sweep-bonus-tag" class="sweep-bonus-tag">+50 Bonus Coins 🪙</span>
           </div>
-          <p id="sweep-status-desc" class="sweep-desc">Conquer today's daily puzzles across your lowest streak games to claim the sweep bonus!</p>
+          <p id="sweep-status-desc" class="sweep-desc">Solve today's puzzles to claim +50 Bonus Coins 🪙</p>
           <div class="sweep-progress-bar" id="sweep-progress-bar">
             <!-- Populated dynamically with user's least 6 streaks -->
           </div>
         </div>
 
-        <!-- World Wars Card -->
+        <!-- World Wars Card (Cubic Shape) -->
         <div id="world-wars-card" class="feature-square-card world-wars-card">
           <div class="sweep-header">
             <span class="sweep-title" style="color: #ea580c;">⚔️ World Wars</span>
-            <span class="sweep-bonus-tag" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5;">Weekly Active 🔥</span>
+            <span class="sweep-bonus-tag" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5;">Live Season 🔥</span>
           </div>
-          <p class="sweep-desc">Enter the global arena, compete on the world podium, and battle in weekly tournaments!</p>
+          <p class="sweep-desc">Climb the world podium and conquer weekly seasons ⚔️</p>
           <div class="world-wars-preview-row">
             <div class="world-wars-stat-pill">
               <span>🏆 Global Rank</span>
               <strong id="world-wars-my-rank">#--</strong>
             </div>
             <div class="world-wars-stat-pill">
-              <span>⚔️ Season Week</span>
-              <strong id="world-wars-week-label">Week 44</strong>
+              <span>⚔️ Active</span>
+              <strong id="world-wars-week-label">Season 2026-W44</strong>
             </div>
           </div>
           <button type="button" class="btn-enter-world-wars" id="btn-open-world-wars">Enter World Wars ⚔️</button>
@@ -2622,9 +2698,10 @@
           </div>
 
           <div class="controls">
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
               <button class="reset-btn" id="new-game-btn">New Game</button>
               <button type="button" class="btn-rules" id="btn-open-rules">📖 Game Rules</button>
+              <span id="arena-infinite-slot"></span>
             </div>
             <div id="status" class="status">Attempt 1 of 6</div>
           </div>
@@ -2641,13 +2718,11 @@
         </div>
       </div>
 
-      <!-- Live Leaderboard Container -->
+      <!-- Live Leaderboard Container (In-Game: Daily & Friends only) -->
       <div class="leaderboard-card" style="margin-top: 1.5rem;">
         <div class="tabs">
-          <button class="tab-btn active" id="btn-global-tab">🏆 Global Standings</button>
-          <button class="tab-btn" id="btn-friends-tab">👥 Friends Leaderboard</button>
-          <button class="tab-btn" id="btn-daily-tab">📅 Today's Daily Standings</button>
-          <button class="tab-btn" id="btn-tournament-tab">⚔️ Weekly Tournament</button>
+          <button class="tab-btn active" id="btn-daily-tab">📅 Today's Daily Standings</button>
+          <button class="tab-btn" id="btn-friends-tab">👥 Friends Standings</button>
         </div>
         <div id="leaderboard-view">Loading standings...</div>
       </div>
@@ -2764,31 +2839,36 @@
     <div class="modal-card" style="max-width: 500px;">
       <button class="modal-close" id="profile-modal-close" title="Close Modal">&times;</button>
       
-      <div class="profile-info-header">
-        <div class="profile-avatar-large" id="profile-avatar">🎮</div>
-        <div class="profile-header-details" style="width: 100%;">
-          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            <h3 id="profile-display-name" style="margin: 0;">Player</h3>
-            <span id="profile-custom-title" class="player-custom-title hidden">Title</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin: 0.2rem 0;">
-            <p id="profile-username" style="margin: 0;">@player</p>
-            <button type="button" id="btn-profile-install-app" class="btn-install-app" style="padding: 2px 8px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; cursor: pointer;">📲 Install App</button>
-          </div>
-          <div class="xp-progress-box">
-            <div class="xp-level-badge">
-              <span id="profile-user-level">Lvl 1</span>
-              <span id="profile-level-title" style="color:var(--text-muted); font-weight:600;">Novice</span>
+      <div class="profile-info-header" style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.85rem; flex: 1; min-width: 0;">
+          <div class="profile-avatar-large" id="profile-avatar">🎮</div>
+          <div class="profile-header-details" style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <h3 id="profile-display-name" style="margin: 0; font-size: 1.35rem; font-weight: 900; line-height: 1.2;">Player</h3>
+              <span id="profile-custom-title" class="player-custom-title hidden">Title</span>
             </div>
-            <div class="xp-bar-bg"><div class="xp-bar-fill" id="profile-xp-fill" style="width: 0%;"></div></div>
-            <div class="xp-text" id="profile-xp-text">0 / 25 XP</div>
+            <p id="profile-username" style="margin: 3px 0 0 0; color: var(--text-muted); font-size: 0.88rem; font-weight: 600;">@player</p>
           </div>
         </div>
+        <!-- Install App Button moved to the far right with height of username + displayname -->
+        <button type="button" id="btn-profile-install-app" class="btn-profile-install-hero" style="height: 46px; padding: 0 1.25rem; font-size: 0.88rem; font-weight: 800; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(37,99,235,0.3); white-space: nowrap; flex-shrink: 0; transition: transform 0.15s;">
+          📲 Install App
+        </button>
+      </div>
+
+      <!-- XP Progress Box -->
+      <div class="xp-progress-box" style="margin: 0.85rem 0 1.15rem 0;">
+        <div class="xp-level-badge">
+          <span id="profile-user-level">Lvl 1</span>
+          <span id="profile-level-title" style="color:var(--text-muted); font-weight:600;">Novice</span>
+        </div>
+        <div class="xp-bar-bg"><div class="xp-bar-fill" id="profile-xp-fill" style="width: 0%;"></div></div>
+        <div class="xp-text" id="profile-xp-text">0 / 25 XP</div>
       </div>
 
       <!-- Profile Quick Actions & Stats: Streak, Challenges, Shop -->
       <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap;">
-        <div class="badge" style="background:#fff7ed; border-color:#fed7aa; color:#c2410c; font-weight:800; font-size:0.82rem; padding:0.45rem 0.75rem;">
+        <div class="badge" id="profile-streak-badge" style="font-weight:800; font-size:0.82rem; padding:0.45rem 0.75rem;">
           🔥 Streak: <span id="profile-streak-count">0</span> Days
         </div>
         <button type="button" class="btn-challenge" id="btn-profile-challenges" style="flex: 1; justify-content: center; font-size: 0.82rem; padding: 0.45rem 0.75rem;">
@@ -2814,18 +2894,8 @@
         </div>
       </div>
 
-      <!-- Followers & Following Section -->
+      <!-- Followers & Following Section (Clean tabs without redundant text) -->
       <div style="margin-top: 1.25rem;">
-        <div style="display: flex; gap: 1.5rem; margin-bottom: 0.75rem;">
-          <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-color);">
-            Followers: <span id="profile-followers-count" style="color:var(--accent);">0</span>
-          </div>
-          <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-color);">
-            Following: <span id="profile-following-count" style="color:var(--accent);">0</span>
-          </div>
-        </div>
-
-        <!-- Following vs Followers Tabs -->
         <div class="tabs" id="follow-tabs" style="margin-bottom: 0.75rem;">
           <button type="button" class="tab-btn active" id="tab-btn-following" data-tab="following">Following (<span id="tab-following-count">0</span>)</button>
           <button type="button" class="tab-btn" id="tab-btn-followers" data-tab="followers">Followers (<span id="tab-followers-count">0</span>)</button>
@@ -2846,10 +2916,10 @@
         </div>
       </div>
 
-      <!-- Logout / Lock Option -->
+      <!-- Logout Option -->
       <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
         <button type="button" id="btn-profile-logout" class="btn-lock" style="width: 100%; padding: 0.75rem; color: #e11d48; border: 1px solid #fecdd3; font-weight: 800; background: #fff1f2; display: flex; align-items: center; justify-content: center; gap: 0.5rem; border-radius: 10px; cursor: pointer; font-size: 0.88rem;">
-          🚪 Logout / Lock Profile
+          🚪 Logout
         </button>
       </div>
     </div>
@@ -3068,8 +3138,8 @@
         </div>
 
         <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-color); margin: 1.15rem 0 0.5rem 0; display: flex; align-items: center; justify-content: space-between;">
-          <span>Contest Calendar & Archives</span>
-          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Weekly Reset · Sun 00:00 UTC</span>
+          <span>Past Seasons Archive</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Weekly Reset · Sun 23:59 UTC</span>
         </div>
 
         <!-- Contest Cards List -->

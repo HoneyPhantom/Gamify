@@ -553,14 +553,23 @@ function handleUserLogout() {
 btnLogout?.addEventListener('click', handleUserLogout);
 btnProfileLogout?.addEventListener('click', handleUserLogout);
 
+function openUpdatesModal() {
+  if (!currentUser) {
+    openAuthModal('login');
+    return;
+  }
+  updatesModal?.classList.remove('hidden');
+  loadChallenges();
+}
+
 btnProfileChallenges?.addEventListener('click', () => {
   profileModal?.classList.add('hidden');
-  btnOpenUpdates?.click();
+  openUpdatesModal();
 });
 
 btnProfileShop?.addEventListener('click', () => {
   profileModal?.classList.add('hidden');
-  btnOpenShop?.click();
+  openShopModal();
 });
 
 // =========================================================================
@@ -702,7 +711,11 @@ function renderGamesScrollList(searchQuery = '') {
 
     let topPillHtml = '';
     if (unlocked) {
-      topPillHtml = `<div class="game-card-streak-pill" title="Daily Streak">🔥 ${currentStreak}</div>`;
+      const isCompletedToday = Array.from(todayCompletions).some(c => c.startsWith(`${game.id}:`));
+      const isMaintainedToday = isCompletedToday || (stats.last_played_date === getTodayDateStr() && currentStreak > 0);
+      const fireClass = isMaintainedToday ? 'streak-fire-active' : 'streak-fire-inactive';
+      const fireTitle = isMaintainedToday ? `Streak Maintained Today (${currentStreak} Days 🔥)` : `Streak Not Yet Maintained Today (${currentStreak} Days)`;
+      topPillHtml = `<div class="game-card-streak-pill ${fireClass}" title="${fireTitle}">🔥 ${currentStreak}</div>`;
     } else {
       topPillHtml = `<div class="game-card-locked-pill" title="Unlock for ${game.gameUnlockCost || 100} Coins">🔒 ${game.gameUnlockCost || 100}</div>`;
     }
@@ -741,24 +754,41 @@ async function handleGameCardClick(game) {
 
 function updateLauncherInfiniteUI(gameId) {
   const container = document.getElementById('launcher-infinite-status-row');
-  if (!container) return;
+  const arenaSlot = document.getElementById('arena-infinite-slot');
   const hasInfinite = Boolean(userUnlocks[gameId]?.playground_unlocked || userUnlocks[gameId]?.infinite_mode);
-  if (hasInfinite) {
-    container.innerHTML = `
-      <div class="badge" style="background:#e0f2fe; color:#0284c7; border-color:#bae6fd; font-weight:800; font-size:0.82rem; padding:0.4rem 0.9rem;">
-        ♾️ Infinite Mode Active
-      </div>
-    `;
-  } else {
-    container.innerHTML = `
-      <button type="button" id="btn-unlock-infinite-launcher" class="game-action-btn btn-unlock-gold" style="padding:0.45rem 1rem; font-size:0.82rem; border-radius:9999px; margin:0 auto; max-width:280px; box-shadow:0 2px 8px rgba(245,158,11,0.25);">
-        ♾️ Unlock Infinite Mode (250 Coins)
-      </button>
-    `;
-    container.querySelector('#btn-unlock-infinite-launcher')?.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      await unlockInfiniteMode(gameId);
-    });
+
+  // 1. Launcher screen: prominent purchase button if locked, REMOVED once purchased
+  if (container) {
+    if (hasInfinite) {
+      container.innerHTML = ''; // Once purchased, remove the unlock infinite mode button!
+    } else {
+      container.innerHTML = `
+        <button type="button" id="btn-unlock-infinite-launcher" class="game-action-btn btn-unlock-gold" style="padding:0.65rem 1.25rem; font-size:0.92rem; border-radius:12px; margin:0 auto; max-width:320px; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(245,158,11,0.25);">
+          ♾️ Unlock Infinite Mode (250 Coins)
+        </button>
+      `;
+      container.querySelector('#btn-unlock-infinite-launcher')?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await unlockInfiniteMode(gameId);
+      });
+    }
+  }
+
+  // 2. In-game arena controls: purchase option if locked, REMOVED once purchased
+  if (arenaSlot) {
+    if (hasInfinite) {
+      arenaSlot.innerHTML = ''; // Once purchased, removed!
+    } else {
+      arenaSlot.innerHTML = `
+        <button type="button" id="btn-arena-unlock-infinite" class="game-action-btn btn-unlock-gold" style="padding: 0.45rem 0.85rem; font-size: 0.8rem; font-weight: 800; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; width: auto; box-shadow: 0 2px 8px rgba(245,158,11,0.2);">
+          ♾️ Unlock Infinite Mode (250 Coins)
+        </button>
+      `;
+      arenaSlot.querySelector('#btn-arena-unlock-infinite')?.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await unlockInfiniteMode(gameId);
+      });
+    }
   }
 }
 
@@ -873,6 +903,7 @@ launcherBtnPlay?.addEventListener('click', async () => {
   }
 
   // Both unlocked, transition to active arena
+  updateLauncherInfiniteUI(activeGameId);
   gameLauncherScreen?.classList.add('hidden');
   gameArenaScreen?.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1043,9 +1074,11 @@ function updateDailySweepUI() {
     const isCompleted = Array.from(todayCompletions).some(c => c.startsWith(`${game.id}:`));
     if (isCompleted) completedCount++;
     const streak = userStats[game.id]?.current_streak ?? 0;
+    const maintainedToday = isCompleted || (userStats[game.id]?.last_played_date === getTodayDateStr() && streak > 0);
+    const fireClass = maintainedToday ? 'streak-fire-active' : 'streak-fire-inactive';
     return `
       <div class="sweep-game-pill ${isCompleted ? 'completed' : ''}" data-game-id="${game.id}" style="cursor:pointer;" title="Current Streak: ${streak} | Click to play">
-        <span class="sweep-pill-name">${game.icon || '🎮'} ${game.title} <small style="opacity:0.8; font-size:0.75rem;">(🔥${streak})</small></span>
+        <span class="sweep-pill-name">${game.icon || '🎮'} ${game.title} <span class="badge ${fireClass}" style="padding: 1px 6px; font-size: 0.72rem; margin-left: 2px;">🔥 ${streak}</span></span>
         <span class="sweep-pill-status">${isCompleted ? '✅' : '⏳'}</span>
       </div>
     `;
@@ -1061,9 +1094,9 @@ function updateDailySweepUI() {
   const totalSweep = sortedGames.length;
   if (sweepStatusDesc) {
     if (completedCount === totalSweep && totalSweep > 0) {
-      sweepStatusDesc.textContent = `🎉 All ${totalSweep} Daily Sweep challenges conquered today! +50 Bonus Claimed!`;
+      sweepStatusDesc.textContent = `🎉 All ${totalSweep} daily challenges conquered! +50 Bonus Claimed!`;
     } else {
-      sweepStatusDesc.textContent = `Completed ${completedCount}/${totalSweep} daily puzzles (focused on your lowest streaks). Conquer all for +50 Bonus Coins!`;
+      sweepStatusDesc.textContent = `Completed ${completedCount}/${totalSweep} daily puzzles · Solve all for +50 Bonus Coins 🪙`;
     }
   }
 }
@@ -1555,18 +1588,34 @@ function openProfileModal() {
   profileAboutInput.value = currentUser.about || '';
   if (profileFriendsFeedback) profileFriendsFeedback.style.display = 'none';
 
-  // Render best streaks in descending order
+  // Overall streak count and active status
+  const totalStreak = Object.values(userStats).reduce((sum, s) => sum + (s.current_streak || 0), 0);
+  const maintainedAnyToday = Object.keys(userStats).some(gId => {
+    const isCompleted = Array.from(todayCompletions).some(c => c.startsWith(`${gId}:`));
+    return isCompleted || (userStats[gId]?.last_played_date === getTodayDateStr() && (userStats[gId]?.current_streak ?? 0) > 0);
+  });
+  if (profileStreakCount) profileStreakCount.textContent = totalStreak;
+  const profileStreakBadge = document.getElementById('profile-streak-badge');
+  if (profileStreakBadge) {
+    profileStreakBadge.className = maintainedAnyToday && totalStreak > 0 ? 'badge streak-fire-active' : 'badge streak-fire-inactive';
+  }
+
+  // Render best streaks in descending order with fire condition
   if (profileStreaksGrid) {
     const allGames = getAllGames();
     const sortedGames = [...allGames].map(g => {
       const stats = userStats[g.id] || {};
-      return { ...g, bestStreak: stats.best_streak ?? 0 };
+      const isCompletedToday = Array.from(todayCompletions).some(c => c.startsWith(`${g.id}:`));
+      const maintainedToday = isCompletedToday || (stats.last_played_date === getTodayDateStr() && (stats.current_streak ?? 0) > 0);
+      return { ...g, bestStreak: stats.best_streak ?? 0, currentStreak: stats.current_streak ?? 0, maintainedToday };
     }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
 
     profileStreaksGrid.innerHTML = sortedGames.map(g => `
-      <div class="streak-card">
-        <div class="game-label">${g.title}</div>
-        <div class="streak-val">🔥 ${g.bestStreak}</div>
+      <div class="streak-card ${g.maintainedToday ? 'streak-fire-active' : 'streak-fire-inactive'}" style="padding: 10px 12px; border-radius: 12px; transition: all 0.2s;">
+        <div class="game-label" style="font-size: 0.76rem; font-weight: 800; text-transform: uppercase;">${g.title}</div>
+        <div class="streak-val" style="font-size: 1.2rem; font-weight: 900; margin-top: 3px;">
+          🔥 ${g.bestStreak}
+        </div>
       </div>
     `).join('');
   }
@@ -2217,70 +2266,12 @@ function renderLeaderboardView(data) {
   const view = document.getElementById('leaderboard-view');
   if (!view) return;
 
-  const isGlobal = btnGlobalTab.classList.contains('active');
   const isFriends = btnFriendsTab?.classList.contains('active');
-  const isTournament = btnTournamentTab?.classList.contains('active');
 
-  if (isTournament) {
-    const rows = data.weeklyTournament || [];
+  if (isFriends) {
+    const rows = data.friendsLeaderboard || [];
     if (!rows.length) {
-      view.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">No tournament points scored yet this week (${data.currentWeekId || 'Current Week'}). Solve puzzles to rank!</p>`;
-      return;
-    }
-    view.innerHTML = `
-      <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom: 0.5rem; font-weight:700;">
-        ⚔️ Active Tournament: ${data.currentWeekId || 'Weekly Season'} · Resets every Sunday midnight UTC
-      </div>
-      <table class="leaderboard-table">
-        <thead>
-          <tr>
-            <th style="width: 14%;">Rank</th>
-            <th>Player</th>
-            <th style="text-align: right;">Points</th>
-            <th style="text-align: right;">Games Played</th>
-            <th style="text-align: right;">Level</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map((r, i) => {
-            const isMe = currentUser && (r.user_id === currentUser.id || r.username === currentUser.username);
-            const rankLabel = i === 0 ? '🥇 #1' : i === 1 ? '🥈 #2' : i === 2 ? '🥉 #3' : `#${i + 1}`;
-            const youTag = isMe ? `<span class="you-badge">You</span>` : '';
-            const titlePill = r.selected_title ? `<span class="player-custom-title" style="font-size:0.68rem; margin-left:4px;">${formatTitleName(r.selected_title)}</span>` : '';
-            const lvl = calculateClientLevel(r.xp || 0).level;
-            return `
-              <tr class="${isMe ? 'leaderboard-row-me' : ''}">
-                <td><strong>${rankLabel}</strong></td>
-                <td>
-                  <strong style="cursor: pointer;" class="leaderboard-player-link" data-username="${r.username}">
-                    ${r.display_name || r.username}
-                  </strong>
-                  ${titlePill}
-                  ${youTag}
-                </td>
-                <td style="text-align: right;"><strong style="color:var(--accent); font-size:1.05rem;">${r.points}</strong></td>
-                <td style="text-align: right; font-weight: 700; color: var(--text-muted);">${r.games_played}</td>
-                <td style="text-align: right;"><span class="badge" style="padding:2px 7px; font-size:0.75rem;">Lvl ${lvl}</span></td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>`;
-
-    view.querySelectorAll('.leaderboard-player-link').forEach(el => {
-      el.addEventListener('click', () => openPublicProfile(el.dataset.username));
-    });
-    return;
-  }
-
-  if (isGlobal || isFriends) {
-    const rows = (isFriends ? data.friendsLeaderboard : data.globalLeaderboard) || [];
-    if (!rows.length) {
-      view.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">${
-        isFriends
-          ? 'No friends ranked yet. Follow other players from their profile to compare scores!'
-          : 'No players ranked yet for this game. Be the first to play and claim #1!'
-      }</p>`;
+      view.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; padding: 1rem 0;">No friends ranked yet. Follow other players from their profile to compare scores!</p>`;
       return;
     }
     view.innerHTML = `
@@ -2289,7 +2280,7 @@ function renderLeaderboardView(data) {
           <tr>
             <th style="width: 14%;">Rank</th>
             <th>Player</th>
-            <th style="text-align: right;">Total Score</th>
+            <th style="text-align: right;">Score</th>
             <th style="text-align: right;">Plays</th>
             <th style="text-align: right;">Best</th>
           </tr>
@@ -2328,10 +2319,10 @@ function renderLeaderboardView(data) {
     return;
   }
 
-  // Daily standings
+  // Daily Standings (Default for in-game)
   const rows = data.dailyLeaderboard || [];
   if (!rows.length) {
-    view.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">No daily completions recorded yet for today (${getTodayDateStr()}). Conquer today's puzzle to rank #1!</p>`;
+    view.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; padding: 1rem 0;">No daily completions recorded yet for today (${getTodayDateStr()}). Conquer today's puzzle to rank #1!</p>`;
     return;
   }
   view.innerHTML = `
@@ -2377,15 +2368,13 @@ function renderLeaderboardView(data) {
 }
 
 function handleTabClick(btn) {
-  [btnGlobalTab, btnFriendsTab, btnDailyTab, btnTournamentTab].forEach(b => b?.classList.remove('active'));
+  [btnFriendsTab, btnDailyTab].forEach(b => b?.classList.remove('active'));
   btn.classList.add('active');
   loadLeaderboard();
 }
 
-btnGlobalTab?.addEventListener('click', () => handleTabClick(btnGlobalTab));
 btnFriendsTab?.addEventListener('click', () => handleTabClick(btnFriendsTab));
 btnDailyTab?.addEventListener('click', () => handleTabClick(btnDailyTab));
-btnTournamentTab?.addEventListener('click', () => handleTabClick(btnTournamentTab));
 
 // =========================================================================
 // 11.1 WORLD WARS ARENA & WEEKLY TOURNAMENTS (Requirement 5)
@@ -2433,6 +2422,8 @@ worldWarsGameFilter?.addEventListener('change', (e) => {
   loadWorldWarsData(currentWwFilter);
 });
 
+let cachedWWLeaderboardData = null;
+
 async function loadWorldWarsData(filter = 'all') {
   if (wwPodiumContainer) {
     wwPodiumContainer.innerHTML = `<div style="color: #94a3b8; font-weight: 700; padding: 1.5rem; text-align: center;">⚡ Summoning World Arena Contenders...</div>`;
@@ -2443,11 +2434,12 @@ async function loadWorldWarsData(filter = 'all') {
 
   try {
     const data = await api.getLeaderboard(filter);
+    cachedWWLeaderboardData = data;
     const rows = data.globalLeaderboard || [];
 
     // 1. Update front page World Wars Card preview
     if (worldWarsWeekLabel) {
-      worldWarsWeekLabel.textContent = data.currentWeekId ? data.currentWeekId.replace(/^\d{4}-W?/, 'Week ') : 'Weekly';
+      worldWarsWeekLabel.textContent = data.currentWeekId ? `Season ${data.currentWeekId}` : 'Weekly';
     }
     if (worldWarsMyRank) {
       if (currentUser && rows.length > 0) {
@@ -2458,10 +2450,10 @@ async function loadWorldWarsData(filter = 'all') {
       }
     }
 
-    // 2. Render Image 3 Podium & Ranked Cards
+    // 2. Render Image 3 Podium & Ranked Cards (Score, Played, Best)
     renderWorldWarsPodium(rows);
 
-    // 3. Render Image 4 Tournaments
+    // 3. Render Image 4 Tournaments (Strictly ⚔️ Season <weekId>)
     renderWorldWarsTournaments(data);
   } catch (err) {
     if (wwPodiumContainer) {
@@ -2507,6 +2499,7 @@ function renderWorldWarsPodium(rows) {
 
     const isMe = currentUser && (player.user_id === currentUser.id || player.username === currentUser.username);
     const scoreVal = player.total_score ?? player.score ?? player.points ?? 0;
+    const bestVal = player.best_score ?? scoreVal;
     const displayName = player.display_name || player.username;
     const initial = (displayName[0] || 'P').toUpperCase();
     const frameBorder = rank === 1 ? '#f59e0b' : rank === 2 ? '#94a3b8' : '#d97706';
@@ -2521,6 +2514,7 @@ function renderWorldWarsPodium(rows) {
           ${displayName} ${isMe ? '⭐' : ''}
         </div>
         <div class="ww-podium-score">${scoreVal}</div>
+        <div style="font-size: 0.7rem; color: #94a3b8; margin-top: -3px; margin-bottom: 3px;">Best: <strong style="color: #38bdf8;">${bestVal}</strong></div>
         <div class="ww-podium-pedestal ${pedestalClass}" style="${heightStyle}">
           <span>#${rank}</span>
         </div>
@@ -2545,6 +2539,7 @@ function renderWorldWarsPodium(rows) {
       const isMe = currentUser && (r.user_id === currentUser.id || r.username === currentUser.username);
       const scoreVal = r.total_score ?? r.score ?? r.points ?? 0;
       const attendedCount = r.plays_count ?? r.games_played ?? 0;
+      const bestScore = r.best_score ?? scoreVal;
       const displayName = r.display_name || r.username;
       const initial = (displayName[0] || 'P').toUpperCase();
       const titlePill = r.selected_title ? `<span class="player-custom-title" style="font-size:0.65rem; margin-left:4px;">${formatTitleName(r.selected_title)}</span>` : '';
@@ -2566,10 +2561,11 @@ function renderWorldWarsPodium(rows) {
           </div>
           <div style="text-align: right; display: flex; flex-direction: column; gap: 2px;">
             <div style="font-size: 0.82rem; color: #cbd5e1;">
-              Rating: <strong style="color: #fbbf24; font-size: 0.95rem;">${scoreVal}</strong>
+              Score: <strong style="color: #fbbf24; font-size: 0.95rem;">${scoreVal}</strong>
             </div>
-            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">
-              Attended: <strong style="color: #e2e8f0;">${attendedCount}</strong>
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <span>Played: <strong style="color: #e2e8f0;">${attendedCount}</strong></span>
+              <span>Best: <strong style="color: #38bdf8;">${bestScore}</strong></span>
             </div>
           </div>
         </div>
@@ -2590,10 +2586,8 @@ function renderWorldWarsTournaments(data) {
   if (!wwCurrentTournamentBanner || !wwContestsList) return;
 
   const currentWeek = data.currentWeekId || '2026-W44';
-  const weekNumber = currentWeek.includes('-W') ? currentWeek.split('-W')[1] : '44';
-  const contestNumber = 500 + parseInt(weekNumber, 10);
 
-  // 1. Pinned Active Tournament Header (Updated daily with user's tournament score and rank)
+  // 1. Pinned Active Tournament Header
   const myTournament = (data.weeklyTournament || []).find(r => 
     currentUser && (r.user_id === currentUser.id || r.username === currentUser.username)
   );
@@ -2608,10 +2602,10 @@ function renderWorldWarsTournaments(data) {
           Current Active Championship
         </div>
         <h4 style="margin: 0.2rem 0; font-size: 1.25rem; font-weight: 900; color: #ffffff;">
-          ⚔️ Season ${currentWeek} · Weekly Contest #${contestNumber}
+          ⚔️ Season ${currentWeek}
         </h4>
         <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">
-          Daily Standings Updated Every 24h · Resets Every Sunday 23:59 UTC
+          Weekly Tournament · Resets Sunday 23:59 UTC
         </div>
       </div>
       <div class="badge" style="background:#064e3b; color:#34d399; border-color:#059669; font-weight:800; font-size:0.75rem; padding: 4px 10px;">
@@ -2644,92 +2638,107 @@ function renderWorldWarsTournaments(data) {
     gamesScrollList?.scrollIntoView({ behavior: 'smooth' });
   });
 
-  // 2. Image 4 Contest Cards (Active, Biweekly, and Past Archives)
-  const contests = [
-    {
-      id: 'weekly-current',
-      title: `Weekly Contest ${contestNumber}`,
-      date: 'Sun, Ongoing · Ends 23:59 UTC',
-      type: 'weekly',
-      thumbClass: 'ww-thumb-weekly',
-      icon: '🧊',
-      progress: `${todayCompletions.size} / 6`,
-      isProgressActive: todayCompletions.size >= 3,
-      btnLabel: 'Virtual',
-      btnAction: 'play',
-    },
-    {
-      id: 'biweekly-current',
-      title: `Biweekly Contest ${contestNumber - 331}`,
-      date: 'Sat, 20:00 UTC · Sprint Arena',
-      type: 'biweekly',
-      thumbClass: 'ww-thumb-biweekly',
-      icon: '🎲',
-      progress: '3 / 4',
-      isProgressActive: false,
-      btnLabel: 'Virtual',
-      btnAction: 'play',
-    },
-    {
-      id: 'weekly-prev',
-      title: `Weekly Contest ${contestNumber - 1}`,
-      date: 'Completed · Official Archives',
-      type: 'weekly',
-      thumbClass: 'ww-thumb-weekly',
-      icon: '🧊',
-      progress: '4 / 4',
-      isProgressActive: true,
-      btnLabel: 'Virtual',
-      btnAction: 'archive',
-    },
-    {
-      id: 'biweekly-prev',
-      title: `Biweekly Contest ${contestNumber - 332}`,
-      date: 'Completed · Official Archives',
-      type: 'biweekly',
-      thumbClass: 'ww-thumb-biweekly',
-      icon: '🎲',
-      progress: '0 / 4',
-      isProgressActive: false,
-      btnLabel: 'Virtual',
-      btnAction: 'archive',
-    },
-  ];
+  // 2. Concluded Past Contests (only finished tournaments, strictly named ⚔️ Season <weekId>)
+  const pastWeeks = data.pastWeeks || [];
+  if (pastWeeks.length === 0) {
+    wwContestsList.innerHTML = `
+      <div style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 1.5rem; background: rgba(0,0,0,0.25); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
+        No past seasons concluded yet. Compete in <strong>⚔️ Season ${currentWeek}</strong> to secure your place in tournament history!
+      </div>
+    `;
+    return;
+  }
 
-  wwContestsList.innerHTML = contests.map(c => `
+  wwContestsList.innerHTML = pastWeeks.map(weekId => `
     <div class="ww-contest-card">
       <div class="ww-contest-info">
-        <div class="ww-contest-thumb ${c.thumbClass}">
-          <span>${c.icon}</span>
+        <div class="ww-contest-thumb ww-thumb-weekly">
+          <span>⚔️</span>
         </div>
         <div class="ww-contest-details">
-          <div class="ww-contest-title">${c.title}</div>
-          <div class="ww-contest-meta">${c.date}</div>
+          <div class="ww-contest-title">⚔️ Season ${weekId}</div>
+          <div class="ww-contest-meta">Concluded Tournament · Official Archives</div>
         </div>
       </div>
       <div class="ww-contest-actions">
-        <div class="ww-contest-pill ${c.isProgressActive ? 'active' : 'inactive'}">
-          ${c.progress}
-        </div>
-        <button type="button" class="ww-contest-btn" data-action="${c.btnAction}" data-title="${c.title}">
-          ${c.btnLabel}
+        <button type="button" class="ww-contest-btn btn-view-past-season" data-week="${weekId}">
+          View Standings 📜
         </button>
       </div>
     </div>
   `).join('');
 
-  wwContestsList.querySelectorAll('.ww-contest-btn').forEach(btn => {
+  wwContestsList.querySelectorAll('.btn-view-past-season').forEach(btn => {
     btn.addEventListener('click', () => {
-      const action = btn.dataset.action;
-      const title = btn.dataset.title;
-      if (action === 'play') {
-        worldWarsModal?.classList.add('hidden');
-        gamesScrollList?.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        alert(`📜 ${title}\n\nArchive standings are recorded in season records. Conquer live tournament puzzles to climb this week's hall of fame!`);
-      }
+      const weekId = btn.dataset.week;
+      if (weekId) showPastTournamentStandings(weekId);
     });
   });
+}
+
+async function showPastTournamentStandings(weekId) {
+  if (!wwContestsList) return;
+  wwContestsList.innerHTML = `
+    <div style="text-align: center; padding: 1.5rem; color: #94a3b8;">
+      Loading standings for ⚔️ Season ${weekId}...
+    </div>
+  `;
+  try {
+    const res = await api.getLeaderboard(null, null, weekId);
+    const tournamentRows = res.weeklyTournament || [];
+    const top10 = tournamentRows.slice(0, 10);
+    const myRow = currentUser ? tournamentRows.find(r => r.user_id === currentUser.id || r.username === currentUser.username) : null;
+    const myRank = myRow ? tournamentRows.indexOf(myRow) + 1 : null;
+
+    let html = `
+      <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+        <strong style="color: #ffffff; font-size: 1rem;">⚔️ Season ${weekId} Final Standings</strong>
+        <button type="button" id="btn-back-to-seasons" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #ffffff; border-radius: 8px; padding: 4px 10px; font-size: 0.78rem; cursor: pointer;">
+          ← Back to Seasons
+        </button>
+      </div>
+      <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 10px; padding: 0.6rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.85rem; color: #fde68a;">
+        Your Finish: <strong>${myRow ? `#${myRank} · ${myRow.points} pts (${myRow.games_played} played)` : 'Did not participate'}</strong>
+      </div>
+    `;
+
+    if (top10.length === 0) {
+      html += `<div style="text-align: center; padding: 1rem; color: #94a3b8; font-size: 0.85rem;">No participant records found for this season.</div>`;
+    } else {
+      html += `<div style="display: flex; flex-direction: column; gap: 6px;">`;
+      top10.forEach((r, idx) => {
+        const rank = idx + 1;
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+        const isMe = currentUser && (r.user_id === currentUser.id || r.username === currentUser.username);
+        html += `
+          <div class="ww-ranked-item ${isMe ? 'leaderboard-row-me' : ''}" style="padding: 0.5rem 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span style="font-weight: 800; font-size: 0.9rem; min-width: 24px;">${medal}</span>
+              <span class="leaderboard-player-link" data-username="${r.username}" style="color: #ffffff; font-weight: 700; cursor: pointer;">
+                ${r.display_name || r.username}
+              </span>
+              ${isMe ? '<span class="you-badge" style="margin-left: 4px;">You</span>' : ''}
+            </div>
+            <div style="text-align: right;">
+              <div style="color: #fbbf24; font-weight: 800; font-size: 0.9rem;">${r.points} pts</div>
+              <div style="color: #94a3b8; font-size: 0.72rem;">${r.games_played} played</div>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    }
+
+    wwContestsList.innerHTML = html;
+    document.getElementById('btn-back-to-seasons')?.addEventListener('click', () => {
+      renderWorldWarsTournaments(cachedWWLeaderboardData || { currentWeekId: weekId, pastWeeks: [weekId] });
+    });
+    wwContestsList.querySelectorAll('.leaderboard-player-link').forEach(el => {
+      el.addEventListener('click', () => openPublicProfile(el.dataset.username));
+    });
+  } catch (err) {
+    wwContestsList.innerHTML = `<div style="color: #f87171; text-align: center; padding: 1rem;">Failed to load season standings.</div>`;
+  }
 }
 
 // =========================================================================

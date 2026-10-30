@@ -112,9 +112,10 @@ class GamifyApiClient {
     });
   }
 
-  async getLeaderboard(gameId, difficulty = null) {
+  async getLeaderboard(gameId, difficulty = null, week = null) {
     const params = new URLSearchParams();
     if (difficulty) params.set('difficulty', difficulty);
+    if (week) params.set('week', week);
     params.set('_t', Date.now().toString());
     return this.request(`/leaderboard/${gameId}?${params.toString()}`);
   }
