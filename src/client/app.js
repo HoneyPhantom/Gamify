@@ -38,11 +38,12 @@ let shopCatalog = [];
 let shopOwned = new Set();
 let activeShopTab = 'frame';
 
+let isInfinitePlay = false;
+
 const DIFFICULTY_TIERS = [
-  { tier: 'easy', label: 'EASY', avatar: '😊', color: '#10b981', fillWidth: '15%' },
-  { tier: 'medium', label: 'MEDIUM', avatar: '😼', color: '#f59e0b', fillWidth: '45%' },
-  { tier: 'hard', label: 'HARD', avatar: '😈', color: '#ef4444', fillWidth: '75%' },
-  { tier: 'playground', label: 'PLAYGROUND', avatar: '🎲', color: '#8b5cf6', fillWidth: '100%' },
+  { tier: 'easy', label: 'EASY', avatar: '😊', color: '#10b981', fillWidth: '20%' },
+  { tier: 'medium', label: 'MEDIUM', avatar: '😼', color: '#f59e0b', fillWidth: '55%' },
+  { tier: 'hard', label: 'HARD', avatar: '😈', color: '#ef4444', fillWidth: '95%' },
 ];
 
 // =========================================================================
@@ -63,6 +64,27 @@ const btnOpenAuth = document.getElementById('btn-open-auth');
 const btnLogout = document.getElementById('btn-logout');
 const headerUserLevel = document.getElementById('header-user-level');
 const headerXpBadge = document.getElementById('header-xp-badge');
+
+// Profile Inner Actions
+const btnProfileLogout = document.getElementById('btn-profile-logout');
+const btnProfileChallenges = document.getElementById('btn-profile-challenges');
+const btnProfileShop = document.getElementById('btn-profile-shop');
+const btnProfileInstallApp = document.getElementById('btn-profile-install-app');
+const profileStreakCount = document.getElementById('profile-streak-count');
+
+// World Wars Elements
+const btnOpenWorldWars = document.getElementById('btn-open-world-wars');
+const worldWarsModal = document.getElementById('world-wars-modal');
+const worldWarsModalClose = document.getElementById('world-wars-modal-close');
+const btnWwTabGlobal = document.getElementById('btn-ww-tab-global');
+const btnWwTabTournaments = document.getElementById('btn-ww-tab-tournaments');
+const worldWarsGameFilter = document.getElementById('world-wars-game-filter');
+const wwPodiumContainer = document.getElementById('ww-podium-container');
+const wwRankedList = document.getElementById('ww-ranked-list');
+const wwCurrentTournamentBanner = document.getElementById('ww-current-tournament-banner');
+const wwContestsList = document.getElementById('ww-contests-list');
+const worldWarsMyRank = document.getElementById('world-wars-my-rank');
+const worldWarsWeekLabel = document.getElementById('world-wars-week-label');
 
 // Install App Buttons
 const btnNavInstallApp = document.getElementById('btn-nav-install-app');
@@ -338,9 +360,10 @@ function updateAuthUI() {
   if (currentUser && api.token) {
     authStateLoggedIn.classList.remove('hidden');
     authStateLoggedOut.classList.add('hidden');
-    coinBalanceEl.textContent = currentUser.coins ?? 100;
-    streakCountEl.textContent = currentUser.streakCount ?? 0;
-    navUserNameEl.textContent = currentUser.displayName || currentUser.username;
+    if (coinBalanceEl) coinBalanceEl.textContent = currentUser.coins ?? 100;
+    if (streakCountEl) streakCountEl.textContent = currentUser.streakCount ?? 0;
+    if (profileStreakCount) profileStreakCount.textContent = currentUser.streakCount ?? 0;
+    if (navUserNameEl) navUserNameEl.textContent = currentUser.displayName || currentUser.username;
     updateLevelUI();
     applyEquippedCosmetics();
   } else {
@@ -512,7 +535,7 @@ loginForm.addEventListener('submit', async (e) => {
   }
 });
 
-btnLogout.addEventListener('click', () => {
+function handleUserLogout() {
   api.logout();
   currentUser = null;
   userUnlocks = {};
@@ -520,10 +543,24 @@ btnLogout.addEventListener('click', () => {
   todayCompletions = new Set();
   userFollowing = [];
   userFollowers = [];
+  profileModal?.classList.add('hidden');
   updateAuthUI();
   updateScoreDisplay();
   renderGamesScrollList();
   returnToHome();
+}
+
+btnLogout?.addEventListener('click', handleUserLogout);
+btnProfileLogout?.addEventListener('click', handleUserLogout);
+
+btnProfileChallenges?.addEventListener('click', () => {
+  profileModal?.classList.add('hidden');
+  btnOpenUpdates?.click();
+});
+
+btnProfileShop?.addEventListener('click', () => {
+  profileModal?.classList.add('hidden');
+  btnOpenShop?.click();
 });
 
 // =========================================================================
@@ -702,6 +739,60 @@ async function handleGameCardClick(game) {
 // 4. IMAGE 2 LAUNCHER & GAME ARENA LIFECYCLE
 // =========================================================================
 
+function updateLauncherInfiniteUI(gameId) {
+  const container = document.getElementById('launcher-infinite-status-row');
+  if (!container) return;
+  const hasInfinite = Boolean(userUnlocks[gameId]?.playground_unlocked || userUnlocks[gameId]?.infinite_mode);
+  if (hasInfinite) {
+    container.innerHTML = `
+      <div class="badge" style="background:#e0f2fe; color:#0284c7; border-color:#bae6fd; font-weight:800; font-size:0.82rem; padding:0.4rem 0.9rem;">
+        ♾️ Infinite Mode Active
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <button type="button" id="btn-unlock-infinite-launcher" class="game-action-btn btn-unlock-gold" style="padding:0.45rem 1rem; font-size:0.82rem; border-radius:9999px; margin:0 auto; max-width:280px; box-shadow:0 2px 8px rgba(245,158,11,0.25);">
+        ♾️ Unlock Infinite Mode (250 Coins)
+      </button>
+    `;
+    container.querySelector('#btn-unlock-infinite-launcher')?.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await unlockInfiniteMode(gameId);
+    });
+  }
+}
+
+async function unlockInfiniteMode(gameId) {
+  if (!currentUser) {
+    openAuthModal('login', '', 'Please login to unlock Infinite Mode.');
+    return;
+  }
+  const cost = 250;
+  if ((currentUser.coins ?? 0) < cost) {
+    alert(`Insufficient coins. Unlocking Infinite Mode costs ${cost} coins, you have ${currentUser.coins ?? 0} coins.`);
+    return;
+  }
+  try {
+    const res = await api.unlockTier(gameId, 'infinite');
+    if (res && res.unlocks) {
+      userUnlocks[gameId] = res.unlocks;
+      if (res.remainingCoins !== undefined) currentUser.coins = res.remainingCoins;
+    } else {
+      userUnlocks[gameId] = { ...(userUnlocks[gameId] || {}), playground_unlocked: 1, infinite_mode: 1 };
+      currentUser.coins -= cost;
+    }
+    updateAuthUI();
+    updateScoreDisplay();
+    updateLauncherInfiniteUI(gameId);
+    idbSet('gamify_user', currentUser).catch(() => {});
+    idbSet('gamify_unlocks', userUnlocks).catch(() => {});
+    const gameName = getAllGames().find(g => g.id === gameId)?.title || gameId;
+    alert(`🎉 Infinite Mode unlocked for ${gameName}! You can now play unlimited puzzles anytime after solving the daily puzzle.`);
+  } catch (err) {
+    alert('Failed to unlock Infinite Mode: ' + (err.message || 'Server error'));
+  }
+}
+
 function setLauncherDifficulty(tier) {
   currentTier = tier;
   const config = DIFFICULTY_TIERS.find(d => d.tier === tier) || DIFFICULTY_TIERS[0];
@@ -717,8 +808,9 @@ function setLauncherDifficulty(tier) {
   }
   if (launcherSliderKnob) {
     const idx = DIFFICULTY_TIERS.findIndex(d => d.tier === tier);
-    const pct = (idx / 3) * 100;
-    launcherSliderKnob.style.left = `calc(${pct}% - ${idx === 0 ? '0px' : idx === 3 ? '32px' : '16px'})`;
+    const total = Math.max(1, DIFFICULTY_TIERS.length - 1);
+    const pct = (idx / total) * 100;
+    launcherSliderKnob.style.left = `calc(${pct}% - ${idx === 0 ? '0px' : idx === total ? '32px' : '16px'})`;
     launcherSliderKnob.style.borderColor = config.color;
   }
 }
@@ -728,19 +820,22 @@ launcherSliderTrack?.addEventListener('click', (e) => {
   const rect = launcherSliderTrack.getBoundingClientRect();
   const clickX = e.clientX - rect.left;
   const ratio = Math.max(0, Math.min(1, clickX / rect.width));
-  const index = Math.round(ratio * 3);
+  const total = DIFFICULTY_TIERS.length - 1;
+  const index = Math.round(ratio * total);
   const selectedTier = DIFFICULTY_TIERS[index].tier;
   setLauncherDifficulty(selectedTier);
 });
 
 async function enterGame(gameId) {
   activeGameId = gameId;
+  isInfinitePlay = false;
   const game = getAllGames().find(g => g.id === gameId);
 
   if (launcherGameTitle) launcherGameTitle.textContent = (game?.title || gameId).toUpperCase();
   if (launcherGameDesc) launcherGameDesc.textContent = game?.description || 'Daily puzzle challenge';
 
   setLauncherDifficulty('easy');
+  updateLauncherInfiniteUI(gameId);
 
   // Show launcher screen, hide arena
   gameLauncherScreen?.classList.remove('hidden');
@@ -768,7 +863,7 @@ launcherBtnPlay?.addEventListener('click', async () => {
 
   // Check if chosen tier is unlocked
   if (!isTierUnlocked(activeGameId, currentTier)) {
-    const tierCosts = { easy: 50, medium: 150, hard: 300, playground: 500 };
+    const tierCosts = { easy: 50, medium: 150, hard: 300 };
     const cost = tierCosts[currentTier] || 150;
     const confirmUnlock = confirm(`Unlock ${currentTier.toUpperCase()} tier for ${cost} coins?\n\nYour Balance: ${currentUser.coins ?? 0} coins`);
     if (confirmUnlock) {
@@ -786,16 +881,19 @@ launcherBtnPlay?.addEventListener('click', async () => {
 
 btnBackToModes?.addEventListener('click', () => {
   stopPuzzleTimer();
+  isInfinitePlay = false;
   if (activeGameCleanup) {
     try { activeGameCleanup(); } catch {}
     activeGameCleanup = null;
   }
+  updateLauncherInfiniteUI(activeGameId);
   gameArenaScreen?.classList.add('hidden');
   gameLauncherScreen?.classList.remove('hidden');
 });
 
 function returnToHome() {
   stopPuzzleTimer();
+  isInfinitePlay = false;
   if (activeGameCleanup) {
     try { activeGameCleanup(); } catch {}
     activeGameCleanup = null;
@@ -851,6 +949,14 @@ const GAME_HELP_CONTENT = {
     <ul style="padding-left:1.2rem; margin:0.5rem 0;">
       <li>Memorize flipped cards to find their partners.</li>
       <li>Speed and low move count award maximum points!</li>
+    </ul>
+  `,
+  crossword: `
+    <p style="margin-top:0"><strong>Goal:</strong> Fill the 5×5 grid with intersecting words using Across & Down clues.</p>
+    <ul style="padding-left:1.2rem; margin:0.5rem 0;">
+      <li>Tap a cell or clue to toggle between Across & Down directions.</li>
+      <li>Type letters using your keyboard or on-screen keys.</li>
+      <li>Speed and accuracy award maximum leaderboard points!</li>
     </ul>
   `
 };
@@ -921,30 +1027,48 @@ function stopPuzzleTimer() {
 }
 
 function updateDailySweepUI() {
-  if (!sweepStatusWordle || !sweepStatusNumberGrid || !sweepStatusNumberTrail) return;
+  const sweepContainer = document.getElementById('sweep-progress-bar');
+  if (!sweepContainer) return;
 
-  const hasWordle = Array.from(todayCompletions).some(c => c.startsWith('wordle:'));
-  const hasGrid = Array.from(todayCompletions).some(c => c.startsWith('number-grid:'));
-  const hasTrail = Array.from(todayCompletions).some(c => c.startsWith('number-trail:'));
+  const allGames = getAllGames();
+  // Dynamically sort games by user's current streak ascending (lowest streaks first)
+  const sortedGames = [...allGames].sort((a, b) => {
+    const streakA = userStats[a.id]?.current_streak ?? 0;
+    const streakB = userStats[b.id]?.current_streak ?? 0;
+    return streakA - streakB || a.title.localeCompare(b.title);
+  }).slice(0, 6);
 
-  sweepItemWordle?.classList.toggle('completed', hasWordle);
-  if (sweepStatusWordle) sweepStatusWordle.textContent = hasWordle ? '✅' : '⏳';
+  let completedCount = 0;
+  sweepContainer.innerHTML = sortedGames.map(game => {
+    const isCompleted = Array.from(todayCompletions).some(c => c.startsWith(`${game.id}:`));
+    if (isCompleted) completedCount++;
+    const streak = userStats[game.id]?.current_streak ?? 0;
+    return `
+      <div class="sweep-game-pill ${isCompleted ? 'completed' : ''}" data-game-id="${game.id}" style="cursor:pointer;" title="Current Streak: ${streak} | Click to play">
+        <span class="sweep-pill-name">${game.icon || '🎮'} ${game.title} <small style="opacity:0.8; font-size:0.75rem;">(🔥${streak})</small></span>
+        <span class="sweep-pill-status">${isCompleted ? '✅' : '⏳'}</span>
+      </div>
+    `;
+  }).join('');
 
-  sweepItemNumberGrid?.classList.toggle('completed', hasGrid);
-  if (sweepStatusNumberGrid) sweepStatusNumberGrid.textContent = hasGrid ? '✅' : '⏳';
+  sweepContainer.querySelectorAll('.sweep-game-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const gId = pill.dataset.gameId;
+      if (gId) enterGame(gId);
+    });
+  });
 
-  sweepItemNumberTrail?.classList.toggle('completed', hasTrail);
-  if (sweepStatusNumberTrail) sweepStatusNumberTrail.textContent = hasTrail ? '✅' : '⏳';
-
-  const completedCount = (hasWordle ? 1 : 0) + (hasGrid ? 1 : 0) + (hasTrail ? 1 : 0);
-  if (completedCount === 3) {
-    if (sweepStatusDesc) sweepStatusDesc.textContent = '🎉 All 3 daily challenges conquered today! +50 Daily Sweep Bonus Claimed!';
-  } else {
-    if (sweepStatusDesc) sweepStatusDesc.textContent = `Completed ${completedCount}/3 daily puzzles. Conquer all 3 today for +50 Bonus Coins!`;
+  const totalSweep = sortedGames.length;
+  if (sweepStatusDesc) {
+    if (completedCount === totalSweep && totalSweep > 0) {
+      sweepStatusDesc.textContent = `🎉 All ${totalSweep} Daily Sweep challenges conquered today! +50 Bonus Claimed!`;
+    } else {
+      sweepStatusDesc.textContent = `Completed ${completedCount}/${totalSweep} daily puzzles (focused on your lowest streaks). Conquer all for +50 Bonus Coins!`;
+    }
   }
 }
 
-async function loadCurrentPuzzle(isNewPlayground = false) {
+async function loadCurrentPuzzle(isNewInfinite = false) {
   const dateStr = getTodayDateStr();
 
   // 1. Verify game is unlocked
@@ -972,68 +1096,90 @@ async function loadCurrentPuzzle(isNewPlayground = false) {
     }
     activeGameContainer.classList.add('hidden');
     lockedTierContainer.classList.remove('hidden');
-    const tierCosts = { easy: 50, medium: 150, hard: 300, playground: 500 };
+    const tierCosts = { easy: 50, medium: 150, hard: 300 };
     const cost = tierCosts[currentTier] || 150;
 
     lockedBannerTitle.textContent = `${currentTier.toUpperCase()} Tier Locked`;
-    lockedBannerDesc.textContent = currentTier === 'playground'
-      ? 'Unlimited Playground requires conquering and unlocking Easy, Medium, and Hard tiers first.'
-      : `Unlock ${currentTier.toUpperCase()} tier for ${cost} coins to play and earn bigger rewards.`;
+    lockedBannerDesc.textContent = `Unlock ${currentTier.toUpperCase()} tier for ${cost} coins to play and earn bigger rewards.`;
 
     unlockActionBtn.textContent = `Unlock ${currentTier.toUpperCase()} (${cost} Coins) 🪙`;
-    unlockActionBtn.onclick = () => unlockSpecificTier(activeGameId, currentTier);
+    unlockActionBtn.onclick = async () => {
+      await unlockSpecificTier(activeGameId, currentTier);
+    };
     return;
   }
 
   lockedTierContainer.classList.add('hidden');
   activeGameContainer.classList.remove('hidden');
 
-  const isPlayground = currentTier === 'playground';
-  const isAlreadyCompletedToday = !isPlayground && todayCompletions.has(`${activeGameId}:${currentTier}`);
+  const hasInfinite = Boolean(userUnlocks[activeGameId]?.playground_unlocked || userUnlocks[activeGameId]?.infinite_mode);
+  const isAlreadyCompletedToday = todayCompletions.has(`${activeGameId}:${currentTier}`);
 
   if (activeGameCleanup) {
     try { activeGameCleanup(); } catch (err) { console.warn('Game cleanup note:', err); }
     activeGameCleanup = null;
   }
 
-  // 3. If daily tier already completed today
-  if (isAlreadyCompletedToday) {
+  // 3. If daily tier already completed today and not in active infinite play
+  if (isAlreadyCompletedToday && !isInfinitePlay) {
     stopPuzzleTimer();
     gameBadge.textContent = `Daily ${currentTier.toUpperCase()} (${dateStr}) · Completed`;
     statusEl.textContent = 'Completed for today';
     statusEl.style.color = 'var(--correct-bg)';
     newGameBtn.style.display = 'none';
 
-    gameArenaContent.innerHTML = `
-      <div class="daily-completed-view" style="text-align:center; padding: 2.5rem 1rem;">
-        <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎉</div>
-        <h3 style="font-size: 1.45rem; color: #166534; margin-bottom: 0.5rem;">
-          Daily ${currentTier.toUpperCase()} Solved!
-        </h3>
-        <p style="color: #15803d; font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
-          You conquered today's challenge. Daily puzzles refresh every midnight UTC. Practice in unlimited Playground mode!
-        </p>
-        <button id="btn-jump-playground" class="launcher-btn-play" style="max-width: 280px; margin: 0 auto; display:block;">
-          Play Playground 🎲
-        </button>
-      </div>
-    `;
+    if (hasInfinite) {
+      gameArenaContent.innerHTML = `
+        <div class="daily-completed-view" style="text-align:center; padding: 2.5rem 1rem;">
+          <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎉</div>
+          <h3 style="font-size: 1.45rem; color: #166534; margin-bottom: 0.5rem;">
+            Daily ${currentTier.toUpperCase()} Solved!
+          </h3>
+          <p style="color: #15803d; font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+            You conquered today's daily puzzle! Since you have <strong>Infinite Mode</strong> unlocked, you can play endless puzzles for all unlocked difficulties anytime!
+          </p>
+          <button id="btn-play-infinite-now" class="launcher-btn-play" style="max-width: 280px; margin: 0 auto; display:block;">
+            Play Infinite Mode ♾️
+          </button>
+        </div>
+      `;
 
-    document.getElementById('btn-jump-playground')?.addEventListener('click', () => {
-      setLauncherDifficulty('playground');
-      loadCurrentPuzzle();
-    });
+      document.getElementById('btn-play-infinite-now')?.addEventListener('click', () => {
+        isInfinitePlay = true;
+        loadCurrentPuzzle();
+      });
+    } else {
+      gameArenaContent.innerHTML = `
+        <div class="daily-completed-view" style="text-align:center; padding: 2.5rem 1rem;">
+          <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎉</div>
+          <h3 style="font-size: 1.45rem; color: #166534; margin-bottom: 0.5rem;">
+            Daily ${currentTier.toUpperCase()} Solved!
+          </h3>
+          <p style="color: #15803d; font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+            You conquered today's challenge. Daily puzzles refresh every midnight UTC. Unlock Infinite Mode to practice and play endless puzzles right now!
+          </p>
+          <button id="btn-unlock-infinite-solved" class="game-action-btn btn-unlock-gold" style="max-width: 320px; margin: 0 auto; display:flex; justify-content:center; padding:0.8rem 1.4rem; font-size:1rem; border-radius:9999px;">
+            ♾️ Unlock Infinite Mode (250 Coins)
+          </button>
+        </div>
+      `;
+
+      document.getElementById('btn-unlock-infinite-solved')?.addEventListener('click', async () => {
+        await unlockInfiniteMode(activeGameId);
+        isInfinitePlay = true;
+        loadCurrentPuzzle();
+      });
+    }
 
     return;
   }
 
   // 4. Setup puzzle for play (Lazy loads game module)
   newGameBtn.style.display = 'inline-block';
-  if (isPlayground) {
-    newGameBtn.textContent = '🎲 New Game';
-    const prevWord = currentPuzzle?.targetWord;
-    currentPuzzle = await getPlaygroundPuzzle(activeGameId, prevWord);
-    gameBadge.textContent = 'Playground Mode (Unranked)';
+  if (isInfinitePlay) {
+    newGameBtn.textContent = '♾️ Next Puzzle';
+    currentPuzzle = await getPlaygroundPuzzle(activeGameId, currentTier);
+    gameBadge.textContent = `Infinite ${currentTier.toUpperCase()} Mode ♾️`;
   } else {
     newGameBtn.textContent = '↺ Reset Puzzle';
     currentPuzzle = await getDailyPuzzle(activeGameId, currentTier, dateStr);
@@ -1075,16 +1221,12 @@ function showSolveVictory(score, coins) {
 
 btnSolveVictoryOk?.addEventListener('click', () => {
   solveVictoryModal?.classList.add('hidden');
-  if (currentTier !== 'playground') {
-    loadCurrentPuzzle();
-  }
+  loadCurrentPuzzle();
 });
 solveVictoryModal?.addEventListener('click', (e) => {
   if (e.target === solveVictoryModal) {
     solveVictoryModal.classList.add('hidden');
-    if (currentTier !== 'playground') {
-      loadCurrentPuzzle();
-    }
+    loadCurrentPuzzle();
   }
 });
 
@@ -1255,7 +1397,7 @@ function updateScoreDisplay() {
 }
 
 newGameBtn?.addEventListener('click', () => {
-  loadCurrentPuzzle(currentTier === 'playground');
+  loadCurrentPuzzle(isInfinitePlay);
 });
 
 // =========================================================================
@@ -2158,6 +2300,9 @@ function renderLeaderboardView(data) {
             const rankLabel = i === 0 ? '🥇 #1' : i === 1 ? '🥈 #2' : i === 2 ? '🥉 #3' : `#${i + 1}`;
             const youTag = isMe ? `<span class="you-badge">You</span>` : '';
             const titlePill = r.selected_title ? `<span class="player-custom-title" style="font-size:0.68rem; margin-left:4px;">${formatTitleName(r.selected_title)}</span>` : '';
+            const totalScoreVal = r.total_score ?? r.score ?? r.points ?? 0;
+            const playsVal = r.plays_count ?? r.games_played ?? 0;
+            const bestScoreVal = r.best_score ?? r.score ?? '—';
             return `
               <tr class="${isMe ? 'leaderboard-row-me' : ''}">
                 <td><strong>${rankLabel}</strong></td>
@@ -2168,9 +2313,9 @@ function renderLeaderboardView(data) {
                   ${titlePill}
                   ${youTag}
                 </td>
-                <td style="text-align: right;"><strong>${r.total_score}</strong></td>
-                <td style="text-align: right;">${r.plays_count}</td>
-                <td style="text-align: right;">${r.best_score}</td>
+                <td style="text-align: right;"><strong>${totalScoreVal}</strong></td>
+                <td style="text-align: right;">${playsVal}</td>
+                <td style="text-align: right;">${bestScoreVal}</td>
               </tr>
             `;
           }).join('')}
@@ -2243,6 +2388,351 @@ btnDailyTab?.addEventListener('click', () => handleTabClick(btnDailyTab));
 btnTournamentTab?.addEventListener('click', () => handleTabClick(btnTournamentTab));
 
 // =========================================================================
+// 11.1 WORLD WARS ARENA & WEEKLY TOURNAMENTS (Requirement 5)
+// =========================================================================
+
+let currentWwFilter = 'all';
+
+const worldWarsPaneGlobal = document.getElementById('world-wars-pane-global');
+const worldWarsPaneTournaments = document.getElementById('world-wars-pane-tournaments');
+
+function switchWwTab(tabName) {
+  if (tabName === 'global') {
+    btnWwTabGlobal?.classList.add('active');
+    btnWwTabTournaments?.classList.remove('active');
+    worldWarsPaneGlobal?.classList.remove('hidden');
+    worldWarsPaneTournaments?.classList.add('hidden');
+  } else {
+    btnWwTabTournaments?.classList.add('active');
+    btnWwTabGlobal?.classList.remove('active');
+    worldWarsPaneTournaments?.classList.remove('hidden');
+    worldWarsPaneGlobal?.classList.add('hidden');
+  }
+}
+
+btnWwTabGlobal?.addEventListener('click', () => switchWwTab('global'));
+btnWwTabTournaments?.addEventListener('click', () => switchWwTab('tournaments'));
+
+btnOpenWorldWars?.addEventListener('click', () => {
+  worldWarsModal?.classList.remove('hidden');
+  loadWorldWarsData(currentWwFilter);
+});
+
+worldWarsModalClose?.addEventListener('click', () => {
+  worldWarsModal?.classList.add('hidden');
+});
+
+worldWarsModal?.addEventListener('click', (e) => {
+  if (e.target === worldWarsModal) {
+    worldWarsModal.classList.add('hidden');
+  }
+});
+
+worldWarsGameFilter?.addEventListener('change', (e) => {
+  currentWwFilter = e.target.value;
+  loadWorldWarsData(currentWwFilter);
+});
+
+async function loadWorldWarsData(filter = 'all') {
+  if (wwPodiumContainer) {
+    wwPodiumContainer.innerHTML = `<div style="color: #94a3b8; font-weight: 700; padding: 1.5rem; text-align: center;">⚡ Summoning World Arena Contenders...</div>`;
+  }
+  if (wwRankedList) {
+    wwRankedList.innerHTML = '';
+  }
+
+  try {
+    const data = await api.getLeaderboard(filter);
+    const rows = data.globalLeaderboard || [];
+
+    // 1. Update front page World Wars Card preview
+    if (worldWarsWeekLabel) {
+      worldWarsWeekLabel.textContent = data.currentWeekId ? data.currentWeekId.replace(/^\d{4}-W?/, 'Week ') : 'Weekly';
+    }
+    if (worldWarsMyRank) {
+      if (currentUser && rows.length > 0) {
+        const myIdx = rows.findIndex(r => r.user_id === currentUser.id || r.username === currentUser.username);
+        worldWarsMyRank.textContent = myIdx >= 0 ? `#${myIdx + 1}` : '#--';
+      } else {
+        worldWarsMyRank.textContent = '#--';
+      }
+    }
+
+    // 2. Render Image 3 Podium & Ranked Cards
+    renderWorldWarsPodium(rows);
+
+    // 3. Render Image 4 Tournaments
+    renderWorldWarsTournaments(data);
+  } catch (err) {
+    if (wwPodiumContainer) {
+      wwPodiumContainer.innerHTML = `<p style="color: var(--danger); font-size: 0.85rem; padding: 1rem; text-align: center;">Failed to load arena: ${err.message || 'Network error'}</p>`;
+    }
+  }
+}
+
+function renderWorldWarsPodium(rows) {
+  if (!wwPodiumContainer || !wwRankedList) return;
+
+  if (!rows || rows.length === 0) {
+    wwPodiumContainer.innerHTML = `
+      <div style="text-align: center; color: #94a3b8; padding: 2rem 1rem;">
+        <span style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem;">⚔️</span>
+        <strong style="color: #ffffff; font-size: 1rem;">No Arena Champions Ranked Yet</strong>
+        <p style="margin: 0.4rem 0 0 0; font-size: 0.8rem;">Be the very first player to conquer puzzles and step onto the gold podium!</p>
+      </div>
+    `;
+    wwRankedList.innerHTML = '';
+    return;
+  }
+
+  const p1 = rows[0] || null;
+  const p2 = rows[1] || null;
+  const p3 = rows[2] || null;
+
+  const renderPodiumStep = (player, rank, crownEmoji, pedestalClass, heightStyle) => {
+    if (!player) {
+      return `
+        <div class="ww-podium-step">
+          <div class="ww-podium-avatar" style="border-color: rgba(255,255,255,0.1); color: #64748b;">
+            👤
+          </div>
+          <div class="ww-podium-name" style="color: #64748b;">Open</div>
+          <div class="ww-podium-score" style="color: #64748b; font-size: 0.8rem;">—</div>
+          <div class="ww-podium-pedestal ${pedestalClass}" style="${heightStyle}; opacity: 0.4;">
+            <span>#${rank}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const isMe = currentUser && (player.user_id === currentUser.id || player.username === currentUser.username);
+    const scoreVal = player.total_score ?? player.score ?? player.points ?? 0;
+    const displayName = player.display_name || player.username;
+    const initial = (displayName[0] || 'P').toUpperCase();
+    const frameBorder = rank === 1 ? '#f59e0b' : rank === 2 ? '#94a3b8' : '#d97706';
+
+    return `
+      <div class="ww-podium-step">
+        <div class="ww-podium-avatar leaderboard-player-link" data-username="${player.username}" style="border-color: ${frameBorder}; cursor: pointer;">
+          <span class="ww-crown-icon">${crownEmoji}</span>
+          <span>${initial}</span>
+        </div>
+        <div class="ww-podium-name leaderboard-player-link" data-username="${player.username}" style="cursor: pointer;" title="${displayName}">
+          ${displayName} ${isMe ? '⭐' : ''}
+        </div>
+        <div class="ww-podium-score">${scoreVal}</div>
+        <div class="ww-podium-pedestal ${pedestalClass}" style="${heightStyle}">
+          <span>#${rank}</span>
+        </div>
+      </div>
+    `;
+  };
+
+  // Image 3 Podium order: Rank 2 on Left, Rank 1 in Center (tallest), Rank 3 on Right
+  wwPodiumContainer.innerHTML = `
+    ${renderPodiumStep(p2, 2, '🥈', 'ww-pedestal-2', 'height: 76px;')}
+    ${renderPodiumStep(p1, 1, '👑', 'ww-pedestal-1', 'height: 104px;')}
+    ${renderPodiumStep(p3, 3, '🥉', 'ww-pedestal-3', 'height: 60px;')}
+  `;
+
+  // Render Image 3 Ranked Cards (#4+)
+  const restRows = rows.slice(3);
+  if (restRows.length === 0) {
+    wwRankedList.innerHTML = `<div style="text-align: center; color: #64748b; font-size: 0.8rem; padding: 1rem;">All active contenders are currently on the top 3 podium!</div>`;
+  } else {
+    wwRankedList.innerHTML = restRows.map((r, idx) => {
+      const rankNum = idx + 4;
+      const isMe = currentUser && (r.user_id === currentUser.id || r.username === currentUser.username);
+      const scoreVal = r.total_score ?? r.score ?? r.points ?? 0;
+      const attendedCount = r.plays_count ?? r.games_played ?? 0;
+      const displayName = r.display_name || r.username;
+      const initial = (displayName[0] || 'P').toUpperCase();
+      const titlePill = r.selected_title ? `<span class="player-custom-title" style="font-size:0.65rem; margin-left:4px;">${formatTitleName(r.selected_title)}</span>` : '';
+
+      return `
+        <div class="ww-ranked-item ${isMe ? 'leaderboard-row-me' : ''}">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="ww-rank-badge">${rankNum}</div>
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: #334155; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; color: #cbd5e1; border: 1.5px solid rgba(255,255,255,0.15);">
+              ${initial}
+            </div>
+            <div>
+              <strong class="leaderboard-player-link" data-username="${r.username}" style="cursor: pointer; font-size: 0.92rem; color: #ffffff;">
+                ${displayName}
+              </strong>
+              ${titlePill}
+              ${isMe ? `<span class="you-badge" style="margin-left: 4px;">You</span>` : ''}
+            </div>
+          </div>
+          <div style="text-align: right; display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 0.82rem; color: #cbd5e1;">
+              Rating: <strong style="color: #fbbf24; font-size: 0.95rem;">${scoreVal}</strong>
+            </div>
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">
+              Attended: <strong style="color: #e2e8f0;">${attendedCount}</strong>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Attach profile click listeners
+  wwPodiumContainer.querySelectorAll('.leaderboard-player-link').forEach(el => {
+    el.addEventListener('click', () => openPublicProfile(el.dataset.username));
+  });
+  wwRankedList.querySelectorAll('.leaderboard-player-link').forEach(el => {
+    el.addEventListener('click', () => openPublicProfile(el.dataset.username));
+  });
+}
+
+function renderWorldWarsTournaments(data) {
+  if (!wwCurrentTournamentBanner || !wwContestsList) return;
+
+  const currentWeek = data.currentWeekId || '2026-W44';
+  const weekNumber = currentWeek.includes('-W') ? currentWeek.split('-W')[1] : '44';
+  const contestNumber = 500 + parseInt(weekNumber, 10);
+
+  // 1. Pinned Active Tournament Header (Updated daily with user's tournament score and rank)
+  const myTournament = (data.weeklyTournament || []).find(r => 
+    currentUser && (r.user_id === currentUser.id || r.username === currentUser.username)
+  );
+  const myRankIdx = myTournament ? (data.weeklyTournament || []).indexOf(myTournament) + 1 : null;
+  const myPoints = myTournament ? myTournament.points : 0;
+  const myGamesPlayed = myTournament ? myTournament.games_played : 0;
+
+  wwCurrentTournamentBanner.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #fbbf24; font-weight: 800;">
+          Current Active Championship
+        </div>
+        <h4 style="margin: 0.2rem 0; font-size: 1.25rem; font-weight: 900; color: #ffffff;">
+          ⚔️ Season ${currentWeek} · Weekly Contest #${contestNumber}
+        </h4>
+        <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">
+          Daily Standings Updated Every 24h · Resets Every Sunday 23:59 UTC
+        </div>
+      </div>
+      <div class="badge" style="background:#064e3b; color:#34d399; border-color:#059669; font-weight:800; font-size:0.75rem; padding: 4px 10px;">
+        Live Scoring ⚡
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.65rem; margin: 0.75rem 0;">
+      <div style="flex:1; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.55rem; text-align:center;">
+        <div style="font-size:0.72rem; color:#94a3b8; font-weight:700;">Your Points</div>
+        <div style="font-size:1.15rem; font-weight:900; color:#fbbf24;">${myPoints} pts</div>
+      </div>
+      <div style="flex:1; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.55rem; text-align:center;">
+        <div style="font-size:0.72rem; color:#94a3b8; font-weight:700;">Your Rank</div>
+        <div style="font-size:1.15rem; font-weight:900; color:#38bdf8;">${myRankIdx ? `#${myRankIdx}` : 'Unranked'}</div>
+      </div>
+      <div style="flex:1; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.55rem; text-align:center;">
+        <div style="font-size:0.72rem; color:#94a3b8; font-weight:700;">Played</div>
+        <div style="font-size:1.15rem; font-weight:900; color:#ffffff;">${myGamesPlayed}</div>
+      </div>
+    </div>
+
+    <button type="button" id="btn-ww-play-tournament" class="btn-enter-world-wars" style="margin-top: 0.4rem; padding: 0.65rem 1rem; font-size: 0.9rem;">
+      Play Today's Tournament Puzzles 🎯
+    </button>
+  `;
+
+  document.getElementById('btn-ww-play-tournament')?.addEventListener('click', () => {
+    worldWarsModal?.classList.add('hidden');
+    gamesScrollList?.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // 2. Image 4 Contest Cards (Active, Biweekly, and Past Archives)
+  const contests = [
+    {
+      id: 'weekly-current',
+      title: `Weekly Contest ${contestNumber}`,
+      date: 'Sun, Ongoing · Ends 23:59 UTC',
+      type: 'weekly',
+      thumbClass: 'ww-thumb-weekly',
+      icon: '🧊',
+      progress: `${todayCompletions.size} / 6`,
+      isProgressActive: todayCompletions.size >= 3,
+      btnLabel: 'Virtual',
+      btnAction: 'play',
+    },
+    {
+      id: 'biweekly-current',
+      title: `Biweekly Contest ${contestNumber - 331}`,
+      date: 'Sat, 20:00 UTC · Sprint Arena',
+      type: 'biweekly',
+      thumbClass: 'ww-thumb-biweekly',
+      icon: '🎲',
+      progress: '3 / 4',
+      isProgressActive: false,
+      btnLabel: 'Virtual',
+      btnAction: 'play',
+    },
+    {
+      id: 'weekly-prev',
+      title: `Weekly Contest ${contestNumber - 1}`,
+      date: 'Completed · Official Archives',
+      type: 'weekly',
+      thumbClass: 'ww-thumb-weekly',
+      icon: '🧊',
+      progress: '4 / 4',
+      isProgressActive: true,
+      btnLabel: 'Virtual',
+      btnAction: 'archive',
+    },
+    {
+      id: 'biweekly-prev',
+      title: `Biweekly Contest ${contestNumber - 332}`,
+      date: 'Completed · Official Archives',
+      type: 'biweekly',
+      thumbClass: 'ww-thumb-biweekly',
+      icon: '🎲',
+      progress: '0 / 4',
+      isProgressActive: false,
+      btnLabel: 'Virtual',
+      btnAction: 'archive',
+    },
+  ];
+
+  wwContestsList.innerHTML = contests.map(c => `
+    <div class="ww-contest-card">
+      <div class="ww-contest-info">
+        <div class="ww-contest-thumb ${c.thumbClass}">
+          <span>${c.icon}</span>
+        </div>
+        <div class="ww-contest-details">
+          <div class="ww-contest-title">${c.title}</div>
+          <div class="ww-contest-meta">${c.date}</div>
+        </div>
+      </div>
+      <div class="ww-contest-actions">
+        <div class="ww-contest-pill ${c.isProgressActive ? 'active' : 'inactive'}">
+          ${c.progress}
+        </div>
+        <button type="button" class="ww-contest-btn" data-action="${c.btnAction}" data-title="${c.title}">
+          ${c.btnLabel}
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  wwContestsList.querySelectorAll('.ww-contest-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.action;
+      const title = btn.dataset.title;
+      if (action === 'play') {
+        worldWarsModal?.classList.add('hidden');
+        gamesScrollList?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        alert(`📜 ${title}\n\nArchive standings are recorded in season records. Conquer live tournament puzzles to climb this week's hall of fame!`);
+      }
+    });
+  });
+}
+
+// =========================================================================
 // 12. PWA INSTALL APP SYSTEM (Requirement 3 & 14)
 // =========================================================================
 
@@ -2289,6 +2779,7 @@ async function triggerInstallApp() {
 btnNavInstallApp?.addEventListener('click', triggerInstallApp);
 btnNavInstallAppLoggedOut?.addEventListener('click', triggerInstallApp);
 btnAddToHome?.addEventListener('click', triggerInstallApp);
+btnProfileInstallApp?.addEventListener('click', triggerInstallApp);
 
 // =========================================================================
 // 13. SERVICE WORKER REGISTRATION
@@ -2325,6 +2816,9 @@ async function bootstrap() {
   } catch (err) {
     console.warn('Profile bootstrap note:', err);
   }
+
+  // 3. Pre-load World Wars Arena stats
+  loadWorldWarsData('all').catch(() => {});
 }
 
 bootstrap();

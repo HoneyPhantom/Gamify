@@ -8,13 +8,16 @@ export const GAME_UNLOCK_COSTS: Record<string, number> = {
   'number-trail': 150, // Locked base game: 150 coins
   'sudoku': 150,       // Locked base game: 150 coins
   'memory-match': 150, // Locked base game: 150 coins
+  'crossword': 150,    // Locked base game: 150 coins
 };
 
 export const TIER_COSTS: Record<string, number> = {
   easy: 50,
   medium: 150,
   hard: 300,
-  playground: 500,
+  playground: 250,
+  infinite: 250,
+  infinite_mode: 250,
 };
 
 export async function handleUnlock(request: Request, env: Env, user: AuthenticatedUser): Promise<Response> {
@@ -123,7 +126,7 @@ export async function handleUnlock(request: Request, env: Env, user: Authenticat
 
   const cost = TIER_COSTS[tier];
   if (cost === undefined) {
-    return errorResponse(`Invalid unlock tier '${tier}'. Allowed: game, easy, medium, hard, playground`, 400);
+    return errorResponse(`Invalid unlock tier '${tier}'. Allowed: game, easy, medium, hard, infinite, playground`, 400);
   }
 
   const columnMap: Record<string, keyof UserGameUnlockRow> = {
@@ -131,6 +134,8 @@ export async function handleUnlock(request: Request, env: Env, user: Authenticat
     medium: 'medium_unlocked',
     hard: 'hard_unlocked',
     playground: 'playground_unlocked',
+    infinite: 'playground_unlocked',
+    infinite_mode: 'playground_unlocked',
   };
 
   const targetCol = columnMap[tier];
@@ -141,30 +146,6 @@ export async function handleUnlock(request: Request, env: Env, user: Authenticat
       alreadyUnlocked: true,
       unlocks: unlockRecord,
     });
-  }
-
-  // Strict playground prerequisites check
-  if (tier === 'playground') {
-    const missingTiers: string[] = [];
-    if (!unlockRecord.easy_unlocked) missingTiers.push('easy');
-    if (!unlockRecord.medium_unlocked) missingTiers.push('medium');
-    if (!unlockRecord.hard_unlocked) missingTiers.push('hard');
-
-    if (missingTiers.length > 0) {
-      return errorResponse(
-        `Forbidden: Unlimited Playground requires unlocking all previous difficulty tiers first. Missing: ${missingTiers.join(', ')}.`,
-        403,
-        {
-          code: 'PLAYGROUND_PREREQUISITES_NOT_MET',
-          missingTiers,
-          currentUnlocks: {
-            easy: Boolean(unlockRecord.easy_unlocked),
-            medium: Boolean(unlockRecord.medium_unlocked),
-            hard: Boolean(unlockRecord.hard_unlocked),
-          },
-        }
-      );
-    }
   }
 
   // Check user coin balance

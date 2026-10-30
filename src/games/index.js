@@ -92,6 +92,24 @@ const GAMES_CATALOG = [
       { tier: 'hard', unlockCost: 300, rewardCoins: 75 },
     ],
     unlimitedPlayground: { unlockCost: 500 },
+    infiniteMode: { unlockCost: 250 },
+  },
+  {
+    id: 'crossword',
+    title: 'Crossword',
+    description: 'Solve the daily 5x5 mini crossword with intersecting Across & Down clues!',
+    badge: '150 Coins to Unlock',
+    icon: '📝',
+    thumbnail: '/images/crossword.png',
+    isFree: false,
+    gameUnlockCost: 150,
+    difficulties: [
+      { tier: 'easy', unlockCost: 0, rewardCoins: 15 },
+      { tier: 'medium', unlockCost: 150, rewardCoins: 35 },
+      { tier: 'hard', unlockCost: 300, rewardCoins: 75 },
+    ],
+    unlimitedPlayground: { unlockCost: 250 },
+    infiniteMode: { unlockCost: 250 },
   },
 ];
 
@@ -168,15 +186,25 @@ export async function getDailyPuzzle(gameId, difficulty, dateStr = getTodayDateS
 }
 
 /**
- * Generates a non-daily, endless random puzzle for playground mode.
+ * Generates a non-daily, endless random puzzle for infinite mode.
  */
-export async function getPlaygroundPuzzle(gameId, ...args) {
+export async function getPlaygroundPuzzle(gameId, tier = 'medium', ...args) {
   const game = await loadGameConfig(gameId);
-  if (!game.unlimitedPlayground || typeof game.unlimitedPlayground.generateRandomPuzzle !== 'function') {
-    throw new Error(`Game '${gameId}' does not support unlimited playground mode.`);
+  if (game.unlimitedPlayground) {
+    const fn = game.unlimitedPlayground.generatePlaygroundPuzzle || game.unlimitedPlayground.generateRandomPuzzle;
+    if (typeof fn === 'function') {
+      return fn(tier, ...args);
+    }
   }
-  return game.unlimitedPlayground.generateRandomPuzzle(...args);
+  // Fallback: generate using random seed with tier generator
+  if (game.difficulties && game.difficulties[tier]) {
+    const randomDate = `infinite-${Date.now()}-${Math.random()}`;
+    return game.difficulties[tier].generateDailyPuzzle(randomDate);
+  }
+  throw new Error(`Game '${gameId}' does not support infinite mode.`);
 }
+
+export const getInfinitePuzzle = getPlaygroundPuzzle;
 
 export default {
   getAllGames,
@@ -184,5 +212,6 @@ export default {
   getGameConfig,
   getDailyPuzzle,
   getPlaygroundPuzzle,
+  getInfinitePuzzle,
   getTodayDateStr,
 };

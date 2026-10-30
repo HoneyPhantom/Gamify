@@ -5,7 +5,7 @@
  * while refreshing the cache in the background. Only /api/ endpoints bypass cache.
  */
 
-const CACHE_NAME = 'gamify-sw-v4-swr';
+const CACHE_NAME = 'gamify-sw-v5-swr';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -16,7 +16,8 @@ const PRECACHE_ASSETS = [
   '/images/number-grid.png',
   '/images/number-trail.png',
   '/images/sudoku.png',
-  '/images/memory-match.png'
+  '/images/memory-match.png',
+  '/images/crossword.png'
 ];
 
 self.addEventListener('install', (event) => {

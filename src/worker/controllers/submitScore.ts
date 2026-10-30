@@ -158,9 +158,9 @@ export async function handleSubmitScore(
       const completedGameIds = new Set((todayOtherGames.results || []).map(r => r.game_id));
       completedGameIds.add(gameId);
 
-      if (ALL_REQUIRED_GAMES.every(g => completedGameIds.has(g))) {
+      if (completedGameIds.size >= 3) {
         isDailySweep = true;
-        dailySweepBonus = 50; // +50 Bonus Coins for completing all 3 games!
+        dailySweepBonus = 50; // +50 Bonus Coins for completing 3+ daily games!
         coinsToAward += dailySweepBonus;
       }
     }
