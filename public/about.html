@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Us - Gamify Brain Games & Daily Puzzles</title>
+  <meta name="description" content="Discover the story and mission behind Gamify. Learn how our deterministic daily logic, math, and vocabulary puzzles are engineered for brain fitness and global competition." />
+  <link rel="canonical" href="https://gamify.pages.dev/about" />
+  <link rel="icon" type="image/png" href="/images/gamify-logo.png" />
+  <style>
+    :root {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-color: #0f172a;
+      --text-muted: #64748b;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --border-color: #e2e8f0;
+      --header-bg: rgba(255, 255, 255, 0.95);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.68;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: var(--text-color);
+      font-weight: 900;
+      font-size: 1.35rem;
+    }
+    .brand-logo-img { width: 34px; height: 34px; border-radius: 8px; }
+    .nav-links { display: flex; align-items: center; gap: 1rem; }
+    .nav-btn {
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--accent);
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: #ffffff;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { background: #f8fafc; border-color: var(--accent); }
+    main {
+      flex: 1;
+      max-width: 860px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 4px 20px rgba(148, 163, 184, 0.08);
+    }
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      color: #0f172a;
+    }
+    .lead-text {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.25rem;
+    }
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin: 1.8rem 0 0.6rem 0;
+      color: #1e293b;
+    }
+    p, ul {
+      margin-bottom: 1rem;
+      color: #334155;
+      font-size: 0.98rem;
+    }
+    ul { padding-left: 1.4rem; }
+    li { margin-bottom: 0.4rem; }
+    a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    a:hover { text-decoration: underline; }
+    .mission-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+      margin: 1.75rem 0;
+    }
+    .mission-card {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.25rem;
+    }
+    .mission-card .icon { font-size: 1.8rem; margin-bottom: 0.5rem; display: block; }
+    .mission-card h3 { font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-bottom: 0.35rem; }
+    .mission-card p { font-size: 0.88rem; color: var(--text-muted); margin: 0; line-height: 1.5; }
+    footer.site-footer {
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 3rem 1.5rem 2rem 1.5rem;
+      margin-top: 4rem;
+      font-size: 0.9rem;
+    }
+    .footer-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 2.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 680px) {
+      .footer-container { grid-template-columns: 1fr; gap: 1.5rem; }
+      .content-card { padding: 1.5rem; }
+    }
+    .footer-col h4 {
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 0.9rem;
+    }
+    .footer-col ul { list-style: none; padding: 0; }
+    .footer-col li { margin-bottom: 0.5rem; }
+    .footer-col a { color: #cbd5e1; text-decoration: none; font-weight: 500; font-size: 0.88rem; }
+    .footer-col a:hover { color: #ffffff; text-decoration: underline; }
+    .footer-bottom {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="/" class="brand">
+      <img src="/images/gamify-logo.png" alt="Gamify" class="brand-logo-img" />
+      <span>Gamify</span>
+    </a>
+    <nav class="nav-links">
+      <a href="/" class="nav-btn">🎮 Play Games</a>
+      <a href="/about" class="nav-btn">About Us</a>
+      <a href="/contact" class="nav-btn">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <article class="content-card">
+      <h1>About Gamify</h1>
+      <div class="lead-text">Empowering minds daily through minimalist, high-impact logic puzzles and cerebral brain games.</div>
+
+      <h2>Our Vision and Mission</h2>
+      <p><strong>Gamify</strong> was founded with a singular conviction: digital puzzle gaming should be intellectually stimulating, universally accessible, and free of the exploitative dark patterns that plague modern mobile apps. We engineer daily cognitive workouts across language, arithmetic, spatial reasoning, and pattern recognition so anyone can sharpen their mental acuity in 10 to 15 focused minutes a day.</p>
+
+      <div class="mission-grid">
+        <div class="mission-card">
+          <span class="icon">🧠</span>
+          <h3>Cognitive Fitness</h3>
+          <p>Scientific daily micro-challenges designed to train verbal recall, numerical deduction, working memory, and pattern analysis.</p>
+        </div>
+        <div class="mission-card">
+          <span class="icon">🌍</span>
+          <h3>Fair Global Arena</h3>
+          <p>Deterministic mathematical seeds guarantee that every player across the globe tackles the exact same daily puzzle every UTC midnight.</p>
+        </div>
+        <div class="mission-card">
+          <span class="icon">⚡</span>
+          <h3>Static-First Speed</h3>
+          <p>Instant 0ms initial load times via Cloudflare Workers edge architecture, Progressive Web App (PWA) offline support, and zero bloat.</p>
+        </div>
+      </div>
+
+      <h2>Our Original Games Suite</h2>
+      <p>Gamify features a diverse, modular library of puzzle games tailored to different cognitive strengths:</p>
+      <ul>
+        <li><strong><a href="/games/word-guess">Word Guess:</a></strong> A strategic linguistic deduction game where players deduce a secret 5-letter word in 6 attempts using color-coded positional feedback.</li>
+        <li><strong><a href="/games/sudoku">Classic Sudoku:</a></strong> The timeless 9×9 number placement logic challenge requiring pure deductive reasoning without guessing or arithmetic.</li>
+        <li><strong><a href="/games/number-grid">Number Grid:</a></strong> An original cross-arithmetic matrix puzzle balancing row and column target sums through mathematical deduction.</li>
+        <li><strong><a href="/games/number-trail">Number Trail:</a></strong> A spatial path puzzle where players connect sequential numbers through an unbroken single continuous trail visiting every cell.</li>
+        <li><strong><a href="/games/memory-match">Memory Match:</a></strong> A fast-paced visual memory test challenging players to pair hidden symbols with minimal card flips and lightning speed.</li>
+        <li><strong><a href="/games/crossword">Daily Crossword:</a></strong> A concise 5×5 mini crossword testing general knowledge, vocabulary, and intersecting clue agility.</li>
+      </ul>
+
+      <h2>Editorial Standards & Procedural Generation</h2>
+      <p>All daily puzzles on Gamify are curated or procedurally generated using deterministic Pseudo-Random Number Generators (PRNG). This guarantees two vital player guarantees: first, that every puzzle has exactly one verified, mathematically valid solution; and second, that all players worldwide compete under identical, tamper-proof conditions on our World Wars leaderboards and weekly tournaments.</p>
+
+      <h2>Our Advertising and Monetization Philosophy</h2>
+      <p>Gamify is committed to 100% compliance with <strong>Google Publisher Policies</strong>. We believe advertising should support independent creators without degrading the player experience. We place clearly labeled, non-intrusive ad containers that never obstruct game boards, never cause layout shifts, and never trick users into accidental clicks.</p>
+
+      <h2>Get in Touch</h2>
+      <p>We love hearing from our community of puzzle solvers! Whether you have ideas for new game modes, feedback on puzzle difficulty, or technical suggestions, visit our <a href="/contact">Contact Page</a> or email us at <a href="mailto:support@gamify.tech">support@gamify.tech</a>.</p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <h4>About Gamify</h4>
+        <p style="color:#94a3b8; font-size:0.86rem; line-height:1.5;">Gamify is a modern daily puzzle platform engineered for brain fitness, logic deduction, and vocabulary mastery. Featuring original daily challenges generated deterministically every UTC midnight.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Daily Puzzles</h4>
+        <ul>
+          <li><a href="/games/word-guess">Word Guess</a></li>
+          <li><a href="/games/sudoku">Classic Sudoku</a></li>
+          <li><a href="/games/number-grid">Number Grid</a></li>
+          <li><a href="/games/number-trail">Number Trail</a></li>
+          <li><a href="/games/memory-match">Memory Match</a></li>
+          <li><a href="/games/crossword">Daily Crossword</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company & Legal</h4>
+        <ul>
+          <li><a href="/about">About Us</a></li>
+          <li><a href="/contact">Contact Support</a></li>
+          <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="/terms">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Gamify. All rights reserved. Complies with Google Publisher Policies.</div>
+      <div><a href="/privacy" style="color:#94a3b8;">Cookie & Ad Settings</a></div>
+    </div>
+  </footer>
+
+</body>
+</html>

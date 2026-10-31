@@ -52,6 +52,7 @@ export interface UserRow {
   pin_salt: string;
   coins: number;
   streak_count: number;
+  best_streak?: number;
   xp?: number;
   selected_frame?: string;
   selected_title?: string;

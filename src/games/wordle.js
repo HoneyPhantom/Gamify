@@ -176,11 +176,12 @@ export function evaluateWordleGuess(guess, targetWord) {
 
 export const gameConfig = {
   id: "wordle",
-  title: "Wordle",
-  description: "Guess the hidden 5-letter word in 6 attempts.",
+  slug: "word-guess",
+  title: "Word Guess",
+  description: "Deduce the secret 5-letter mystery word within 6 strategic guesses.",
   badge: "Free to Play",
   icon: "🔤",
-  thumbnail: "/images/wordle.png",
+  thumbnail: "/images/word-guess.png",
   isFree: true,
   gameUnlockCost: 0,
   difficulties: {
@@ -270,7 +271,7 @@ export const gameConfig = {
     showStatus(`Attempt 1 of ${maxAttempts}`, "var(--text-muted)");
 
     setRules(`
-      <h3>Wordle Rules & Scoring:</h3>
+      <h3>Word Guess Rules & Scoring:</h3>
       <ul>
         <li>Guess the 5-letter word in <strong>${maxAttempts} attempts</strong>.</li>
         <li><strong>Scoring:</strong> 1st try = 600 pts, 2nd = 500, 3rd = 400, 4th = 300, 5th = 200, 6th = 100.</li>
@@ -444,7 +445,7 @@ export const gameConfig = {
         const dateLabel = puzz.dateStr || '';
 
         const shareText = [
-          `🎮 Gamify Wordle (${diffLabel}${dateLabel ? ' · ' + dateLabel : ''})`,
+          `🎮 Gamify Word Guess (${diffLabel}${dateLabel ? ' · ' + dateLabel : ''})`,
           `${triesUsed}/${maxTries}`,
           '',
           grid,

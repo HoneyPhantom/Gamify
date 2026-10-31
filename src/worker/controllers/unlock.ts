@@ -28,7 +28,9 @@ export async function handleUnlock(request: Request, env: Env, user: Authenticat
     return errorResponse('Invalid JSON body in unlock request', 400);
   }
 
-  const { gameId, tier } = body;
+  const rawGameId = body.gameId;
+  const gameId = rawGameId === 'word-guess' ? 'wordle' : rawGameId;
+  const { tier } = body;
   if (!gameId || !tier) {
     return errorResponse("Missing required fields 'gameId' and 'tier'", 400);
   }

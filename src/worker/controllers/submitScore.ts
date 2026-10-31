@@ -30,7 +30,9 @@ export async function handleSubmitScore(
     return errorResponse('Invalid JSON body in submit score request', 400);
   }
 
-  const { gameId, difficulty, score, timeTakenMs } = body;
+  const { difficulty, score, timeTakenMs } = body;
+  const rawGameId = body.gameId;
+  const gameId = rawGameId === 'word-guess' ? 'wordle' : rawGameId;
   const playedDate = body.dateStr || getTodayUTC();
 
   // Basic sanity validation
@@ -132,6 +134,7 @@ export async function handleSubmitScore(
     isFirstDailyCompletion = true;
     const baseCoins = REWARD_COINS[difficulty] || 0;
     newStreak = calculateNextStreak(currentUser.last_played_date, currentUser.streak_count, playedDate);
+    const userBestStreak = Math.max(currentUser.best_streak || 0, newStreak);
 
     // DAILY PUZZLE STREAK FOR THIS GAME (Maintained by consecutive daily solves)
     nextGameCurrentStreak = calculateNextStreak(currentGameStats?.last_daily_date ?? null, currentGameStats?.current_streak ?? 0, playedDate);
@@ -183,7 +186,7 @@ export async function handleSubmitScore(
         total_score = user_game_stats.total_score + excluded.total_score,
         plays_count = user_game_stats.plays_count + 1,
         best_score = MAX(user_game_stats.best_score, excluded.best_score),
-        best_streak = excluded.best_streak,
+        best_streak = MAX(user_game_stats.best_streak, excluded.best_streak),
         current_streak = excluded.current_streak,
         last_daily_date = COALESCE(excluded.last_daily_date, user_game_stats.last_daily_date),
         updated_at = CURRENT_TIMESTAMP
@@ -224,16 +227,18 @@ export async function handleSubmitScore(
       );
     }
 
+    const userBestStreak = Math.max(currentUser.best_streak || 0, newStreak);
     batchStatements.push(
       env.DB.prepare(`
         UPDATE users 
         SET coins = coins + ?, 
             xp = COALESCE(xp, 0) + ?,
             streak_count = ?, 
+            best_streak = MAX(COALESCE(best_streak, 0), ?),
             last_played_date = ?, 
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).bind(coinsToAward, xpToAward, newStreak, playedDate, user.id)
+      `).bind(coinsToAward, xpToAward, newStreak, userBestStreak, playedDate, user.id)
     );
 
     // D. Daily Leaderboard Entry

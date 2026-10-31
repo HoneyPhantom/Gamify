@@ -10,7 +10,7 @@ import { handleGetShop, handleBuyCosmetic, handleEquipCosmetic } from './control
 import { handleCreateChallenge, handleGetChallenges, handleRespondChallenge } from './controllers/challenges';
 import { handleGetActivityFeed } from './controllers/activityFeed';
 import { calculateLevel } from './utils/level';
-import { getTodayUTC } from './utils/date';
+import { getTodayUTC, getYesterdayUTC, evaluateActiveStreak } from './utils/date';
 
 import { ensureDbSchema } from './utils/dbInit';
 
@@ -31,16 +31,37 @@ export default {
     // Static Asset Delivery (Cloudflare Workers Static Assets / Pages)
     // -------------------------------------------------------------------
     if (!url.pathname.startsWith('/api')) {
+      // 301 Permanent Redirect from trademarked /games/wordle to generic /games/word-guess
+      if (url.pathname === '/games/wordle' || url.pathname === '/games/wordle/') {
+        return Response.redirect(`${url.origin}/games/word-guess`, 301);
+      }
+
       if (env.ASSETS) {
-        const assetRes = await env.ASSETS.fetch(request);
+        let assetRes = await env.ASSETS.fetch(request);
         const pathname = url.pathname;
 
+        // SPA Fallback: for clean URLs like /games/*, /privacy, /about, /contact, /terms
+        if (assetRes.status === 404 && !pathname.includes('.')) {
+          // Check if there is a direct static HTML file in dist/ (e.g., /privacy -> /privacy.html)
+          const directHtmlUrl = new URL(`${pathname.replace(/\/$/, '')}.html`, request.url);
+          const directHtmlRes = await env.ASSETS.fetch(new Request(directHtmlUrl.toString(), request));
+          if (directHtmlRes.status === 200) {
+            assetRes = directHtmlRes;
+          } else {
+            // Fallback to index.html for client-side routing
+            const indexUrl = new URL('/index.html', request.url);
+            assetRes = await env.ASSETS.fetch(new Request(indexUrl.toString(), request));
+          }
+        }
+
         // Never allow browsers or intermediate caches to cache HTML or the service worker
-        if (pathname === '/' || pathname === '/index.html' || pathname === '/sw.js') {
+        const isHtmlOrSw = pathname === '/' || pathname === '/index.html' || pathname === '/sw.js' || (!pathname.includes('.') && !pathname.startsWith('/assets/'));
+        if (isHtmlOrSw) {
           const freshHeaders = new Headers(assetRes.headers);
           freshHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
           freshHeaders.set('Pragma', 'no-cache');
           freshHeaders.set('Expires', '0');
+          freshHeaders.set('Content-Type', pathname === '/sw.js' ? 'application/javascript; charset=utf-8' : 'text/html; charset=utf-8');
           return new Response(assetRes.body, {
             status: assetRes.status,
             statusText: assetRes.statusText,
@@ -107,7 +128,8 @@ export default {
       // -------------------------------------------------------------------
       const leaderboardMatch = url.pathname.match(/^\/api\/leaderboard\/([^/]+)$/);
       if (method === 'GET' && leaderboardMatch) {
-        const gameId = leaderboardMatch[1];
+        const rawGameId = leaderboardMatch[1];
+        const gameId = rawGameId === 'word-guess' ? 'wordle' : rawGameId;
         return await handleGetLeaderboard(request, env, gameId);
       }
 
@@ -119,12 +141,13 @@ export default {
         if ('error' in auth) return auth.error;
 
         const todayStr = getTodayUTC();
+        const yesterdayStr = getYesterdayUTC();
         const [user, unlocks, stats, todayCompletions, followingResult, followersCountResult, pendingChallengesResult] = await Promise.all([
-          env.DB.prepare('SELECT id, username, display_name, COALESCE(about, "Puzzle solver climbing to the top!") as about, coins, streak_count, COALESCE(xp, 0) as xp, COALESCE(selected_frame, "default") as selected_frame, COALESCE(selected_title, "") as selected_title, last_played_date, last_login_at FROM users WHERE id = ?')
+          env.DB.prepare('SELECT id, username, display_name, COALESCE(about, "Puzzle solver climbing to the top!") as about, coins, streak_count, COALESCE(best_streak, streak_count) as best_streak, COALESCE(xp, 0) as xp, COALESCE(selected_frame, "default") as selected_frame, COALESCE(selected_title, "") as selected_title, last_played_date, last_login_at FROM users WHERE id = ?')
             .bind(auth.user.id).first<any>(),
           env.DB.prepare('SELECT * FROM user_game_unlocks WHERE user_id = ?')
             .bind(auth.user.id).all(),
-          env.DB.prepare('SELECT game_id, total_score, plays_count, best_score, best_streak, current_streak, ROUND(CAST(total_score AS REAL) / plays_count, 2) AS average_score FROM user_game_stats WHERE user_id = ?')
+          env.DB.prepare('SELECT game_id, total_score, plays_count, best_score, best_streak, current_streak, last_daily_date, ROUND(CAST(total_score AS REAL) / plays_count, 2) AS average_score FROM user_game_stats WHERE user_id = ?')
             .bind(auth.user.id).all(),
           env.DB.prepare('SELECT game_id, difficulty FROM daily_completions WHERE user_id = ? AND played_date = ?')
             .bind(auth.user.id, todayStr).all(),
@@ -148,6 +171,24 @@ export default {
           `).bind(auth.user.id).all(),
         ]);
 
+        if (user) {
+          const { activeStreak, isMaintainedToday } = evaluateActiveStreak(user.last_played_date, user.streak_count, todayStr, yesterdayStr);
+          user.streak_count = activeStreak;
+          user.is_streak_maintained_today = isMaintainedToday;
+          user.best_streak = Math.max(user.best_streak || 0, activeStreak);
+        }
+
+        const rawStats = (stats.results || []) as any[];
+        const evaluatedStats = rawStats.map(s => {
+          const { activeStreak, isMaintainedToday } = evaluateActiveStreak(s.last_daily_date, s.current_streak, todayStr, yesterdayStr);
+          return {
+            ...s,
+            current_streak: activeStreak,
+            best_streak: Math.max(s.best_streak || 0, activeStreak),
+            is_streak_maintained_today: isMaintainedToday,
+          };
+        });
+
         const levelInfo = calculateLevel(user?.xp || 0);
         const following = followingResult.results || [];
 
@@ -157,7 +198,7 @@ export default {
             user,
             levelInfo,
             unlocks: unlocks.results || [],
-            stats: stats.results || [],
+            stats: evaluatedStats,
             todayCompletions: todayCompletions.results || [],
             following,
             followingCount: following.length,

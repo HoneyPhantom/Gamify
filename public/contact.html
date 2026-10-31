@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us - Gamify Puzzle Support & Feedback</title>
+  <meta name="description" content="Get in touch with the Gamify editorial and technical team. Send bug reports, game suggestions, partnership inquiries, or general player feedback." />
+  <link rel="canonical" href="https://gamify.pages.dev/contact" />
+  <link rel="icon" type="image/png" href="/images/gamify-logo.png" />
+  <style>
+    :root {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-color: #0f172a;
+      --text-muted: #64748b;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --border-color: #e2e8f0;
+      --header-bg: rgba(255, 255, 255, 0.95);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.68;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: var(--text-color);
+      font-weight: 900;
+      font-size: 1.35rem;
+    }
+    .brand-logo-img { width: 34px; height: 34px; border-radius: 8px; }
+    .nav-links { display: flex; align-items: center; gap: 1rem; }
+    .nav-btn {
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--accent);
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: #ffffff;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { background: #f8fafc; border-color: var(--accent); }
+    main {
+      flex: 1;
+      max-width: 860px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 4px 20px rgba(148, 163, 184, 0.08);
+    }
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      color: #0f172a;
+    }
+    .lead-text {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.25rem;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+    }
+    @media (max-width: 700px) {
+      .contact-grid { grid-template-columns: 1fr; }
+      .content-card { padding: 1.5rem; }
+    }
+    .contact-info-panel h2, .contact-form-panel h2 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: #1e293b;
+    }
+    .contact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+    .contact-item .icon { font-size: 1.35rem; }
+    .contact-item strong { display: block; color: #0f172a; font-size: 0.95rem; }
+    .contact-item span, .contact-item a { color: var(--text-muted); font-size: 0.9rem; }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 0.35rem;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: #0f172a;
+      outline: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--accent);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+    .form-textarea { resize: vertical; min-height: 110px; }
+    .btn-submit {
+      width: 100%;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-submit:hover { background: var(--accent-hover); }
+    .faq-section {
+      margin-top: 2.5rem;
+      border-top: 1px solid var(--border-color);
+      padding-top: 2rem;
+    }
+    .faq-section h2 { font-size: 1.35rem; font-weight: 800; margin-bottom: 1.25rem; }
+    .faq-item {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.15rem;
+      margin-bottom: 0.85rem;
+    }
+    .faq-item h3 { font-size: 0.98rem; font-weight: 800; color: #0f172a; margin-bottom: 0.35rem; }
+    .faq-item p { font-size: 0.9rem; color: #475569; margin: 0; line-height: 1.5; }
+    footer.site-footer {
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 3rem 1.5rem 2rem 1.5rem;
+      margin-top: 4rem;
+      font-size: 0.9rem;
+    }
+    .footer-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 2.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 680px) {
+      .footer-container { grid-template-columns: 1fr; gap: 1.5rem; }
+    }
+    .footer-col h4 { color: #ffffff; font-size: 1rem; font-weight: 800; margin-bottom: 0.9rem; }
+    .footer-col ul { list-style: none; padding: 0; }
+    .footer-col li { margin-bottom: 0.5rem; }
+    .footer-col a { color: #cbd5e1; text-decoration: none; font-weight: 500; font-size: 0.88rem; }
+    .footer-col a:hover { color: #ffffff; text-decoration: underline; }
+    .footer-bottom {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="/" class="brand">
+      <img src="/images/gamify-logo.png" alt="Gamify" class="brand-logo-img" />
+      <span>Gamify</span>
+    </a>
+    <nav class="nav-links">
+      <a href="/" class="nav-btn">🎮 Play Games</a>
+      <a href="/about" class="nav-btn">About Us</a>
+      <a href="/contact" class="nav-btn">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <article class="content-card">
+      <h1>Contact Us</h1>
+      <div class="lead-text">Have a question, feedback, or found a bug? We are here to help and reply to all player inquiries within 24–48 hours.</div>
+
+      <div class="contact-grid">
+        <div class="contact-info-panel">
+          <h2>Get in Touch</h2>
+          <div class="contact-item">
+            <span class="icon">✉️</span>
+            <div>
+              <strong>General Support & Bugs</strong>
+              <a href="mailto:support@gamify.tech">support@gamify.tech</a>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="icon">💡</span>
+            <div>
+              <strong>Feedback & Feature Ideas</strong>
+              <a href="mailto:feedback@gamify.tech">feedback@gamify.tech</a>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="icon">🛡️</span>
+            <div>
+              <strong>Privacy Inquiries</strong>
+              <a href="mailto:privacy@gamify.tech">privacy@gamify.tech</a>
+            </div>
+          </div>
+          <div class="contact-item">
+            <span class="icon">⏱️</span>
+            <div>
+              <strong>Response Time</strong>
+              <span>Monday – Saturday, within 24–48 hours</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-form-panel">
+          <h2>Send a Direct Message</h2>
+          <form id="contact-form" onsubmit="event.preventDefault(); alert('Thank you for reaching out! Your message has been received by the Gamify support team.'); this.reset();">
+            <div class="form-group">
+              <label for="contact-name">Your Name or Gamertag</label>
+              <input type="text" id="contact-name" class="form-input" required placeholder="e.g., Alex Solver" />
+            </div>
+            <div class="form-group">
+              <label for="contact-email">Email Address</label>
+              <input type="email" id="contact-email" class="form-input" required placeholder="name@example.com" />
+            </div>
+            <div class="form-group">
+              <label for="contact-subject">Topic / Game</label>
+              <input type="text" id="contact-subject" class="form-input" placeholder="e.g. Word Guess feedback, Bug report" />
+            </div>
+            <div class="form-group">
+              <label for="contact-message">Message</label>
+              <textarea id="contact-message" class="form-textarea" required placeholder="Describe your question, issue, or puzzle suggestion..."></textarea>
+            </div>
+            <button type="submit" class="btn-submit">Send Message</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="faq-section">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-item">
+          <h3>When do the daily puzzles reset?</h3>
+          <p>All daily puzzle games reset simultaneously at <strong>00:00 UTC</strong> every single day. Streak counters and Daily Sweep challenges evaluate against this calendar milestone.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How does the daily streak calculation work?</h3>
+          <p>Your streak count increases when you successfully solve a daily puzzle on consecutive UTC calendar days. If a day is missed, the active streak resets to 0 while your all-time best streak is permanently recorded on your profile.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Can I play Gamify offline on my mobile phone?</h3>
+          <p>Yes! Gamify is a Progressive Web App (PWA). Simply tap your browser menu and select "Install App" or "Add to Home Screen" to install Gamify directly on your home screen with 0ms offline startup.</p>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <h4>About Gamify</h4>
+        <p style="color:#94a3b8; font-size:0.86rem; line-height:1.5;">Gamify is a modern daily puzzle platform engineered for brain fitness, logic deduction, and vocabulary mastery. Featuring original daily challenges generated deterministically every UTC midnight.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Daily Puzzles</h4>
+        <ul>
+          <li><a href="/games/word-guess">Word Guess</a></li>
+          <li><a href="/games/sudoku">Classic Sudoku</a></li>
+          <li><a href="/games/number-grid">Number Grid</a></li>
+          <li><a href="/games/number-trail">Number Trail</a></li>
+          <li><a href="/games/memory-match">Memory Match</a></li>
+          <li><a href="/games/crossword">Daily Crossword</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company & Legal</h4>
+        <ul>
+          <li><a href="/about">About Us</a></li>
+          <li><a href="/contact">Contact Support</a></li>
+          <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="/terms">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Gamify. All rights reserved. Complies with Google Publisher Policies.</div>
+      <div><a href="/privacy" style="color:#94a3b8;">Cookie & Ad Settings</a></div>
+    </div>
+  </footer>
+
+</body>
+</html>

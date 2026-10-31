@@ -4,10 +4,37 @@
  * instant optimistic UI updates, Canvas confetti, and social features.
  */
 
-import { getAllGames, loadGameConfig, getGameConfig, getDailyPuzzle, getPlaygroundPuzzle, getTodayDateStr } from '../games/index.js';
+import { getAllGames, getGameBySlugOrId, loadGameConfig, getGameConfig, getDailyPuzzle, getPlaygroundPuzzle, getTodayDateStr, getYesterdayDateStr } from '../games/index.js';
+import { getStaticGameRules } from './gameRulesContent.js';
 import { api } from './api.js';
 import { launchConfetti } from './confetti.js';
 import { idbGet, idbSet } from './idb.js';
+
+/**
+ * Evaluates active streak status according to strict consecutive day rules:
+ * - If lastDate is today: streak maintained today.
+ * - If lastDate is yesterday: active streak from yesterday, can be continued today.
+ * - If lastDate < yesterday (missed day): active streak has reset to 0!
+ * Best streak is never reset and tracked automatically.
+ */
+function getStreakStatus(lastDate, count, best = 0) {
+  const today = getTodayDateStr();
+  const yesterday = getYesterdayDateStr();
+  const rawCount = Number(count) || 0;
+  const rawBest = Math.max(Number(best) || 0, rawCount);
+
+  if (!lastDate || rawCount <= 0) {
+    return { currentStreak: 0, bestStreak: rawBest, maintainedToday: false };
+  }
+  if (lastDate === today) {
+    return { currentStreak: rawCount, bestStreak: rawBest, maintainedToday: true };
+  }
+  if (lastDate === yesterday) {
+    return { currentStreak: rawCount, bestStreak: rawBest, maintainedToday: false };
+  }
+  // Missed consecutive day! Resets to 0
+  return { currentStreak: 0, bestStreak: rawBest, maintainedToday: false };
+}
 
 // =========================================================================
 // APPLICATION STATE
@@ -702,7 +729,10 @@ function renderGamesScrollList(searchQuery = '') {
   games.forEach(game => {
     const unlocked = isGameUnlocked(game.id);
     const stats = userStats[game.id] || {};
-    const currentStreak = stats.current_streak ?? 0;
+    const streakInfo = getStreakStatus(stats.last_daily_date || stats.last_played_date, stats.current_streak, stats.best_streak);
+    const isCompletedToday = Array.from(todayCompletions).some(c => c.startsWith(`${game.id}:`));
+    const isMaintainedToday = isCompletedToday || streakInfo.maintainedToday;
+    const currentStreak = isCompletedToday ? Math.max(1, streakInfo.currentStreak) : streakInfo.currentStreak;
 
     const card = document.createElement('div');
     card.className = 'game-card-box';
@@ -711,9 +741,7 @@ function renderGamesScrollList(searchQuery = '') {
 
     let topPillHtml = '';
     if (unlocked) {
-      const isCompletedToday = Array.from(todayCompletions).some(c => c.startsWith(`${game.id}:`));
-      const isMaintainedToday = isCompletedToday || (stats.last_played_date === getTodayDateStr() && currentStreak > 0);
-      const fireClass = isMaintainedToday ? 'streak-fire-active' : 'streak-fire-inactive';
+      const fireClass = isMaintainedToday && currentStreak > 0 ? 'streak-fire-active' : 'streak-fire-inactive';
       const fireTitle = isMaintainedToday ? `Streak Maintained Today (${currentStreak} Days 🔥)` : `Streak Not Yet Maintained Today (${currentStreak} Days)`;
       topPillHtml = `<div class="game-card-streak-pill ${fireClass}" title="${fireTitle}">🔥 ${currentStreak}</div>`;
     } else {
@@ -856,23 +884,89 @@ launcherSliderTrack?.addEventListener('click', (e) => {
   setLauncherDifficulty(selectedTier);
 });
 
-async function enterGame(gameId) {
+function hideAllStaticPages() {
+  document.querySelectorAll('.static-content-page').forEach(el => el.classList.add('hidden'));
+}
+
+function navigateToStaticPage(pageName, pushState = true) {
+  stopPuzzleTimer();
+  isInfinitePlay = false;
+  if (activeGameCleanup) {
+    try { activeGameCleanup(); } catch {}
+    activeGameCleanup = null;
+  }
+
+  const cleanPage = pageName.replace(/^\//, '').replace(/\.html$/, '');
+  const targetPath = `/${cleanPage}`;
+  if (pushState && window.location.pathname !== targetPath) {
+    window.history.pushState({ page: cleanPage }, '', targetPath);
+  }
+
+  const pageTitles = {
+    privacy: 'Privacy Policy - Gamify Daily Logic Puzzles',
+    about: 'About Us - Gamify Brain Games & Daily Puzzles',
+    contact: 'Contact Us - Gamify Puzzle Support & Feedback',
+    terms: 'Terms of Service - Gamify Daily Logic Puzzles'
+  };
+  document.title = pageTitles[cleanPage] || 'Gamify';
+
+  frontPageView?.classList.add('hidden');
+  gameView?.classList.add('hidden');
+  hideAllStaticPages();
+
+  const targetView = document.getElementById(`${cleanPage}-page-view`);
+  if (targetView) {
+    targetView.classList.remove('hidden');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function enterGame(gameIdOrSlug, pushState = true) {
+  const game = getGameBySlugOrId(gameIdOrSlug) || getAllGames().find(g => g.id === gameIdOrSlug);
+  const gameId = game?.id || gameIdOrSlug;
+  const gameSlug = game?.slug || gameId;
+  const gameTitle = game?.title || gameId;
+
   activeGameId = gameId;
   isInfinitePlay = false;
-  const game = getAllGames().find(g => g.id === gameId);
 
-  if (launcherGameTitle) launcherGameTitle.textContent = (game?.title || gameId).toUpperCase();
+  // 1. Update Dedicated URL & Document Title (Google AdSense & SEO indexability)
+  const targetPath = `/games/${gameSlug}`;
+  if (pushState && window.location.pathname !== targetPath) {
+    window.history.pushState({ page: 'game', gameId: gameId, slug: gameSlug }, '', targetPath);
+  }
+  document.title = `${gameTitle} - Free Daily Puzzle Online | Gamify`;
+
+  // 2. Update Breadcrumbs
+  const breadcrumbLauncher = document.getElementById('breadcrumb-launcher-title');
+  const breadcrumbArena = document.getElementById('breadcrumb-arena-title');
+  if (breadcrumbLauncher) breadcrumbLauncher.textContent = gameTitle;
+  if (breadcrumbArena) breadcrumbArena.textContent = gameTitle;
+
+  // 3. Update Static Indexable Written Rules Directly Below Game Canvas (250+ Words)
+  const rules = getStaticGameRules(gameId);
+  const rulesTitleEl = document.getElementById('rules-summary-title');
+  const rulesContentEl = document.getElementById('game-static-rules-content');
+  const rulesDropdown = document.getElementById('game-static-rules-dropdown');
+  if (rulesTitleEl) rulesTitleEl.textContent = rules.title;
+  if (rulesContentEl) rulesContentEl.innerHTML = rules.html;
+  if (rulesDropdown) rulesDropdown.open = true;
+
+  if (launcherGameTitle) launcherGameTitle.textContent = gameTitle.toUpperCase();
   if (launcherGameDesc) launcherGameDesc.textContent = game?.description || 'Daily puzzle challenge';
 
   setLauncherDifficulty('easy');
   updateLauncherInfiniteUI(gameId);
 
-  // Show launcher screen, hide arena
+  // Hide static pages & front page, show game view
+  hideAllStaticPages();
+  frontPageView?.classList.add('hidden');
+  gameView?.classList.remove('hidden');
+
+  // Show launcher screen, hide arena initially
   gameLauncherScreen?.classList.remove('hidden');
   gameArenaScreen?.classList.add('hidden');
 
-  frontPageView.classList.add('hidden');
-  gameView.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   updateScoreDisplay();
@@ -922,22 +1016,28 @@ btnBackToModes?.addEventListener('click', () => {
   gameLauncherScreen?.classList.remove('hidden');
 });
 
-function returnToHome() {
+function returnToHome(pushState = true) {
   stopPuzzleTimer();
   isInfinitePlay = false;
   if (activeGameCleanup) {
     try { activeGameCleanup(); } catch {}
     activeGameCleanup = null;
   }
-  gameView.classList.add('hidden');
-  frontPageView.classList.remove('hidden');
+  if (pushState && window.location.pathname !== '/') {
+    window.history.pushState({ page: 'home' }, '', '/');
+  }
+  document.title = 'Gamify — Minimalist Daily Puzzle Universe';
+
+  hideAllStaticPages();
+  gameView?.classList.add('hidden');
+  frontPageView?.classList.remove('hidden');
   updateDailySweepUI();
   renderGamesScrollList(gameSearchInput?.value?.trim() || '');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-btnLauncherBack?.addEventListener('click', returnToHome);
-brandLogo?.addEventListener('click', returnToHome);
+btnLauncherBack?.addEventListener('click', () => returnToHome(true));
+brandLogo?.addEventListener('click', () => returnToHome(true));
 
 // =========================================================================
 // 5. IMAGE 3 CLEAN HELP RULES DIALOG
@@ -993,16 +1093,20 @@ const GAME_HELP_CONTENT = {
 };
 
 function showGameHelp(gameId) {
-  const game = getAllGames().find(g => g.id === gameId);
-  if (!game) return;
-
-  if (helpDialogIcon) helpDialogIcon.textContent = game.icon || '📖';
-  if (helpDialogTitle) helpDialogTitle.textContent = `${game.title} - Rules`;
-  if (helpDialogBody) {
-    helpDialogBody.innerHTML = GAME_HELP_CONTENT[gameId] || `<p>${game.description}</p>`;
+  // If currently in launcher, transition to arena so rules directly below canvas are visible
+  if (gameArenaScreen?.classList.contains('hidden')) {
+    gameLauncherScreen?.classList.add('hidden');
+    gameArenaScreen?.classList.remove('hidden');
+    loadCurrentPuzzle();
   }
 
-  helpDialogModal?.classList.remove('hidden');
+  const rulesDetails = document.getElementById('game-static-rules-dropdown');
+  if (rulesDetails) {
+    rulesDetails.open = true;
+    rulesDetails.classList.add('highlight-pulse');
+    setTimeout(() => rulesDetails.classList.remove('highlight-pulse'), 1400);
+    rulesDetails.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 launcherBtnHelp?.addEventListener('click', () => showGameHelp(activeGameId));
@@ -1062,23 +1166,24 @@ function updateDailySweepUI() {
   if (!sweepContainer) return;
 
   const allGames = getAllGames();
-  // Dynamically sort games by user's current streak ascending (lowest streaks first)
+  // Dynamically sort games by user's active streak ascending (lowest streaks first)
   const sortedGames = [...allGames].sort((a, b) => {
-    const streakA = userStats[a.id]?.current_streak ?? 0;
-    const streakB = userStats[b.id]?.current_streak ?? 0;
-    return streakA - streakB || a.title.localeCompare(b.title);
+    const sA = getStreakStatus(userStats[a.id]?.last_daily_date || userStats[a.id]?.last_played_date, userStats[a.id]?.current_streak, userStats[a.id]?.best_streak);
+    const sB = getStreakStatus(userStats[b.id]?.last_daily_date || userStats[b.id]?.last_played_date, userStats[b.id]?.current_streak, userStats[b.id]?.best_streak);
+    return sA.activeStreak - sB.activeStreak || a.title.localeCompare(b.title);
   }).slice(0, 6);
 
   let completedCount = 0;
   sweepContainer.innerHTML = sortedGames.map(game => {
     const isCompleted = Array.from(todayCompletions).some(c => c.startsWith(`${game.id}:`));
     if (isCompleted) completedCount++;
-    const streak = userStats[game.id]?.current_streak ?? 0;
-    const maintainedToday = isCompleted || (userStats[game.id]?.last_played_date === getTodayDateStr() && streak > 0);
-    const fireClass = maintainedToday ? 'streak-fire-active' : 'streak-fire-inactive';
+    const streakInfo = getStreakStatus(userStats[game.id]?.last_daily_date || userStats[game.id]?.last_played_date, userStats[game.id]?.current_streak, userStats[game.id]?.best_streak);
+    const maintainedToday = isCompleted || streakInfo.maintainedToday;
+    const activeStreak = streakInfo.activeStreak;
+    const fireClass = maintainedToday && activeStreak > 0 ? 'streak-fire-active' : 'streak-fire-inactive';
     return `
-      <div class="sweep-game-pill ${isCompleted ? 'completed' : ''}" data-game-id="${game.id}" style="cursor:pointer;" title="Current Streak: ${streak} | Click to play">
-        <span class="sweep-pill-name">${game.icon || '🎮'} ${game.title} <span class="badge ${fireClass}" style="padding: 1px 6px; font-size: 0.72rem; margin-left: 2px;">🔥 ${streak}</span></span>
+      <div class="sweep-game-pill ${isCompleted ? 'completed' : ''}" data-game-id="${game.id}" style="cursor:pointer;" title="Current Streak: ${activeStreak} | Click to play">
+        <span class="sweep-pill-name">${game.title} <span class="badge ${fireClass}" style="padding: 1px 6px; font-size: 0.72rem; margin-left: 2px;">🔥 ${activeStreak}</span></span>
         <span class="sweep-pill-status">${isCompleted ? '✅' : '⏳'}</span>
       </div>
     `;
@@ -1589,29 +1694,31 @@ function openProfileModal() {
   if (profileFriendsFeedback) profileFriendsFeedback.style.display = 'none';
 
   // Overall streak count and active status
-  const totalStreak = Object.values(userStats).reduce((sum, s) => sum + (s.current_streak || 0), 0);
-  const maintainedAnyToday = Object.keys(userStats).some(gId => {
-    const isCompleted = Array.from(todayCompletions).some(c => c.startsWith(`${gId}:`));
-    return isCompleted || (userStats[gId]?.last_played_date === getTodayDateStr() && (userStats[gId]?.current_streak ?? 0) > 0);
-  });
-  if (profileStreakCount) profileStreakCount.textContent = totalStreak;
+  let totalActiveStreak = 0;
+  let maintainedAnyToday = false;
+  const allGames = getAllGames();
+  const sortedGames = [...allGames].map(g => {
+    const stats = userStats[g.id] || {};
+    const lastDate = stats.last_daily_date || stats.last_played_date;
+    const isCompletedToday = Array.from(todayCompletions).some(c => c.startsWith(`${g.id}:`));
+    const streakInfo = getStreakStatus(lastDate, stats.current_streak, stats.best_streak);
+    const maintainedToday = isCompletedToday || streakInfo.maintainedToday;
+    const activeStreak = streakInfo.activeStreak;
+    totalActiveStreak += activeStreak;
+    if (maintainedToday && activeStreak > 0) maintainedAnyToday = true;
+    return { ...g, bestStreak: streakInfo.bestStreak, currentStreak: activeStreak, maintainedToday };
+  }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
+
+  if (profileStreakCount) profileStreakCount.textContent = totalActiveStreak;
   const profileStreakBadge = document.getElementById('profile-streak-badge');
   if (profileStreakBadge) {
-    profileStreakBadge.className = maintainedAnyToday && totalStreak > 0 ? 'badge streak-fire-active' : 'badge streak-fire-inactive';
+    profileStreakBadge.className = maintainedAnyToday && totalActiveStreak > 0 ? 'badge streak-fire-active' : 'badge streak-fire-inactive';
   }
 
   // Render best streaks in descending order with fire condition
   if (profileStreaksGrid) {
-    const allGames = getAllGames();
-    const sortedGames = [...allGames].map(g => {
-      const stats = userStats[g.id] || {};
-      const isCompletedToday = Array.from(todayCompletions).some(c => c.startsWith(`${g.id}:`));
-      const maintainedToday = isCompletedToday || (stats.last_played_date === getTodayDateStr() && (stats.current_streak ?? 0) > 0);
-      return { ...g, bestStreak: stats.best_streak ?? 0, currentStreak: stats.current_streak ?? 0, maintainedToday };
-    }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
-
     profileStreaksGrid.innerHTML = sortedGames.map(g => `
-      <div class="streak-card ${g.maintainedToday ? 'streak-fire-active' : 'streak-fire-inactive'}" style="padding: 10px 12px; border-radius: 12px; transition: all 0.2s;">
+      <div class="streak-card ${g.maintainedToday && g.currentStreak > 0 ? 'streak-fire-active' : 'streak-fire-inactive'}" style="padding: 10px 12px; border-radius: 12px; transition: all 0.2s;">
         <div class="game-label" style="font-size: 0.76rem; font-weight: 800; text-transform: uppercase;">${g.title}</div>
         <div class="streak-val" style="font-size: 1.2rem; font-weight: 900; margin-top: 3px;">
           🔥 ${g.bestStreak}
@@ -1703,17 +1810,20 @@ async function openPublicProfile(username) {
       const allGames = getAllGames();
       const userStreaks = currentPublicUser.streaks || [];
       const streakMap = new Map();
-      userStreaks.forEach(s => streakMap.set(s.game_id, s.best_streak ?? 0));
+      userStreaks.forEach(s => {
+        const streakInfo = getStreakStatus(s.last_daily_date || s.last_played_date, s.current_streak, s.best_streak);
+        streakMap.set(s.game_id, streakInfo);
+      });
 
       const sortedGames = [...allGames].map(g => {
-        const best = streakMap.get(g.id) || 0;
-        return { ...g, bestStreak: best };
+        const info = streakMap.get(g.id) || { bestStreak: 0, activeStreak: 0, maintainedToday: false };
+        return { ...g, ...info };
       }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
 
       publicStreaksGrid.innerHTML = sortedGames.map(g => `
-        <div class="streak-card">
-          <div class="game-label">${g.title}</div>
-          <div class="streak-val">🔥 ${g.bestStreak}</div>
+        <div class="streak-card ${g.maintainedToday && g.activeStreak > 0 ? 'streak-fire-active' : 'streak-fire-inactive'}" style="padding: 10px 12px; border-radius: 12px; transition: all 0.2s;">
+          <div class="game-label" style="font-size: 0.76rem; font-weight: 800; text-transform: uppercase;">${g.title}</div>
+          <div class="streak-val" style="font-size: 1.2rem; font-weight: 900; margin-top: 3px;">🔥 ${g.bestStreak}</div>
         </div>
       `).join('');
     }
@@ -2808,7 +2918,72 @@ if ('serviceWorker' in navigator) {
 }
 
 // =========================================================================
-// 14. INITIAL BOOTSTRAP (Instant Offline Restore -> Single Batched Sync)
+// 14. DEDICATED URL ROUTING & NAVIGATION (AdSense / SEO Compliance)
+// =========================================================================
+
+function handleUrlRouting(pushState = false) {
+  const path = window.location.pathname.replace(/\/$/, '');
+  if (path.startsWith('/games/')) {
+    const slug = path.replace('/games/', '');
+    const game = getGameBySlugOrId(slug);
+    if (game) {
+      enterGame(game.id, pushState);
+      return;
+    }
+  }
+  if (path === '/privacy' || path === '/privacy.html') {
+    navigateToStaticPage('privacy', pushState);
+    return;
+  }
+  if (path === '/about' || path === '/about.html') {
+    navigateToStaticPage('about', pushState);
+    return;
+  }
+  if (path === '/contact' || path === '/contact.html') {
+    navigateToStaticPage('contact', pushState);
+    return;
+  }
+  if (path === '/terms' || path === '/terms.html') {
+    navigateToStaticPage('terms', pushState);
+    return;
+  }
+  // Default: Home
+  if (path === '' || path === '/') {
+    returnToHome(pushState);
+  }
+}
+
+window.addEventListener('popstate', () => {
+  handleUrlRouting(false);
+});
+
+function setupRoutingListeners() {
+  document.querySelectorAll('.btn-route-home').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      returnToHome(true);
+    });
+  });
+
+  document.querySelectorAll('.footer-nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const gameId = link.dataset.game;
+      if (gameId) enterGame(gameId, true);
+    });
+  });
+
+  document.querySelectorAll('.footer-page-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = link.dataset.page;
+      if (page) navigateToStaticPage(page, true);
+    });
+  });
+}
+
+// =========================================================================
+// 15. INITIAL BOOTSTRAP (Instant Offline Restore -> Single Batched Sync)
 // =========================================================================
 
 async function bootstrap() {
@@ -2819,15 +2994,18 @@ async function bootstrap() {
   // 1. Instant 0ms Offline Restore from IndexedDB
   await restoreOfflineState();
 
-  // 2. Single Batched Roundtrip to /api/me
+  // 2. Setup Dedicated Routing & Footer Links
+  setupRoutingListeners();
+
+  // 3. Resolve Initial URL Route (/games/sudoku, /privacy, /about, etc.)
+  handleUrlRouting(false);
+
+  // 4. Single Batched Roundtrip to /api/me
   try {
     await fetchUserProfile();
   } catch (err) {
     console.warn('Profile bootstrap note:', err);
   }
-
-  // 3. Pre-load World Wars Arena stats
-  loadWorldWarsData('all').catch(() => {});
 }
 
 bootstrap();

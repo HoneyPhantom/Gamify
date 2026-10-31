@@ -790,8 +790,10 @@
     .sweep-card {
       flex: 1.55;
       overflow: hidden;
-      border-color: rgba(34, 197, 94, 0.35);
-      background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+      border: 1.5px solid #10b981;
+      background: linear-gradient(145deg, #064e3b 0%, #065f46 50%, #047857 100%);
+      box-shadow: 0 8px 24px rgba(5, 150, 105, 0.25);
+      color: #ffffff;
     }
     .world-wars-card {
       flex: 1;
@@ -799,8 +801,10 @@
       max-width: 320px;
       aspect-ratio: 1 / 1;
       overflow: hidden;
-      border-color: rgba(234, 88, 12, 0.35);
-      background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+      border: 1.5px solid #f97316;
+      background: linear-gradient(145deg, #431407 0%, #7c2d12 45%, #c2410c 100%);
+      box-shadow: 0 8px 24px rgba(234, 88, 12, 0.25);
+      color: #ffffff;
     }
     @media (max-width: 680px) {
       .world-wars-card {
@@ -815,20 +819,21 @@
     }
     .world-wars-stat-pill {
       flex: 1;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(234, 88, 12, 0.2);
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 10px;
       padding: 0.45rem 0.65rem;
       font-size: 0.78rem;
-      color: var(--text-muted);
+      color: #fed7aa;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 2px;
+      backdrop-filter: blur(8px);
     }
     .world-wars-stat-pill strong {
-      font-size: 1.05rem;
-      color: #ea580c;
+      font-size: 1.12rem;
+      color: #fbbf24;
       font-weight: 900;
     }
     .btn-enter-world-wars {
@@ -1550,51 +1555,63 @@
       border: 1px solid #fde68a;
     }
     .sweep-desc {
-      font-size: 0.82rem;
-      color: #15803d;
-      margin: 0 0 0.75rem 0;
+      font-size: 0.85rem;
+      color: #d1fae5;
+      margin: 0 0 0.85rem 0;
       line-height: 1.4;
+      font-weight: 600;
     }
     .sweep-progress-bar {
-      display: flex;
-      gap: 0.65rem;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 6px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(34, 197, 94, 0.4) transparent;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
       width: 100%;
       box-sizing: border-box;
+      overflow: visible;
     }
-    .sweep-progress-bar::-webkit-scrollbar {
-      height: 4px;
-    }
-    .sweep-progress-bar::-webkit-scrollbar-thumb {
-      background: rgba(34, 197, 94, 0.3);
-      border-radius: 9999px;
+    @media (max-width: 560px) {
+      .sweep-progress-bar {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
     }
     .sweep-game-pill {
-      flex-shrink: 0;
-      min-width: 110px;
+      min-width: 0;
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 6px;
-      background: #ffffff;
-      border: 1px solid #bbf7d0;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 12px;
-      padding: 7px 12px;
+      padding: 7px 10px;
       font-size: 0.82rem;
-      font-weight: 700;
-      color: #166534;
-      transition: all 0.2s;
-      white-space: nowrap;
+      font-weight: 800;
+      color: #ffffff;
+      transition: all 0.18s ease;
+      box-sizing: border-box;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      cursor: pointer;
+    }
+    .sweep-game-pill:hover {
+      background: rgba(255, 255, 255, 0.28);
+      transform: translateY(-1px);
     }
     .sweep-game-pill.completed {
-      background: #dcfce7;
-      border-color: #4ade80;
-      color: #14532d;
-      box-shadow: 0 2px 6px rgba(34, 197, 94, 0.15);
+      background: #ecfdf5;
+      border-color: #34d399;
+      color: #064e3b;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    }
+    .sweep-pill-name {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .sweep-pill-status { font-size: 0.95rem; }
 
@@ -2524,7 +2541,228 @@
         height: 40px;
         font-size: 1rem;
       }
+    /* Breadcrumb navigation for dedicated game and policy pages */
+    .breadcrumb-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      padding: 0 0.25rem;
     }
+    .breadcrumb-link {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.15s;
+      cursor: pointer;
+    }
+    .breadcrumb-link:hover { text-decoration: underline; color: var(--accent-hover); }
+    .breadcrumb-sep { color: #94a3b8; font-size: 0.75rem; }
+    .breadcrumb-current { color: var(--text-color); }
+
+    /* Responsive AdSense-Compliant Ad Banner Layouts */
+    .ad-banner-wrapper {
+      width: 100%;
+      max-width: 728px;
+      margin: 1.25rem auto;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-sizing: border-box;
+    }
+    .ad-banner-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 5px;
+      user-select: none;
+    }
+    .ad-banner-slot {
+      width: 100%;
+      min-height: 90px;
+      background: rgba(248, 250, 252, 0.7);
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      overflow: hidden;
+      transition: min-height 0.2s ease;
+    }
+    .top-header-ad { margin: 0.75rem auto 1.25rem auto; }
+    .in-content-ad { margin: 1.5rem auto 1.5rem auto; }
+    .bottom-footer-ad { margin: 2rem auto 1rem auto; }
+    @media (max-width: 640px) {
+      .ad-banner-slot { min-height: 60px; border-radius: 8px; }
+      .in-content-ad .ad-banner-slot { min-height: 250px; } /* Fits 300x250 mobile rectangle */
+    }
+
+    /* Static On-Page Indexable Game Rules Dropdown (Directly Below Game Canvas) */
+    .game-rules-details {
+      margin-top: 1.75rem;
+      background: #f8fafc;
+      border: 1.5px solid var(--border-color);
+      border-radius: 18px;
+      padding: 1.15rem 1.4rem;
+      box-shadow: 0 4px 16px rgba(148, 163, 184, 0.08);
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .game-rules-details[open] {
+      border-color: #93c5fd;
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.08);
+    }
+    .game-rules-details.highlight-pulse {
+      animation: rulesPulse 1.2s ease-in-out;
+    }
+    @keyframes rulesPulse {
+      0%, 100% { border-color: #93c5fd; }
+      50% { border-color: #0284c7; box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.25); }
+    }
+    .game-rules-summary {
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: #0f172a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+      outline: none;
+      list-style: none;
+    }
+    .game-rules-summary::-webkit-details-marker { display: none; }
+    .rules-summary-toggle {
+      font-size: 0.78rem;
+      color: var(--accent);
+      transition: transform 0.2s ease;
+    }
+    .game-rules-details[open] .rules-summary-toggle {
+      transform: rotate(180deg);
+    }
+    .game-rules-body {
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+      color: #334155;
+      font-size: 0.94rem;
+      line-height: 1.68;
+    }
+    .game-rules-body h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 1.2rem 0 0.4rem 0;
+    }
+    .game-rules-body h3:first-child { margin-top: 0; }
+    .game-rules-body p { margin-bottom: 0.85rem; }
+    .game-rules-body ul { padding-left: 1.4rem; margin-bottom: 0.85rem; }
+    .game-rules-body li { margin-bottom: 0.35rem; }
+
+    /* Static Dedicated Policy & About Pages Views */
+    .static-content-page {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2.25rem;
+      box-shadow: 0 4px 20px rgba(148, 163, 184, 0.08);
+      margin: 0 auto;
+      max-width: 860px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    @media (max-width: 640px) {
+      .static-content-page { padding: 1.5rem 1.15rem; }
+    }
+    .static-content-page h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      color: #0f172a;
+    }
+    .static-page-meta {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+    .static-content-page h2 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 1.75rem 0 0.5rem 0;
+    }
+    .static-content-page p { margin-bottom: 1rem; color: #334155; line-height: 1.68; }
+    .static-content-page ul { padding-left: 1.4rem; margin-bottom: 1rem; color: #334155; }
+    .static-content-page li { margin-bottom: 0.4rem; }
+    .static-policy-alert {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin: 1.25rem 0;
+      color: #166534;
+    }
+
+    /* Site Footer (Compliant with Google AdSense Policies) */
+    .site-footer {
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 3rem 1.5rem 2rem 1.5rem;
+      margin-top: 4rem;
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .footer-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 2.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 680px) {
+      .footer-container { grid-template-columns: 1fr; gap: 1.75rem; }
+    }
+    .footer-col h4 {
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 0.9rem;
+    }
+    .footer-col p { font-size: 0.86rem; line-height: 1.55; color: #94a3b8; margin: 0; }
+    .footer-col ul { list-style: none; padding: 0; margin: 0; }
+    .footer-col li { margin-bottom: 0.5rem; }
+    .footer-col a {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.88rem;
+      transition: color 0.15s;
+      cursor: pointer;
+    }
+    .footer-col a:hover { color: #ffffff; text-decoration: underline; }
+    .footer-bottom {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.82rem;
+    }
+    .footer-bottom a { color: #94a3b8; text-decoration: none; }
+    .footer-bottom a:hover { color: #ffffff; text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -2558,6 +2796,12 @@
   </header>
 
   <main>
+    <!-- Google AdSense Responsive Top Banner (Policy Compliant & CLS Safe) -->
+    <div class="ad-banner-wrapper top-header-ad" id="ad-slot-header">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-banner-slot" id="adsense-top-banner"></div>
+    </div>
+
     <!-- ================================================================= -->
     <!-- VIEW 1: FRONT PAGE (HERO FEATURES ROW & APP ICON GAMES)           -->
     <!-- ================================================================= -->
@@ -2567,22 +2811,22 @@
         <!-- Daily Sweep Challenge Tracker Card (Rectangular Banner) -->
         <div id="daily-sweep-card" class="feature-square-card sweep-card">
           <div class="sweep-header">
-            <span class="sweep-title">🏆 Daily Sweep</span>
-            <span id="sweep-bonus-tag" class="sweep-bonus-tag">+50 Bonus Coins 🪙</span>
+            <span class="sweep-title" style="color: #ffffff; font-weight: 900;">🏆 Daily Sweep</span>
+            <span id="sweep-bonus-tag" class="sweep-bonus-tag" style="background:#fef08a; color:#854d0e; border:1px solid #facc15; font-weight:800; font-size:0.78rem; box-shadow:0 2px 8px rgba(250,204,21,0.35);">+50 Bonus Coins 🪙</span>
           </div>
           <p id="sweep-status-desc" class="sweep-desc">Solve today's puzzles to claim +50 Bonus Coins 🪙</p>
           <div class="sweep-progress-bar" id="sweep-progress-bar">
-            <!-- Populated dynamically with user's least 6 streaks -->
+            <!-- Populated dynamically with all games grid -->
           </div>
         </div>
 
         <!-- World Wars Card (Cubic Shape) -->
         <div id="world-wars-card" class="feature-square-card world-wars-card">
           <div class="sweep-header">
-            <span class="sweep-title" style="color: #ea580c;">⚔️ World Wars</span>
-            <span class="sweep-bonus-tag" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5;">Live Season 🔥</span>
+            <span class="sweep-title" style="color: #ffffff; font-weight: 900;">⚔️ World Wars</span>
+            <span class="sweep-bonus-tag" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5; font-weight:800; box-shadow:0 2px 8px rgba(239,68,68,0.4);">Live Season 🔥</span>
           </div>
-          <p class="sweep-desc">Climb the world podium and conquer weekly seasons ⚔️</p>
+          <p class="sweep-desc" style="color: #fed7aa; font-weight: 600;">Climb the world podium and conquer weekly seasons ⚔️</p>
           <div class="world-wars-preview-row">
             <div class="world-wars-stat-pill">
               <span>🏆 Global Rank</span>
@@ -2614,6 +2858,14 @@
     <section id="game-view" class="hidden">
       <!-- 2A. Difficulty Launcher Screen (Image 2 style) -->
       <div id="game-launcher-screen" class="launcher-screen">
+        <div class="breadcrumb-nav" style="width: 100%; max-width: 480px; justify-content: flex-start;">
+          <a href="/" class="breadcrumb-link btn-route-home">Home</a>
+          <span class="breadcrumb-sep">›</span>
+          <a href="/" class="breadcrumb-link btn-route-home">Games</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current" id="breadcrumb-launcher-title">Word Guess</span>
+        </div>
+
         <div class="launcher-top-bar">
           <button type="button" class="launcher-circle-btn" id="btn-launcher-back" title="Back to Games">‹</button>
           <h2 class="launcher-title" id="launcher-game-title">GAME TITLE</h2>
@@ -2655,6 +2907,14 @@
 
       <!-- 2B. Active Arena Screen (Shown when clicking PLAY) -->
       <div id="game-arena-screen" class="hidden">
+        <div class="breadcrumb-nav">
+          <a href="/" class="breadcrumb-link btn-route-home">Home</a>
+          <span class="breadcrumb-sep">›</span>
+          <a href="/" class="breadcrumb-link btn-route-home">Games</a>
+          <span class="breadcrumb-sep">›</span>
+          <span class="breadcrumb-current" id="breadcrumb-arena-title">Word Guess</span>
+        </div>
+
         <div class="game-top-bar" style="margin-bottom: 0.75rem;">
           <button class="back-btn" id="btn-back-to-modes">
             ‹ Change Difficulty
@@ -2708,8 +2968,49 @@
 
           <!-- Dynamic Game Arena Canvas / Board -->
           <div id="game-arena-content">
-            <!-- Wordle, Number Grid, or Number Trail board rendered dynamically -->
+            <!-- Word Guess, Number Grid, or Number Trail board rendered dynamically -->
           </div>
+
+          <!-- Responsive In-Content Ad Placement (Google AdSense Policy Compliant) -->
+          <div class="ad-banner-wrapper in-content-ad" id="ad-slot-game-incontent">
+            <span class="ad-banner-label">Advertisement</span>
+            <div class="ad-banner-slot" id="adsense-game-mid-slot"></div>
+          </div>
+
+          <!-- Static Indexable Written Rules & Instructions (Directly Below Game Canvas for SEO/AdSense) -->
+          <details id="game-static-rules-dropdown" class="game-rules-details" open>
+            <summary class="game-rules-summary">
+              <span style="display:flex; align-items:center; gap:0.5rem;">
+                <span>📖</span>
+                <span id="rules-summary-title">How to Play Word Guess</span>
+              </span>
+              <span class="rules-summary-toggle">▼</span>
+            </summary>
+            <div id="game-static-rules-content" class="game-rules-body">
+              <h3>Goal and Daily Challenge Overview</h3>
+              <p>Word Guess is an engaging linguistic deduction puzzle where your mission is to discover a hidden 5-letter mystery word within six strategic attempts. Every puzzle is generated deterministically each calendar day at 00:00 UTC, providing an identical, fair challenge for players worldwide without network latency.</p>
+
+              <h3>Color Code Definitions & Feedback System</h3>
+              <p>After submitting each 5-letter word guess, the tile background colors change to provide precise deductive feedback:</p>
+              <ul>
+                <li><strong style="color: #10b981;">🟩 Green (Correct Position):</strong> The letter appears in the secret word and is placed in the exact right column.</li>
+                <li><strong style="color: #f59e0b;">🟨 Yellow (Present in Word):</strong> The letter is part of the secret mystery word, but it is currently located in a different slot.</li>
+                <li><strong style="color: #64748b;">⬛ Grey / Dark (Absent):</strong> The letter does not appear anywhere in the target word for this daily puzzle.</li>
+              </ul>
+
+              <h3>Controls and Input Mechanics</h3>
+              <p>You can type your guesses using your physical keyboard (letters A through Z, Backspace to delete, and Enter to submit your attempt) or by tapping the on-screen responsive touch keyboard. Each submitted guess must be a legitimate 5-letter English word from the curated vocabulary dictionary. The cursor highlights the current cell automatically for fast, intuitive typing.</p>
+
+              <h3>Difficulty Tiers and Infinite Mode</h3>
+              <p>Gamify features three progressive difficulty levels: <strong>Easy</strong> grants you 6 attempts, <strong>Medium</strong> tightens the margin to 5 attempts, and <strong>Hard</strong> challenges wordmasters with only 4 attempts. When you unlock <strong>Infinite Mode</strong> with your earned coins, you can play limitless randomly generated 5-letter puzzles anytime without waiting for the daily midnight UTC reset.</p>
+
+              <h3>Proven Strategies and Pro Tips</h3>
+              <p>Begin your game with vowel-heavy anchor words containing high-frequency consonants such as "CRANE", "SLATE", "AUDIO", or "ROAST" to test the most common vowels (A, E, I, O) and consonants (R, S, T, L, N). Avoid re-using letters marked grey in subsequent attempts. Use your second attempt to explore remaining vowels before committing to candidate word patterns.</p>
+
+              <h3>Scoring, Speed Bonuses and Daily Streaks</h3>
+              <p>Solving on your 1st attempt awards 600 points, 2nd try = 500 pts, 3rd try = 400 pts, down to 100 pts for a 6th-try solve. Additional Speed Bonus points (+50 pts for under 30s, +25 pts for under 60s, +10 pts for under 120s) reward quick thinkers. Consecutive daily solves build active streaks that yield bonus coins!</p>
+            </div>
+          </details>
 
           <!-- Hidden container to retain rules text for the modal -->
           <div class="rules hidden" id="game-rules-box">
@@ -2727,7 +3028,144 @@
         <div id="leaderboard-view">Loading standings...</div>
       </div>
     </section>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 3: PRIVACY POLICY PAGE (DEDICATED ROUTE /privacy)            -->
+    <!-- ================================================================= -->
+    <section id="privacy-page-view" class="static-content-page hidden">
+      <div class="breadcrumb-nav">
+        <a href="/" class="breadcrumb-link btn-route-home">Home</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">Privacy Policy</span>
+      </div>
+      <h1>Privacy Policy</h1>
+      <div class="static-page-meta">Last Updated: October 31, 2026 · Google Publisher Policy Compliant</div>
+
+      <p>Welcome to <strong>Gamify</strong>. We are dedicated to delivering free, high-quality daily puzzle games while rigorously respecting the privacy and data rights of our players worldwide.</p>
+
+      <h2>1. Information We Collect</h2>
+      <p>Gamify operates with a privacy-first, minimal-data philosophy. Players can solve puzzles as a guest without creating an account. If you register, we store a username, display name, and securely salted SHA-256 PIN hash. Gameplay stats and streaks are stored to maintain leaderboard fairness.</p>
+
+      <div class="static-policy-alert">
+        <h3 style="margin-bottom:0.4rem; font-size:1.05rem;">2. Google AdSense & Advertising Disclosures</h3>
+        <p style="margin:0;">Third-party vendors, including <strong>Google</strong>, use cookies to serve ads based on prior visits to this website. Google's use of advertising cookies enables it and its partners to serve ads based on your visit to Gamify and other sites. You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" style="color:#15803d; font-weight:700;">Google Ads Settings</a> or <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" style="color:#15803d; font-weight:700;">www.aboutads.info</a>.</p>
+      </div>
+
+      <h2>3. Local Storage and IndexedDB</h2>
+      <p>Gamify uses local storage and IndexedDB on your device to cache unlocked puzzles and streak progress locally for fast 0ms offline startup.</p>
+
+      <h2>4. User Rights and Contact</h2>
+      <p>Players may request data deletion or review their account details at any time by contacting us at <a href="mailto:privacy@gamify.tech">privacy@gamify.tech</a>.</p>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 4: ABOUT US PAGE (DEDICATED ROUTE /about)                    -->
+    <!-- ================================================================= -->
+    <section id="about-page-view" class="static-content-page hidden">
+      <div class="breadcrumb-nav">
+        <a href="/" class="breadcrumb-link btn-route-home">Home</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">About Us</span>
+      </div>
+      <h1>About Gamify</h1>
+      <div class="static-page-meta">Cerebral Brain Games & Daily Cognitive Fitness</div>
+
+      <p><strong>Gamify</strong> is a daily logic puzzle and brain-training platform. We engineer daily challenges across vocabulary, arithmetic deduction, spatial reasoning, and memory to stimulate mental fitness in 10 to 15 focused minutes a day.</p>
+
+      <h2>Our Original Games Suite</h2>
+      <ul>
+        <li><strong>Word Guess:</strong> 5-letter daily vocabulary deduction challenge.</li>
+        <li><strong>Classic Sudoku:</strong> Pure deductive 9×9 number placement.</li>
+        <li><strong>Number Grid:</strong> Mathematical cross-arithmetic target sum balancing.</li>
+        <li><strong>Number Trail:</strong> Continuous sequential pathfinding visiting every cell.</li>
+        <li><strong>Memory Match:</strong> Fast-paced visual memory pair matching.</li>
+        <li><strong>Daily Crossword:</strong> Concise 5×5 mini crossword puzzle.</li>
+      </ul>
+
+      <h2>Procedural Generation & Fairness</h2>
+      <p>Every daily challenge is procedurally generated using deterministic seeds at 00:00 UTC, ensuring that all players worldwide face the identical fair puzzle every day.</p>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 5: CONTACT US PAGE (DEDICATED ROUTE /contact)                -->
+    <!-- ================================================================= -->
+    <section id="contact-page-view" class="static-content-page hidden">
+      <div class="breadcrumb-nav">
+        <a href="/" class="breadcrumb-link btn-route-home">Home</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">Contact Us</span>
+      </div>
+      <h1>Contact Us</h1>
+      <div class="static-page-meta">We are here to help · Player support within 24–48 hours</div>
+
+      <p>Have a question, feedback, or found a bug? Get in touch with the Gamify editorial and technical team:</p>
+      <ul>
+        <li><strong>General Support & Bugs:</strong> <a href="mailto:support@gamify.tech">support@gamify.tech</a></li>
+        <li><strong>Game Suggestions & Feedback:</strong> <a href="mailto:feedback@gamify.tech">feedback@gamify.tech</a></li>
+        <li><strong>Privacy Inquiries:</strong> <a href="mailto:privacy@gamify.tech">privacy@gamify.tech</a></li>
+      </ul>
+
+      <h2>Frequently Asked Questions</h2>
+      <p><strong>When do puzzles reset?</strong> Daily puzzles reset at 00:00 UTC every day.</p>
+      <p><strong>How do streaks work?</strong> Streaks increment on consecutive UTC days. If a day is missed, the active streak resets to 0 while your best streak is saved permanently.</p>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 6: TERMS OF SERVICE PAGE (DEDICATED ROUTE /terms)            -->
+    <!-- ================================================================= -->
+    <section id="terms-page-view" class="static-content-page hidden">
+      <div class="breadcrumb-nav">
+        <a href="/" class="breadcrumb-link btn-route-home">Home</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">Terms of Service</span>
+      </div>
+      <h1>Terms of Service</h1>
+      <div class="static-page-meta">Platform Terms & Fair Play Rules</div>
+
+      <p>By accessing or using Gamify, you agree to these Terms. Gamify provides logic puzzle games for personal, non-commercial entertainment. Players must adhere to fair play: no bots, automated solvers, or score manipulation.</p>
+      <p>For legal inquiries, contact <a href="mailto:legal@gamify.tech">legal@gamify.tech</a>.</p>
+    </section>
+
+    <!-- Google AdSense Bottom Banner Placement (Responsive Above Footer) -->
+    <div class="ad-banner-wrapper bottom-footer-ad" id="ad-slot-bottom">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-banner-slot" id="adsense-bottom-banner"></div>
+    </div>
   </main>
+
+  <!-- Google AdSense Compliant Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <h4>About Gamify</h4>
+        <p>Gamify is a modern daily puzzle platform engineered for brain fitness, logic deduction, and vocabulary mastery. Featuring original daily challenges generated deterministically every UTC midnight.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Daily Logic Games</h4>
+        <ul>
+          <li><a href="/games/word-guess" class="footer-nav-link" data-game="wordle">Word Guess</a></li>
+          <li><a href="/games/sudoku" class="footer-nav-link" data-game="sudoku">Classic Sudoku</a></li>
+          <li><a href="/games/number-grid" class="footer-nav-link" data-game="number-grid">Number Grid</a></li>
+          <li><a href="/games/number-trail" class="footer-nav-link" data-game="number-trail">Number Trail</a></li>
+          <li><a href="/games/memory-match" class="footer-nav-link" data-game="memory-match">Memory Match</a></li>
+          <li><a href="/games/crossword" class="footer-nav-link" data-game="crossword">Daily Crossword</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company & Legal</h4>
+        <ul>
+          <li><a href="/about" class="footer-page-link" data-page="about">About Us</a></li>
+          <li><a href="/contact" class="footer-page-link" data-page="contact">Contact Support</a></li>
+          <li><a href="/privacy" class="footer-page-link" data-page="privacy">Privacy Policy</a></li>
+          <li><a href="/terms" class="footer-page-link" data-page="terms">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Gamify. All rights reserved. Complies with Google Publisher Policies.</div>
+      <div><a href="/privacy" class="footer-page-link" data-page="privacy" style="color:#94a3b8;">Cookie & Ad Choices</a></div>
+    </div>
+  </footer>
 
   <!-- =================================================================== -->
   <!-- 4-DIGIT PIN AUTHENTICATION MODAL                                    -->
@@ -3110,12 +3548,12 @@
           <span style="font-size: 0.82rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Podium & Standings:</span>
           <select id="world-wars-game-filter" class="form-input" style="width: auto; min-width: 210px; padding: 0.4rem 0.8rem; font-weight: 700; border-radius: 8px;">
             <option value="all" selected>🌐 Total Score (All Games)</option>
-            <option value="wordle">🔤 Wordle</option>
+            <option value="wordle">🔤 Word Guess</option>
             <option value="number-grid">🔢 Number Grid</option>
             <option value="number-trail">〰️ Number Trail</option>
-            <option value="sudoku">🧩 Sudoku</option>
+            <option value="sudoku">🧩 Classic Sudoku</option>
             <option value="memory-match">🃏 Memory Match</option>
-            <option value="crossword">📝 Crossword</option>
+            <option value="crossword">📝 Daily Crossword</option>
           </select>
         </div>
 

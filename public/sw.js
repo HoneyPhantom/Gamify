@@ -5,13 +5,18 @@
  * while refreshing the cache in the background. Only /api/ endpoints bypass cache.
  */
 
-const CACHE_NAME = 'gamify-sw-v5-swr';
+const CACHE_NAME = 'gamify-sw-v7-adsense-ready';
 
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/privacy.html',
+  '/about.html',
+  '/contact.html',
+  '/terms.html',
   '/images/gamify-logo.png',
+  '/images/word-guess.png',
   '/images/wordle.png',
   '/images/number-grid.png',
   '/images/number-trail.png',

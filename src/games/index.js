@@ -15,11 +15,12 @@ const loadedConfigs = new Map();
 const GAMES_CATALOG = [
   {
     id: 'wordle',
-    title: 'Wordle',
-    description: 'Guess the hidden 5-letter word in 6 attempts.',
+    slug: 'word-guess',
+    title: 'Word Guess',
+    description: 'Deduce the secret 5-letter mystery word within 6 strategic guesses.',
     badge: 'Free to Play',
     icon: '🔤',
-    thumbnail: '/images/wordle.png',
+    thumbnail: '/images/word-guess.png',
     isFree: true,
     gameUnlockCost: 0,
     difficulties: [
@@ -31,6 +32,7 @@ const GAMES_CATALOG = [
   },
   {
     id: 'number-grid',
+    slug: 'number-grid',
     title: 'Number Grid',
     description: 'Deduce missing numbers to balance row & column target sums.',
     badge: '100 Coins to Unlock',
@@ -47,6 +49,7 @@ const GAMES_CATALOG = [
   },
   {
     id: 'number-trail',
+    slug: 'number-trail',
     title: 'Number Trail',
     description: 'Connect numbers in sequence with one continuous path visiting every cell.',
     badge: '150 Coins to Unlock',
@@ -63,7 +66,8 @@ const GAMES_CATALOG = [
   },
   {
     id: 'sudoku',
-    title: 'Sudoku',
+    slug: 'sudoku',
+    title: 'Classic Sudoku',
     description: 'Fill the grid with digits so every row, col, and subgrid has unique numbers.',
     badge: '150 Coins to Unlock',
     icon: '🔢',
@@ -79,6 +83,7 @@ const GAMES_CATALOG = [
   },
   {
     id: 'memory-match',
+    slug: 'memory-match',
     title: 'Memory Match',
     description: 'Flip cards and match all emoji pairs with fewest moves and fastest time!',
     badge: '150 Coins to Unlock',
@@ -96,7 +101,8 @@ const GAMES_CATALOG = [
   },
   {
     id: 'crossword',
-    title: 'Crossword',
+    slug: 'crossword',
+    title: 'Daily Crossword',
     description: 'Solve the daily 5x5 mini crossword with intersecting Across & Down clues!',
     badge: '150 Coins to Unlock',
     icon: '📝',
@@ -125,10 +131,31 @@ export function getTodayDateStr() {
 }
 
 /**
+ * Returns yesterday's calendar date in UTC YYYY-MM-DD
+ */
+export function getYesterdayDateStr() {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - 1);
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Returns all discovered games with their static metadata (cost, tiers, description)
  */
 export function getAllGames() {
   return GAMES_CATALOG;
+}
+
+/**
+ * Resolves a game from either its internal id or its public SEO slug
+ */
+export function getGameBySlugOrId(identifier) {
+  if (!identifier) return null;
+  const clean = String(identifier).toLowerCase().replace(/^\/games\//, '').replace(/\/$/, '');
+  return GAMES_CATALOG.find(g => g.id === clean || g.slug === clean) || null;
 }
 
 /**
@@ -208,10 +235,12 @@ export const getInfinitePuzzle = getPlaygroundPuzzle;
 
 export default {
   getAllGames,
+  getGameBySlugOrId,
   loadGameConfig,
   getGameConfig,
   getDailyPuzzle,
   getPlaygroundPuzzle,
   getInfinitePuzzle,
   getTodayDateStr,
+  getYesterdayDateStr,
 };

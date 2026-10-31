@@ -12,13 +12,14 @@ export async function handleGetLeaderboard(
     return errorResponse("Missing required 'gameId' path parameter", 400);
   }
 
+  const effectiveGameId = gameId === 'word-guess' ? 'wordle' : gameId;
   const url = new URL(request.url);
   const difficulty = url.searchParams.get('difficulty'); // Optional filter: easy, medium, hard
   const todayStr = url.searchParams.get('date') || getTodayUTC();
   const currentWeekId = getWeekIdUTC();
   const requestedWeek = url.searchParams.get('week') || url.searchParams.get('week_id') || currentWeekId;
 
-  const isAllGames = gameId === 'all';
+  const isAllGames = effectiveGameId === 'all';
 
   // 1. Fetch Today's Daily Leaderboard
   let dailyQuery = `
@@ -37,7 +38,7 @@ export async function handleGetLeaderboard(
     JOIN users u ON dl.user_id = u.id
     WHERE ${isAllGames ? 'dl.played_date = ?' : 'dl.game_id = ? AND dl.played_date = ?'}
   `;
-  const dailyParams: unknown[] = isAllGames ? [todayStr] : [gameId, todayStr];
+  const dailyParams: unknown[] = isAllGames ? [todayStr] : [effectiveGameId, todayStr];
 
   if (difficulty) {
     dailyQuery += ` AND dl.difficulty = ?`;
@@ -151,7 +152,7 @@ export async function handleGetLeaderboard(
             ORDER BY ugs.total_score DESC, ugs.plays_count DESC, ugs.best_score DESC
             LIMIT 50
           `;
-        const params = isAllGames ? [auth.user.id, auth.user.id] : [gameId, auth.user.id, auth.user.id];
+        const params = isAllGames ? [auth.user.id, auth.user.id] : [effectiveGameId, auth.user.id, auth.user.id];
         const res = await env.DB.prepare(friendsQuery).bind(...params).all();
         return res.results || [];
       } catch {
@@ -163,7 +164,7 @@ export async function handleGetLeaderboard(
   // Execute all queries concurrently
   const [dailyResult, globalResult, weeklyResult, friendsResult, pastWeeksResult] = await Promise.all([
     env.DB.prepare(dailyQuery).bind(...dailyParams).all(),
-    isAllGames ? env.DB.prepare(globalQuery).all() : env.DB.prepare(globalQuery).bind(gameId).all(),
+    isAllGames ? env.DB.prepare(globalQuery).all() : env.DB.prepare(globalQuery).bind(effectiveGameId).all(),
     env.DB.prepare(weeklyQuery).bind(requestedWeek).all(),
     friendsPromise,
     env.DB.prepare('SELECT DISTINCT week_id FROM weekly_tournament WHERE week_id != ? ORDER BY week_id DESC LIMIT 10').bind(currentWeekId).all(),
@@ -193,7 +194,7 @@ export async function handleGetLeaderboard(
     },
     200,
     {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Cache-Control': 'public, max-age=60, s-maxage=60, stale-while-revalidate=120',
     }
   );
 }

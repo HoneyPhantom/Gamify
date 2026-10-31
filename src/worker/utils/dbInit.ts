@@ -144,6 +144,7 @@ export async function ensureDbSchema(env: Env): Promise<void> {
     `ALTER TABLE users ADD COLUMN xp INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE users ADD COLUMN selected_frame TEXT DEFAULT 'default'`,
     `ALTER TABLE users ADD COLUMN selected_title TEXT DEFAULT ''`,
+    `ALTER TABLE users ADD COLUMN best_streak INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE user_game_stats ADD COLUMN best_streak INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE user_game_stats ADD COLUMN current_streak INTEGER NOT NULL DEFAULT 0`,
     `ALTER TABLE user_game_stats ADD COLUMN last_daily_date TEXT`,

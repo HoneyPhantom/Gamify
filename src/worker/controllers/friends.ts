@@ -1,6 +1,7 @@
 import { Env, AuthenticatedUser } from '../types';
 import { jsonResponse, errorResponse } from '../utils/response';
 import { calculateLevel } from '../utils/level';
+import { getTodayUTC, getYesterdayUTC, evaluateActiveStreak } from '../utils/date';
 
 /**
  * Controller for followers & following system, player username lookup, and profile management.
@@ -190,10 +191,10 @@ export async function handleGetUserProfile(
     `).bind(cleanUsername).first<{ id: string; username: string; display_name: string; about: string; xp: number; selected_frame: string; selected_title: string }>(),
     
     env.DB.prepare(`
-      SELECT game_id, best_streak, current_streak
+      SELECT game_id, best_streak, current_streak, last_daily_date
       FROM user_game_stats
       WHERE user_id = (SELECT id FROM users WHERE LOWER(username) = ?)
-    `).bind(cleanUsername).all<{ game_id: string; best_streak: number; current_streak: number }>(),
+    `).bind(cleanUsername).all<{ game_id: string; best_streak: number; current_streak: number; last_daily_date: string | null }>(),
 
     // Followers count: how many follow this user
     env.DB.prepare(`
@@ -215,25 +216,45 @@ export async function handleGetUserProfile(
   }
 
   const lvl = calculateLevel(row.xp || 0);
+  const todayStr = getTodayUTC();
+  const yesterdayStr = getYesterdayUTC();
 
-  return jsonResponse({
-    success: true,
-    profile: {
-      id: row.id,
-      username: row.username,
-      gamertag: row.display_name,
-      displayName: row.display_name,
-      about: row.about,
-      xp: row.xp,
-      level: lvl.level,
-      levelTitle: lvl.title,
-      selectedFrame: row.selected_frame || 'default',
-      selectedTitle: row.selected_title || '',
-      streaks: statsResult.results || [],
-      followersCount: followersCount?.count || 0,
-      followingCount: followingCount?.count || 0,
-    },
+  // Evaluate streaks: if consecutive day was missed, active streak resets to 0
+  const evaluatedStreaks = (statsResult.results || []).map(s => {
+    const { activeStreak, isMaintainedToday } = evaluateActiveStreak(s.last_daily_date, s.current_streak, todayStr, yesterdayStr);
+    return {
+      game_id: s.game_id,
+      current_streak: activeStreak,
+      best_streak: Math.max(s.best_streak || 0, activeStreak),
+      is_streak_maintained_today: isMaintainedToday,
+      last_daily_date: s.last_daily_date,
+    };
   });
+
+  return jsonResponse(
+    {
+      success: true,
+      profile: {
+        id: row.id,
+        username: row.username,
+        gamertag: row.display_name,
+        displayName: row.display_name,
+        about: row.about,
+        xp: row.xp,
+        level: lvl.level,
+        levelTitle: lvl.title,
+        selectedFrame: row.selected_frame || 'default',
+        selectedTitle: row.selected_title || '',
+        streaks: evaluatedStreaks,
+        followersCount: followersCount?.count || 0,
+        followingCount: followingCount?.count || 0,
+      },
+    },
+    200,
+    {
+      'Cache-Control': 'public, max-age=120, stale-while-revalidate=300',
+    }
+  );
 }
 
 // PUT /api/user/profile - Update user's about description and gamertag (display_name)
