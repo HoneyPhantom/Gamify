@@ -24,16 +24,16 @@ function getStreakStatus(lastDate, count, best = 0) {
   const rawBest = Math.max(Number(best) || 0, rawCount);
 
   if (!lastDate || rawCount <= 0) {
-    return { currentStreak: 0, bestStreak: rawBest, maintainedToday: false };
+    return { currentStreak: 0, activeStreak: 0, bestStreak: rawBest, maintainedToday: false };
   }
   if (lastDate === today) {
-    return { currentStreak: rawCount, bestStreak: rawBest, maintainedToday: true };
+    return { currentStreak: rawCount, activeStreak: rawCount, bestStreak: rawBest, maintainedToday: true };
   }
   if (lastDate === yesterday) {
-    return { currentStreak: rawCount, bestStreak: rawBest, maintainedToday: false };
+    return { currentStreak: rawCount, activeStreak: rawCount, bestStreak: rawBest, maintainedToday: false };
   }
   // Missed consecutive day! Resets to 0
-  return { currentStreak: 0, bestStreak: rawBest, maintainedToday: false };
+  return { currentStreak: 0, activeStreak: 0, bestStreak: rawBest, maintainedToday: false };
 }
 
 // =========================================================================
@@ -591,12 +591,12 @@ function openUpdatesModal() {
 
 btnProfileChallenges?.addEventListener('click', () => {
   profileModal?.classList.add('hidden');
-  openUpdatesModal();
+  navigateToChallenges(true);
 });
 
 btnProfileShop?.addEventListener('click', () => {
   profileModal?.classList.add('hidden');
-  openShopModal();
+  navigateToShop(true);
 });
 
 // =========================================================================
@@ -1166,24 +1166,15 @@ function updateDailySweepUI() {
   if (!sweepContainer) return;
 
   const allGames = getAllGames();
-  // Dynamically sort games by user's active streak ascending (lowest streaks first)
-  const sortedGames = [...allGames].sort((a, b) => {
-    const sA = getStreakStatus(userStats[a.id]?.last_daily_date || userStats[a.id]?.last_played_date, userStats[a.id]?.current_streak, userStats[a.id]?.best_streak);
-    const sB = getStreakStatus(userStats[b.id]?.last_daily_date || userStats[b.id]?.last_played_date, userStats[b.id]?.current_streak, userStats[b.id]?.best_streak);
-    return sA.activeStreak - sB.activeStreak || a.title.localeCompare(b.title);
-  }).slice(0, 6);
+  const sortedGames = [...allGames].sort((a, b) => a.title.localeCompare(b.title));
 
   let completedCount = 0;
   sweepContainer.innerHTML = sortedGames.map(game => {
     const isCompleted = Array.from(todayCompletions).some(c => c.startsWith(`${game.id}:`));
     if (isCompleted) completedCount++;
-    const streakInfo = getStreakStatus(userStats[game.id]?.last_daily_date || userStats[game.id]?.last_played_date, userStats[game.id]?.current_streak, userStats[game.id]?.best_streak);
-    const maintainedToday = isCompleted || streakInfo.maintainedToday;
-    const activeStreak = streakInfo.activeStreak;
-    const fireClass = maintainedToday && activeStreak > 0 ? 'streak-fire-active' : 'streak-fire-inactive';
     return `
-      <div class="sweep-game-pill ${isCompleted ? 'completed' : ''}" data-game-id="${game.id}" style="cursor:pointer;" title="Current Streak: ${activeStreak} | Click to play">
-        <span class="sweep-pill-name">${game.title} <span class="badge ${fireClass}" style="padding: 1px 6px; font-size: 0.72rem; margin-left: 2px;">🔥 ${activeStreak}</span></span>
+      <div class="sweep-game-pill ${isCompleted ? 'completed' : ''}" data-game-id="${game.id}" style="cursor:pointer;" title="${game.title} - ${isCompleted ? 'Solved Today' : 'Pending'} | Click to play">
+        <span class="sweep-pill-name">${game.title}</span>
         <span class="sweep-pill-status">${isCompleted ? '✅' : '⏳'}</span>
       </div>
     `;
@@ -1548,44 +1539,51 @@ function renderFollowersFollowingUI() {
   if (tabFollowingCount) tabFollowingCount.textContent = userFollowing.length;
   if (tabFollowersCount) tabFollowersCount.textContent = userFollowers.length;
 
-  // Render Following List
-  if (profileFollowingList) {
+  const pageTabFollowingCount = document.getElementById('tab-page-following-count');
+  const pageTabFollowersCount = document.getElementById('tab-page-followers-count');
+  if (pageTabFollowingCount) pageTabFollowingCount.textContent = userFollowing.length;
+  if (pageTabFollowersCount) pageTabFollowersCount.textContent = userFollowers.length || userFollowersCount;
+
+  // Render Following Lists (Modal & Dedicated Page)
+  const renderFollowingTo = (container) => {
+    if (!container) return;
     if (userFollowing.length === 0) {
-      profileFollowingList.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; text-align:center;">You are not following anyone yet. Search players to follow!</div>';
+      container.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; text-align:center;">You are not following anyone yet. Search players to follow!</div>';
     } else {
-      profileFollowingList.innerHTML = userFollowing.map(f => `
+      container.innerHTML = userFollowing.map(f => `
         <div class="friend-item">
           <div>
-            <div class="friend-name" data-username="${f.username}">${f.display_name || f.username}</div>
+            <div class="friend-name" data-username="${f.username}" style="cursor: pointer;">${f.display_name || f.username}</div>
             <div style="font-size:0.75rem; color:var(--text-muted);">@${f.username}</div>
           </div>
           <button type="button" class="btn-lock unfollow-btn" data-id="${f.id}" data-username="${f.username}" style="padding:0.25rem 0.6rem; font-size:0.75rem;">Unfollow</button>
         </div>
       `).join('');
 
-      profileFollowingList.querySelectorAll('.friend-name').forEach(el => {
-        el.addEventListener('click', () => openPublicProfile(el.dataset.username));
+      container.querySelectorAll('.friend-name').forEach(el => {
+        el.addEventListener('click', () => navigateToPublicProfile(el.dataset.username, true));
       });
 
-      profileFollowingList.querySelectorAll('.unfollow-btn').forEach(btn => {
+      container.querySelectorAll('.unfollow-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           await unfollowPlayer(btn.dataset.id, btn.dataset.username);
         });
       });
     }
-  }
+  };
 
-  // Render Followers List
-  if (profileFollowersList) {
+  // Render Followers Lists (Modal & Dedicated Page)
+  const renderFollowersTo = (container) => {
+    if (!container) return;
     if (userFollowers.length === 0) {
-      profileFollowersList.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; text-align:center;">No followers yet. Climb the leaderboards to get discovered!</div>';
+      container.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; text-align:center;">No followers yet. Climb the leaderboards to get discovered!</div>';
     } else {
-      profileFollowersList.innerHTML = userFollowers.map(f => {
+      container.innerHTML = userFollowers.map(f => {
         const isFollowingBack = userFollowing.some(u => u.id === f.id || u.username === f.username);
         return `
           <div class="friend-item">
             <div>
-              <div class="friend-name" data-username="${f.username}">${f.display_name || f.username}</div>
+              <div class="friend-name" data-username="${f.username}" style="cursor: pointer;">${f.display_name || f.username}</div>
               <div style="font-size:0.75rem; color:var(--text-muted);">@${f.username}</div>
             </div>
             ${isFollowingBack
@@ -1596,17 +1594,23 @@ function renderFollowersFollowingUI() {
         `;
       }).join('');
 
-      profileFollowersList.querySelectorAll('.friend-name').forEach(el => {
-        el.addEventListener('click', () => openPublicProfile(el.dataset.username));
+      container.querySelectorAll('.friend-name').forEach(el => {
+        el.addEventListener('click', () => navigateToPublicProfile(el.dataset.username, true));
       });
 
-      profileFollowersList.querySelectorAll('.follow-back-btn').forEach(btn => {
+      container.querySelectorAll('.follow-back-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           await followPlayer(btn.dataset.username);
         });
       });
     }
-  }
+  };
+
+  renderFollowingTo(profileFollowingList);
+  renderFollowingTo(document.getElementById('profile-page-following-list'));
+
+  renderFollowersTo(profileFollowersList);
+  renderFollowersTo(document.getElementById('profile-page-followers-list'));
 }
 
 tabBtnFollowing?.addEventListener('click', () => {
@@ -1731,7 +1735,7 @@ function openProfileModal() {
   profileModal.classList.remove('hidden');
 }
 
-btnOpenProfile?.addEventListener('click', openProfileModal);
+btnOpenProfile?.addEventListener('click', () => navigateToProfile(true));
 profileModalClose?.addEventListener('click', () => profileModal.classList.add('hidden'));
 profileModal?.addEventListener('click', (e) => {
   if (e.target === profileModal) profileModal.classList.add('hidden');
@@ -1760,78 +1764,7 @@ btnSaveProfile?.addEventListener('click', async () => {
 
 // Public Player Profile
 async function openPublicProfile(username) {
-  try {
-    const res = await api.getUserProfile(username);
-    currentPublicUser = res.profile;
-
-    if (publicProfileGamertag) publicProfileGamertag.textContent = currentPublicUser.gamertag || currentPublicUser.displayName || currentPublicUser.username;
-    if (publicProfileHandle) publicProfileHandle.textContent = `@${currentPublicUser.username}`;
-    if (publicProfileAbout) publicProfileAbout.textContent = currentPublicUser.about || 'No description provided yet.';
-    if (publicProfileFollowersCount) publicProfileFollowersCount.textContent = currentPublicUser.followersCount ?? 0;
-    if (publicProfileFollowingCount) publicProfileFollowingCount.textContent = currentPublicUser.followingCount ?? 0;
-
-    applyCosmeticToAvatar(publicProfileAvatar, currentPublicUser.selectedFrame);
-
-    if (publicProfileCustomTitle) {
-      if (currentPublicUser.selectedTitle) {
-        publicProfileCustomTitle.textContent = formatTitleName(currentPublicUser.selectedTitle);
-        publicProfileCustomTitle.classList.remove('hidden');
-      } else {
-        publicProfileCustomTitle.classList.add('hidden');
-      }
-    }
-
-    if (publicProfileLevel) {
-      publicProfileLevel.textContent = `Lvl ${currentPublicUser.level || 1} · ${currentPublicUser.levelTitle || 'Novice'}`;
-    }
-
-    const isFollowing = userFollowing.some(f => f.username?.toLowerCase() === currentPublicUser.username?.toLowerCase());
-    const isSelf = currentUser && currentUser.username === currentPublicUser.username;
-
-    if (isSelf) {
-      btnToggleFriendPublic.style.display = 'none';
-    } else {
-      btnToggleFriendPublic.style.display = 'block';
-      btnToggleFriendPublic.textContent = isFollowing ? 'Unfollow' : 'Follow Player';
-      btnToggleFriendPublic.className = isFollowing ? 'btn-lock' : 'btn-login';
-      btnToggleFriendPublic.onclick = async () => {
-        if (isFollowing) {
-          await unfollowPlayer(currentPublicUser.id, currentPublicUser.username);
-        } else {
-          await followPlayer(currentPublicUser.username);
-        }
-        await openPublicProfile(currentPublicUser.username);
-      };
-    }
-
-    // Streaks in descending order
-    const publicStreaksGrid = document.getElementById('public-profile-streaks-grid');
-    if (publicStreaksGrid) {
-      const allGames = getAllGames();
-      const userStreaks = currentPublicUser.streaks || [];
-      const streakMap = new Map();
-      userStreaks.forEach(s => {
-        const streakInfo = getStreakStatus(s.last_daily_date || s.last_played_date, s.current_streak, s.best_streak);
-        streakMap.set(s.game_id, streakInfo);
-      });
-
-      const sortedGames = [...allGames].map(g => {
-        const info = streakMap.get(g.id) || { bestStreak: 0, activeStreak: 0, maintainedToday: false };
-        return { ...g, ...info };
-      }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
-
-      publicStreaksGrid.innerHTML = sortedGames.map(g => `
-        <div class="streak-card ${g.maintainedToday && g.activeStreak > 0 ? 'streak-fire-active' : 'streak-fire-inactive'}" style="padding: 10px 12px; border-radius: 12px; transition: all 0.2s;">
-          <div class="game-label" style="font-size: 0.76rem; font-weight: 800; text-transform: uppercase;">${g.title}</div>
-          <div class="streak-val" style="font-size: 1.2rem; font-weight: 900; margin-top: 3px;">🔥 ${g.bestStreak}</div>
-        </div>
-      `).join('');
-    }
-
-    publicProfileModal?.classList.remove('hidden');
-  } catch (err) {
-    alert(err.message || 'Could not find player');
-  }
+  await navigateToPublicProfile(username, true);
 }
 
 publicProfileClose?.addEventListener('click', () => publicProfileModal?.classList.add('hidden'));
@@ -2068,7 +2001,7 @@ function renderShopItems(tab) {
   });
 }
 
-btnOpenShop?.addEventListener('click', openShopModal);
+btnOpenShop?.addEventListener('click', () => navigateToShop(true));
 shopModalClose?.addEventListener('click', () => shopModal?.classList.add('hidden'));
 shopModal?.addEventListener('click', (e) => {
   if (e.target === shopModal) shopModal?.classList.add('hidden');
@@ -2513,8 +2446,7 @@ btnWwTabGlobal?.addEventListener('click', () => switchWwTab('global'));
 btnWwTabTournaments?.addEventListener('click', () => switchWwTab('tournaments'));
 
 btnOpenWorldWars?.addEventListener('click', () => {
-  worldWarsModal?.classList.remove('hidden');
-  loadWorldWarsData(currentWwFilter);
+  navigateToWorldWars(true);
 });
 
 worldWarsModalClose?.addEventListener('click', () => {
@@ -2781,74 +2713,13 @@ function renderWorldWarsTournaments(data) {
   wwContestsList.querySelectorAll('.btn-view-past-season').forEach(btn => {
     btn.addEventListener('click', () => {
       const weekId = btn.dataset.week;
-      if (weekId) showPastTournamentStandings(weekId);
+      if (weekId) navigateToTournament(weekId, true);
     });
   });
 }
 
 async function showPastTournamentStandings(weekId) {
-  if (!wwContestsList) return;
-  wwContestsList.innerHTML = `
-    <div style="text-align: center; padding: 1.5rem; color: #94a3b8;">
-      Loading standings for ⚔️ Season ${weekId}...
-    </div>
-  `;
-  try {
-    const res = await api.getLeaderboard(null, null, weekId);
-    const tournamentRows = res.weeklyTournament || [];
-    const top10 = tournamentRows.slice(0, 10);
-    const myRow = currentUser ? tournamentRows.find(r => r.user_id === currentUser.id || r.username === currentUser.username) : null;
-    const myRank = myRow ? tournamentRows.indexOf(myRow) + 1 : null;
-
-    let html = `
-      <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-        <strong style="color: #ffffff; font-size: 1rem;">⚔️ Season ${weekId} Final Standings</strong>
-        <button type="button" id="btn-back-to-seasons" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #ffffff; border-radius: 8px; padding: 4px 10px; font-size: 0.78rem; cursor: pointer;">
-          ← Back to Seasons
-        </button>
-      </div>
-      <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 10px; padding: 0.6rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.85rem; color: #fde68a;">
-        Your Finish: <strong>${myRow ? `#${myRank} · ${myRow.points} pts (${myRow.games_played} played)` : 'Did not participate'}</strong>
-      </div>
-    `;
-
-    if (top10.length === 0) {
-      html += `<div style="text-align: center; padding: 1rem; color: #94a3b8; font-size: 0.85rem;">No participant records found for this season.</div>`;
-    } else {
-      html += `<div style="display: flex; flex-direction: column; gap: 6px;">`;
-      top10.forEach((r, idx) => {
-        const rank = idx + 1;
-        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
-        const isMe = currentUser && (r.user_id === currentUser.id || r.username === currentUser.username);
-        html += `
-          <div class="ww-ranked-item ${isMe ? 'leaderboard-row-me' : ''}" style="padding: 0.5rem 0.75rem;">
-            <div style="display: flex; align-items: center; gap: 0.6rem;">
-              <span style="font-weight: 800; font-size: 0.9rem; min-width: 24px;">${medal}</span>
-              <span class="leaderboard-player-link" data-username="${r.username}" style="color: #ffffff; font-weight: 700; cursor: pointer;">
-                ${r.display_name || r.username}
-              </span>
-              ${isMe ? '<span class="you-badge" style="margin-left: 4px;">You</span>' : ''}
-            </div>
-            <div style="text-align: right;">
-              <div style="color: #fbbf24; font-weight: 800; font-size: 0.9rem;">${r.points} pts</div>
-              <div style="color: #94a3b8; font-size: 0.72rem;">${r.games_played} played</div>
-            </div>
-          </div>
-        `;
-      });
-      html += `</div>`;
-    }
-
-    wwContestsList.innerHTML = html;
-    document.getElementById('btn-back-to-seasons')?.addEventListener('click', () => {
-      renderWorldWarsTournaments(cachedWWLeaderboardData || { currentWeekId: weekId, pastWeeks: [weekId] });
-    });
-    wwContestsList.querySelectorAll('.leaderboard-player-link').forEach(el => {
-      el.addEventListener('click', () => openPublicProfile(el.dataset.username));
-    });
-  } catch (err) {
-    wwContestsList.innerHTML = `<div style="color: #f87171; text-align: center; padding: 1rem;">Failed to load season standings.</div>`;
-  }
+  navigateToTournament(weekId, true);
 }
 
 // =========================================================================
@@ -2918,11 +2789,1081 @@ if ('serviceWorker' in navigator) {
 }
 
 // =========================================================================
-// 14. DEDICATED URL ROUTING & NAVIGATION (AdSense / SEO Compliance)
+// 14. DEDICATED URL ROUTING & FULL-PAGE NAVIGATION (AdSense / Multi-Page)
 // =========================================================================
 
+function hideAllDedicatedViews() {
+  stopPuzzleTimer();
+  isInfinitePlay = false;
+  if (activeGameCleanup) {
+    try { activeGameCleanup(); } catch {}
+    activeGameCleanup = null;
+  }
+
+  // Close any open modals
+  profileModal?.classList.add('hidden');
+  shopModal?.classList.add('hidden');
+  updatesModal?.classList.add('hidden');
+  worldWarsModal?.classList.add('hidden');
+  publicProfileModal?.classList.add('hidden');
+  helpModal?.classList.add('hidden');
+  authModal?.classList.add('hidden');
+  createChallengeModal?.classList.add('hidden');
+
+  gameView?.classList.add('hidden');
+  frontPageView?.classList.add('hidden');
+  hideAllStaticPages();
+}
+
+// 1. My Profile Route (/profile)
+function navigateToProfile(pushState = true) {
+  if (!currentUser) {
+    openAuthModal('login');
+    return;
+  }
+
+  hideAllDedicatedViews();
+  const targetPath = '/profile';
+  if (pushState && window.location.pathname !== targetPath) {
+    window.history.pushState({ page: 'profile' }, '', targetPath);
+  }
+  document.title = 'My Profile — Gamify Daily Logic Puzzles';
+
+  const view = document.getElementById('profile-page-view');
+  view?.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  renderProfilePageData();
+}
+
+function renderProfilePageData() {
+  if (!currentUser) return;
+
+  const displayNameEl = document.getElementById('profile-page-display-name');
+  const usernameEl = document.getElementById('profile-page-username');
+  const customTitleEl = document.getElementById('profile-page-custom-title');
+  const avatarEl = document.getElementById('profile-page-avatar');
+  const levelEl = document.getElementById('profile-page-user-level');
+  const levelTitleEl = document.getElementById('profile-page-level-title');
+  const xpFillEl = document.getElementById('profile-page-xp-fill');
+  const xpTextEl = document.getElementById('profile-page-xp-text');
+  const streakCountEl = document.getElementById('profile-page-streak-count');
+  const streakBadgeEl = document.getElementById('profile-page-streak-badge');
+  const aboutInput = document.getElementById('profile-page-about-input');
+  const streaksGrid = document.getElementById('profile-page-streaks-grid');
+
+  if (displayNameEl) displayNameEl.textContent = currentUser.displayName || currentUser.username;
+  if (usernameEl) usernameEl.textContent = `@${currentUser.username}`;
+  if (aboutInput) aboutInput.value = currentUser.about || '';
+
+  applyCosmeticToAvatar(avatarEl, currentUser.selected_frame);
+
+  if (customTitleEl) {
+    if (currentUser.selected_title) {
+      customTitleEl.textContent = formatTitleName(currentUser.selected_title);
+      customTitleEl.classList.remove('hidden');
+    } else {
+      customTitleEl.classList.add('hidden');
+    }
+  }
+
+  // Level & XP
+  const lvl = currentUser.level || 1;
+  const xp = currentUser.xp || 0;
+  if (levelEl) levelEl.textContent = `Lvl ${lvl}`;
+  if (levelTitleEl) levelTitleEl.textContent = currentUser.levelTitle || 'Novice';
+
+  const xpCurrent = xp % 25;
+  const progress = Math.min(100, Math.round((xpCurrent / 25) * 100));
+  if (xpFillEl) xpFillEl.style.width = `${progress}%`;
+  if (xpTextEl) xpTextEl.textContent = `${xpCurrent} / 25 XP`;
+
+  // Streak Calculation (Strictly defensive, never NaN)
+  let totalActiveStreak = 0;
+  let maintainedAnyToday = false;
+  const allGames = getAllGames();
+  const sortedGames = [...allGames].map(g => {
+    const stats = userStats[g.id] || {};
+    const lastDate = stats.last_daily_date || stats.last_played_date;
+    const isCompletedToday = Array.from(todayCompletions).some(c => c.startsWith(`${g.id}:`));
+    const streakInfo = getStreakStatus(lastDate, stats.current_streak, stats.best_streak);
+    const maintainedToday = isCompletedToday || streakInfo.maintainedToday;
+    const activeStreak = streakInfo.activeStreak;
+    totalActiveStreak += activeStreak;
+    if (maintainedToday && activeStreak > 0) maintainedAnyToday = true;
+    return { ...g, bestStreak: streakInfo.bestStreak, currentStreak: activeStreak, maintainedToday };
+  }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
+
+  if (streakCountEl) streakCountEl.textContent = totalActiveStreak;
+  if (streakBadgeEl) {
+    streakBadgeEl.className = maintainedAnyToday && totalActiveStreak > 0 ? 'badge streak-fire-active' : 'badge streak-fire-inactive';
+  }
+
+  if (streaksGrid) {
+    streaksGrid.innerHTML = sortedGames.map(g => `
+      <div class="streak-card ${g.maintainedToday && g.currentStreak > 0 ? 'streak-fire-active' : 'streak-fire-inactive'}" style="padding: 10px 12px; border-radius: 12px; transition: all 0.2s;">
+        <div class="game-label" style="font-size: 0.76rem; font-weight: 800; text-transform: uppercase;">${g.title}</div>
+        <div class="streak-val" style="font-size: 1.2rem; font-weight: 900; margin-top: 3px;">
+          🔥 ${g.bestStreak}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  renderFollowersFollowingUI();
+}
+
+// 2. Public Player Profile Route (/users/:username)
+async function navigateToPublicProfile(username, pushState = true) {
+  if (!username) return;
+  hideAllDedicatedViews();
+
+  const targetPath = `/users/${encodeURIComponent(username)}`;
+  if (pushState && window.location.pathname !== targetPath) {
+    window.history.pushState({ page: 'public-profile', username }, '', targetPath);
+  }
+  document.title = `@${username}'s Profile — Gamify`;
+
+  const view = document.getElementById('public-profile-page-view');
+  view?.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  await loadPublicProfilePage(username);
+}
+
+async function loadPublicProfilePage(username) {
+  const breadcrumbEl = document.getElementById('public-profile-page-breadcrumb');
+  const avatarEl = document.getElementById('public-profile-page-avatar');
+  const gamertagEl = document.getElementById('public-profile-page-gamertag');
+  const customTitleEl = document.getElementById('public-profile-page-custom-title');
+  const handleEl = document.getElementById('public-profile-page-handle');
+  const levelEl = document.getElementById('public-profile-page-level');
+  const followersCountEl = document.getElementById('public-profile-page-followers-count');
+  const followingCountEl = document.getElementById('public-profile-page-following-count');
+  const aboutEl = document.getElementById('public-profile-page-about');
+  const streaksGridEl = document.getElementById('public-profile-page-streaks-grid');
+  const btnToggleFriend = document.getElementById('btn-toggle-friend-public-page');
+  const btnChallenge = document.getElementById('btn-challenge-public-page');
+
+  if (breadcrumbEl) breadcrumbEl.textContent = `@${username}`;
+
+  try {
+    const res = await api.getUserProfile(username);
+    const profile = res.profile;
+    currentPublicUser = profile;
+
+    if (gamertagEl) gamertagEl.textContent = profile.gamertag || profile.displayName || profile.username;
+    if (handleEl) handleEl.textContent = `@${profile.username}`;
+    if (aboutEl) aboutEl.textContent = profile.about || 'No description provided yet.';
+    if (followersCountEl) followersCountEl.textContent = profile.followersCount ?? 0;
+    if (followingCountEl) followingCountEl.textContent = profile.followingCount ?? 0;
+
+    applyCosmeticToAvatar(avatarEl, profile.selectedFrame);
+
+    if (customTitleEl) {
+      if (profile.selectedTitle) {
+        customTitleEl.textContent = formatTitleName(profile.selectedTitle);
+        customTitleEl.classList.remove('hidden');
+      } else {
+        customTitleEl.classList.add('hidden');
+      }
+    }
+
+    if (levelEl) {
+      levelEl.textContent = `Lvl ${profile.level || 1} · ${profile.levelTitle || 'Novice'}`;
+    }
+
+    const isFollowing = userFollowing.some(f => f.username?.toLowerCase() === profile.username?.toLowerCase());
+    const isSelf = currentUser && currentUser.username?.toLowerCase() === profile.username?.toLowerCase();
+
+    if (btnToggleFriend) {
+      if (isSelf) {
+        btnToggleFriend.style.display = 'none';
+      } else {
+        btnToggleFriend.style.display = 'block';
+        btnToggleFriend.textContent = isFollowing ? 'Unfollow' : 'Follow Player';
+        btnToggleFriend.className = isFollowing ? 'btn-lock' : 'btn-login';
+        btnToggleFriend.onclick = async () => {
+          if (isFollowing) {
+            await unfollowPlayer(profile.id, profile.username);
+          } else {
+            await followPlayer(profile.username);
+          }
+          await loadPublicProfilePage(profile.username);
+        };
+      }
+    }
+
+    if (btnChallenge) {
+      if (isSelf) {
+        btnChallenge.style.display = 'none';
+      } else {
+        btnChallenge.style.display = 'flex';
+        btnChallenge.onclick = () => {
+          openCreateChallengeModal(profile.username);
+        };
+      }
+    }
+
+    // Streaks in descending order
+    if (streaksGridEl) {
+      const allGames = getAllGames();
+      const userStreaks = profile.streaks || [];
+      const streakMap = new Map();
+      userStreaks.forEach(s => {
+        const streakInfo = getStreakStatus(s.last_daily_date || s.last_played_date, s.current_streak, s.best_streak);
+        streakMap.set(s.game_id, streakInfo);
+      });
+
+      const sortedGames = [...allGames].map(g => {
+        const info = streakMap.get(g.id) || { bestStreak: 0, activeStreak: 0, maintainedToday: false };
+        return { ...g, ...info };
+      }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
+
+      streaksGridEl.innerHTML = sortedGames.map(g => `
+        <div class="streak-card ${g.maintainedToday && g.activeStreak > 0 ? 'streak-fire-active' : 'streak-fire-inactive'}" style="padding: 10px 12px; border-radius: 12px; transition: all 0.2s;">
+          <div class="game-label" style="font-size: 0.76rem; font-weight: 800; text-transform: uppercase;">${g.title}</div>
+          <div class="streak-val" style="font-size: 1.2rem; font-weight: 900; margin-top: 3px;">🔥 ${g.bestStreak}</div>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    if (aboutEl) aboutEl.textContent = `Could not load player profile: ${err.message || 'Player not found'}`;
+  }
+}
+
+// 3. World Wars Arena Route (/world-wars)
+async function navigateToWorldWars(pushState = true) {
+  hideAllDedicatedViews();
+
+  const targetPath = '/world-wars';
+  if (pushState && window.location.pathname !== targetPath) {
+    window.history.pushState({ page: 'world-wars' }, '', targetPath);
+  }
+  document.title = 'World Wars Arena — Gamify Global Leaderboard & Weekly Championships';
+
+  const view = document.getElementById('world-wars-page-view');
+  view?.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  await loadWorldWarsPageData(currentWwFilter);
+}
+
+async function loadWorldWarsPageData(filter = 'all') {
+  const podiumContainer = document.getElementById('ww-page-podium-container');
+  const rankedList = document.getElementById('ww-page-ranked-list');
+  const banner = document.getElementById('ww-page-current-tournament-banner');
+  const contestsList = document.getElementById('ww-page-contests-list');
+
+  if (podiumContainer) {
+    podiumContainer.innerHTML = `<div style="color: #94a3b8; font-weight: 700; padding: 1.5rem; text-align: center;">⚡ Summoning World Arena Contenders...</div>`;
+  }
+  if (rankedList) rankedList.innerHTML = '';
+
+  try {
+    const data = await api.getLeaderboard(filter);
+    cachedWWLeaderboardData = data;
+    const rows = data.globalLeaderboard || [];
+
+    // Render podium into #ww-page-podium-container and rest into #ww-page-ranked-list
+    renderWorldWarsPagePodium(rows, podiumContainer, rankedList);
+
+    // Render current active tournament banner
+    const currentWeek = data.currentWeekId || '2026-W44';
+    const myTournament = (data.weeklyTournament || []).find(r => 
+      currentUser && (r.user_id === currentUser.id || r.username === currentUser.username)
+    );
+    const myRankIdx = myTournament ? (data.weeklyTournament || []).indexOf(myTournament) + 1 : null;
+    const myPoints = myTournament ? myTournament.points : 0;
+    const myGamesPlayed = myTournament ? myTournament.games_played : 0;
+
+    if (banner) {
+      banner.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #fbbf24; font-weight: 800;">
+              Current Active Championship
+            </div>
+            <h4 style="margin: 0.2rem 0; font-size: 1.35rem; font-weight: 900; color: #ffffff;">
+              ⚔️ Season ${currentWeek}
+            </h4>
+            <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">
+              Weekly Tournament · Resets Sunday 23:59 UTC · Tap for Full Standings →
+            </div>
+          </div>
+          <div class="badge" style="background:#064e3b; color:#34d399; border-color:#059669; font-weight:800; font-size:0.75rem; padding: 4px 10px;">
+            Live Scoring ⚡
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.65rem; margin: 0.75rem 0;">
+          <div style="flex:1; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.55rem; text-align:center;">
+            <div style="font-size:0.72rem; color:#94a3b8; font-weight:700;">Your Points</div>
+            <div style="font-size:1.15rem; font-weight:900; color:#fbbf24;">${myPoints} pts</div>
+          </div>
+          <div style="flex:1; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.55rem; text-align:center;">
+            <div style="font-size:0.72rem; color:#94a3b8; font-weight:700;">Your Rank</div>
+            <div style="font-size:1.15rem; font-weight:900; color:#38bdf8;">${myRankIdx ? `#${myRankIdx}` : 'Unranked'}</div>
+          </div>
+          <div style="flex:1; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:0.55rem; text-align:center;">
+            <div style="font-size:0.72rem; color:#94a3b8; font-weight:700;">Played</div>
+            <div style="font-size:1.15rem; font-weight:900; color:#ffffff;">${myGamesPlayed}</div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+          <span style="font-size: 0.82rem; font-weight: 800; color: #fbbf24; display: flex; align-items: center; gap: 4px;">
+            Inspect Top 10 Contenders & Season Standings →
+          </span>
+        </div>
+      `;
+      banner.onclick = () => navigateToTournament(currentWeek, true);
+    }
+
+    // Render concluded past tournaments
+    const pastWeeks = data.pastWeeks || [];
+    if (contestsList) {
+      if (pastWeeks.length === 0) {
+        contestsList.innerHTML = `
+          <div style="text-align: center; color: #94a3b8; font-size: 0.85rem; padding: 1.5rem; background: #f8fafc; border-radius: 12px; border: 1px dashed var(--border-color);">
+            No past seasons concluded yet. Compete in <strong>⚔️ Season ${currentWeek}</strong> to make tournament history!
+          </div>
+        `;
+      } else {
+        contestsList.innerHTML = pastWeeks.map(weekId => `
+          <div class="ww-contest-card btn-open-championship" data-week="${weekId}" style="cursor: pointer; background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 14px; padding: 0.85rem 1rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.15s;">
+            <div style="display: flex; align-items: center; gap: 0.85rem;">
+              <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #1e1b4b, #312e81); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                ⚔️
+              </div>
+              <div>
+                <div style="font-weight: 900; font-size: 1rem; color: #0f172a;">⚔️ Season ${weekId}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Concluded Weekly Tournament · Official Archives</div>
+              </div>
+            </div>
+            <button type="button" class="ww-contest-btn" data-week="${weekId}" style="padding: 6px 14px; font-weight: 800; font-size: 0.82rem; border-radius: 8px; background: #f1f5f9; border: 1px solid var(--border-color); color: #0f172a; cursor: pointer;">
+              View Standings 📜
+            </button>
+          </div>
+        `).join('');
+
+        contestsList.querySelectorAll('.btn-open-championship, .ww-contest-btn').forEach(el => {
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const w = el.dataset.week;
+            if (w) navigateToTournament(w, true);
+          });
+        });
+      }
+    }
+  } catch (err) {
+    if (podiumContainer) {
+      podiumContainer.innerHTML = `<p style="color: var(--danger); font-size: 0.85rem; padding: 1rem; text-align: center;">Failed to load arena: ${err.message || 'Network error'}</p>`;
+    }
+  }
+}
+
+function renderWorldWarsPagePodium(rows, podiumContainer, rankedList) {
+  if (!podiumContainer || !rankedList) return;
+
+  if (!rows || rows.length === 0) {
+    podiumContainer.innerHTML = `
+      <div style="text-align: center; color: #94a3b8; padding: 2rem 1rem;">
+        <span style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem;">⚔️</span>
+        <strong style="color: #0f172a; font-size: 1rem;">No Arena Champions Ranked Yet</strong>
+        <p style="margin: 0.4rem 0 0 0; font-size: 0.8rem; color: #64748b;">Be the very first player to conquer puzzles and step onto the gold podium!</p>
+      </div>
+    `;
+    rankedList.innerHTML = '';
+    return;
+  }
+
+  const p1 = rows[0] || null;
+  const p2 = rows[1] || null;
+  const p3 = rows[2] || null;
+
+  const renderStep = (player, rank, crownEmoji, pedestalClass, heightStyle) => {
+    if (!player) {
+      return `
+        <div class="ww-podium-step">
+          <div class="ww-podium-avatar" style="border-color: rgba(0,0,0,0.1); color: #94a3b8;">👤</div>
+          <div class="ww-podium-name" style="color: #94a3b8;">Open</div>
+          <div class="ww-podium-score" style="color: #94a3b8; font-size: 0.8rem;">—</div>
+          <div class="ww-podium-pedestal ${pedestalClass}" style="${heightStyle}; opacity: 0.3;">
+            <span>#${rank}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const isMe = currentUser && (player.user_id === currentUser.id || player.username === currentUser.username);
+    const scoreVal = player.total_score ?? player.score ?? player.points ?? 0;
+    const bestVal = player.best_score ?? scoreVal;
+    const displayName = player.display_name || player.username;
+    const initial = (displayName[0] || 'P').toUpperCase();
+    const frameBorder = rank === 1 ? '#f59e0b' : rank === 2 ? '#94a3b8' : '#d97706';
+
+    return `
+      <div class="ww-podium-step">
+        <div class="ww-podium-avatar leaderboard-player-link" data-username="${player.username}" style="border-color: ${frameBorder}; cursor: pointer;">
+          <span class="ww-crown-icon">${crownEmoji}</span>
+          <span>${initial}</span>
+        </div>
+        <div class="ww-podium-name leaderboard-player-link" data-username="${player.username}" style="cursor: pointer;" title="${displayName}">
+          ${displayName} ${isMe ? '⭐' : ''}
+        </div>
+        <div class="ww-podium-score">${scoreVal}</div>
+        <div style="font-size: 0.7rem; color: #64748b; margin-top: -3px; margin-bottom: 3px;">Best: <strong style="color: #0284c7;">${bestVal}</strong></div>
+        <div class="ww-podium-pedestal ${pedestalClass}" style="${heightStyle}">
+          <span>#${rank}</span>
+        </div>
+      </div>
+    `;
+  };
+
+  podiumContainer.innerHTML = `
+    ${renderStep(p2, 2, '🥈', 'ww-pedestal-2', 'height: 76px;')}
+    ${renderStep(p1, 1, '👑', 'ww-pedestal-1', 'height: 104px;')}
+    ${renderStep(p3, 3, '🥉', 'ww-pedestal-3', 'height: 60px;')}
+  `;
+
+  const restRows = rows.slice(3);
+  if (restRows.length === 0) {
+    rankedList.innerHTML = `<div style="text-align: center; color: #64748b; font-size: 0.8rem; padding: 1rem;">All active contenders are currently on the top 3 podium!</div>`;
+  } else {
+    rankedList.innerHTML = restRows.map((r, idx) => {
+      const rankNum = idx + 4;
+      const isMe = currentUser && (r.user_id === currentUser.id || r.username === currentUser.username);
+      const scoreVal = r.total_score ?? r.score ?? r.points ?? 0;
+      const attendedCount = r.plays_count ?? r.games_played ?? 0;
+      const bestScore = r.best_score ?? scoreVal;
+      const displayName = r.display_name || r.username;
+      const initial = (displayName[0] || 'P').toUpperCase();
+      const titlePill = r.selected_title ? `<span class="player-custom-title" style="font-size:0.65rem; margin-left:4px;">${formatTitleName(r.selected_title)}</span>` : '';
+
+      return `
+        <div class="ww-ranked-item ${isMe ? 'leaderboard-row-me' : ''}" style="background: #ffffff; border: 1px solid var(--border-color); color: #0f172a;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="ww-rank-badge" style="background: #f1f5f9; color: #475569;">${rankNum}</div>
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; color: #334155; border: 1.5px solid rgba(0,0,0,0.08);">
+              ${initial}
+            </div>
+            <div>
+              <strong class="leaderboard-player-link" data-username="${r.username}" style="cursor: pointer; font-size: 0.92rem; color: #0f172a;">
+                ${displayName}
+              </strong>
+              ${titlePill}
+              ${isMe ? `<span class="you-badge" style="margin-left: 4px;">You</span>` : ''}
+            </div>
+          </div>
+          <div style="text-align: right; display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 0.82rem; color: #475569;">
+              Score: <strong style="color: #b45309; font-size: 0.95rem;">${scoreVal}</strong>
+            </div>
+            <div style="font-size: 0.72rem; color: #64748b; font-weight: 600; display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <span>Played: <strong style="color: #0f172a;">${attendedCount}</strong></span>
+              <span>Best: <strong style="color: #0284c7;">${bestScore}</strong></span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Attach player link click listeners
+  podiumContainer.querySelectorAll('.leaderboard-player-link').forEach(el => {
+    el.addEventListener('click', () => navigateToPublicProfile(el.dataset.username, true));
+  });
+  rankedList.querySelectorAll('.leaderboard-player-link').forEach(el => {
+    el.addEventListener('click', () => navigateToPublicProfile(el.dataset.username, true));
+  });
+}
+
+// 4. Weekly Tournament Championship Page (/tournaments/:weekId)
+async function navigateToTournament(weekId, pushState = true) {
+  if (!weekId) return;
+  hideAllDedicatedViews();
+
+  const targetPath = `/tournaments/${encodeURIComponent(weekId)}`;
+  if (pushState && window.location.pathname !== targetPath) {
+    window.history.pushState({ page: 'tournament', weekId }, '', targetPath);
+  }
+  document.title = `Season ${weekId} Championship — Gamify World Wars`;
+
+  const view = document.getElementById('tournament-page-view');
+  view?.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  await loadTournamentPageData(weekId);
+}
+
+async function loadTournamentPageData(weekId) {
+  const breadcrumbLabel = document.getElementById('tournament-breadcrumb-label');
+  const titleEl = document.getElementById('tournament-detail-title');
+  const badgeEl = document.getElementById('tournament-detail-badge');
+  const userRankText = document.getElementById('tournament-user-rank-text');
+  const podiumContainer = document.getElementById('tournament-podium-container');
+  const top10List = document.getElementById('tournament-top10-list');
+
+  if (breadcrumbLabel) breadcrumbLabel.textContent = `Season ${weekId}`;
+  if (titleEl) titleEl.textContent = `⚔️ Season ${weekId}`;
+
+  if (podiumContainer) {
+    podiumContainer.innerHTML = `<div style="color: #94a3b8; font-weight: 700; padding: 2rem; text-align: center;">⚡ Loading Season ${weekId} Contenders...</div>`;
+  }
+  if (top10List) {
+    top10List.innerHTML = '';
+  }
+
+  try {
+    const data = await api.getTournamentArchive(weekId);
+    const currentWeekId = data.currentWeekId || '';
+    const isActive = data.isActive ?? (weekId === currentWeekId);
+
+    if (badgeEl) {
+      if (isActive) {
+        badgeEl.textContent = 'Active Championship 🔥';
+        badgeEl.style.background = '#064e3b';
+        badgeEl.style.color = '#34d399';
+        badgeEl.style.borderColor = '#059669';
+      } else {
+        badgeEl.textContent = 'Concluded Season 📜';
+        badgeEl.style.background = '#1e293b';
+        badgeEl.style.color = '#94a3b8';
+        badgeEl.style.borderColor = '#475569';
+      }
+    }
+
+    const standing = data.userStanding;
+    if (userRankText) {
+      if (standing && standing.rank) {
+        userRankText.textContent = `#${standing.rank} · ${standing.points} Points (${standing.gamesPlayed} Games Played)`;
+      } else if (currentUser) {
+        userRankText.textContent = 'Did not participate in this season · 0 Points';
+      } else {
+        userRankText.textContent = 'Log in to see your tournament finish and points';
+      }
+    }
+
+    const rows = data.top10 || [];
+    renderTournamentArchivePodium(rows, podiumContainer, top10List);
+  } catch (err) {
+    if (podiumContainer) {
+      podiumContainer.innerHTML = `<p style="color: var(--danger); font-size: 0.9rem; padding: 1.5rem; text-align: center;">Failed to load championship: ${err.message || 'Network error'}</p>`;
+    }
+  }
+}
+
+function renderTournamentArchivePodium(rows, podiumContainer, top10List) {
+  if (!podiumContainer || !top10List) return;
+
+  if (!rows || rows.length === 0) {
+    podiumContainer.innerHTML = `
+      <div style="text-align: center; color: #94a3b8; padding: 2rem 1rem;">
+        <span style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem;">⚔️</span>
+        <strong style="color: #0f172a; font-size: 1rem;">No Records Logged for This Championship</strong>
+        <p style="margin: 0.4rem 0 0 0; font-size: 0.8rem; color: #64748b;">No contestants submitted scores during this tournament window.</p>
+      </div>
+    `;
+    top10List.innerHTML = '';
+    return;
+  }
+
+  const p1 = rows[0] || null;
+  const p2 = rows[1] || null;
+  const p3 = rows[2] || null;
+
+  const renderStep = (player, rank, crownEmoji, pedestalClass, heightStyle) => {
+    if (!player) {
+      return `
+        <div class="ww-podium-step">
+          <div class="ww-podium-avatar" style="border-color: rgba(0,0,0,0.1); color: #94a3b8;">👤</div>
+          <div class="ww-podium-name" style="color: #94a3b8;">Open</div>
+          <div class="ww-podium-score" style="color: #94a3b8; font-size: 0.8rem;">—</div>
+          <div class="ww-podium-pedestal ${pedestalClass}" style="${heightStyle}; opacity: 0.3;">
+            <span>#${rank}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const isMe = currentUser && (player.user_id === currentUser.id || player.username === currentUser.username);
+    const scoreVal = player.points ?? player.total_score ?? player.score ?? 0;
+    const gamesPlayed = player.games_played ?? player.plays_count ?? 0;
+    const displayName = player.display_name || player.username;
+    const initial = (displayName[0] || 'P').toUpperCase();
+    const frameBorder = rank === 1 ? '#f59e0b' : rank === 2 ? '#94a3b8' : '#d97706';
+
+    return `
+      <div class="ww-podium-step">
+        <div class="ww-podium-avatar leaderboard-player-link" data-username="${player.username}" style="border-color: ${frameBorder}; cursor: pointer;">
+          <span class="ww-crown-icon">${crownEmoji}</span>
+          <span>${initial}</span>
+        </div>
+        <div class="ww-podium-name leaderboard-player-link" data-username="${player.username}" style="cursor: pointer;" title="${displayName}">
+          ${displayName} ${isMe ? '⭐' : ''}
+        </div>
+        <div class="ww-podium-score">${scoreVal} pts</div>
+        <div style="font-size: 0.72rem; color: #64748b; margin-top: -3px; margin-bottom: 3px;">Played: <strong style="color: #0284c7;">${gamesPlayed}</strong></div>
+        <div class="ww-podium-pedestal ${pedestalClass}" style="${heightStyle}">
+          <span>#${rank}</span>
+        </div>
+      </div>
+    `;
+  };
+
+  podiumContainer.innerHTML = `
+    ${renderStep(p2, 2, '🥈', 'ww-pedestal-2', 'height: 76px;')}
+    ${renderStep(p1, 1, '👑', 'ww-pedestal-1', 'height: 104px;')}
+    ${renderStep(p3, 3, '🥉', 'ww-pedestal-3', 'height: 60px;')}
+  `;
+
+  const restRows = rows.slice(3, 10);
+  if (restRows.length === 0) {
+    top10List.innerHTML = `<div style="text-align: center; color: #64748b; font-size: 0.85rem; padding: 1rem;">All contenders for this championship are featured on the top 3 podium!</div>`;
+  } else {
+    top10List.innerHTML = restRows.map((r, idx) => {
+      const rankNum = idx + 4;
+      const isMe = currentUser && (r.user_id === currentUser.id || r.username === currentUser.username);
+      const scoreVal = r.points ?? r.total_score ?? r.score ?? 0;
+      const gamesPlayed = r.games_played ?? r.plays_count ?? 0;
+      const displayName = r.display_name || r.username;
+      const initial = (displayName[0] || 'P').toUpperCase();
+      const titlePill = r.selected_title ? `<span class="player-custom-title" style="font-size:0.65rem; margin-left:4px;">${formatTitleName(r.selected_title)}</span>` : '';
+
+      return `
+        <div class="ww-ranked-item ${isMe ? 'leaderboard-row-me' : ''}" style="background: #ffffff; border: 1px solid var(--border-color); color: #0f172a;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="ww-rank-badge" style="background: #f1f5f9; color: #475569;">${rankNum}</div>
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; color: #334155; border: 1.5px solid rgba(0,0,0,0.08);">
+              ${initial}
+            </div>
+            <div>
+              <strong class="leaderboard-player-link" data-username="${r.username}" style="cursor: pointer; font-size: 0.92rem; color: #0f172a;">
+                ${displayName}
+              </strong>
+              ${titlePill}
+              ${isMe ? `<span class="you-badge" style="margin-left: 4px;">You</span>` : ''}
+            </div>
+          </div>
+          <div style="text-align: right; display: flex; flex-direction: column; gap: 2px;">
+            <div style="font-size: 0.82rem; color: #475569;">
+              Score: <strong style="color: #b45309; font-size: 0.95rem;">${scoreVal} pts</strong>
+            </div>
+            <div style="font-size: 0.72rem; color: #64748b; font-weight: 600;">
+              Played: <strong style="color: #0f172a;">${gamesPlayed}</strong>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Attach player link click listeners
+  podiumContainer.querySelectorAll('.leaderboard-player-link').forEach(el => {
+    el.addEventListener('click', () => navigateToPublicProfile(el.dataset.username, true));
+  });
+  top10List.querySelectorAll('.leaderboard-player-link').forEach(el => {
+    el.addEventListener('click', () => navigateToPublicProfile(el.dataset.username, true));
+  });
+}
+
+// 5. Cosmetic Shop Route (/shop)
+async function navigateToShop(pushState = true) {
+  if (!currentUser) {
+    openAuthModal('login');
+    return;
+  }
+
+  hideAllDedicatedViews();
+  const targetPath = '/shop';
+  if (pushState && window.location.pathname !== targetPath) {
+    window.history.pushState({ page: 'shop' }, '', targetPath);
+  }
+  document.title = 'Cosmetic Shop — Gamify Avatar Frames & Titles';
+
+  const view = document.getElementById('shop-page-view');
+  view?.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  await loadShopPageData();
+}
+
+async function loadShopPageData() {
+  const coinsEl = document.getElementById('shop-page-coins');
+  const framesGrid = document.getElementById('shop-page-frames-grid');
+  const titlesGrid = document.getElementById('shop-page-titles-grid');
+  const feedbackEl = document.getElementById('shop-page-feedback');
+
+  if (coinsEl) coinsEl.textContent = currentUser?.coins ?? 0;
+
+  try {
+    const res = await api.getShop();
+    shopCatalog = res.catalog || [];
+    shopOwned = new Set(res.owned || []);
+    if (coinsEl) coinsEl.textContent = res.coins ?? currentUser?.coins ?? 0;
+
+    renderShopGrid(framesGrid, 'frame', feedbackEl, coinsEl);
+    renderShopGrid(titlesGrid, 'title', feedbackEl, coinsEl);
+  } catch (err) {
+    if (feedbackEl) {
+      feedbackEl.textContent = 'Failed to load shop: ' + (err.message || 'Server error');
+      feedbackEl.style.display = 'block';
+    }
+  }
+}
+
+function renderShopGrid(container, type, feedbackEl, coinsEl) {
+  if (!container) return;
+  const filtered = shopCatalog.filter(i => i.type === type);
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding: 1.5rem; color: var(--text-muted);">No items in this category.</div>`;
+    return;
+  }
+
+  const currentCoins = currentUser?.coins ?? 0;
+  const isFrame = type === 'frame';
+  const currentlyEquippedId = isFrame ? (currentUser?.selected_frame || 'default') : (currentUser?.selected_title || '');
+
+  container.innerHTML = filtered.map(item => {
+    const isOwned = shopOwned.has(item.id);
+    const isEquipped = currentlyEquippedId === item.id;
+    const canAfford = currentCoins >= item.cost;
+
+    let previewHtml = '';
+    if (item.type === 'frame') {
+      previewHtml = `
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #38bdf8); display:flex; align-items:center; justify-content:center; color:#fff;" class="frame-${item.id}">
+          🎮
+        </div>
+      `;
+    } else {
+      previewHtml = `
+        <span class="player-custom-title" style="font-size: 0.82rem; padding: 4px 10px;">${item.name}</span>
+      `;
+    }
+
+    let actionBtn = '';
+    if (isEquipped) {
+      actionBtn = `<span style="font-size: 0.8rem; font-weight: 800; color: #16a34a;">Equipped ✓</span>`;
+    } else if (isOwned) {
+      actionBtn = `<button class="btn-shop-equip-page game-action-btn btn-play" data-id="${item.id}" data-type="${item.type}" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">Equip</button>`;
+    } else {
+      actionBtn = `<button class="btn-shop-buy-page game-action-btn ${canAfford ? 'btn-unlock-gold' : 'btn-lock'}" data-id="${item.id}" data-cost="${item.cost}" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;" ${canAfford ? '' : 'disabled'}>Buy ${item.cost} 🪙</button>`;
+    }
+
+    return `
+      <div class="shop-card ${isEquipped ? 'equipped' : ''}" style="background:#ffffff; border:1.5px solid ${isEquipped ? '#16a34a' : 'var(--border-color)'};">
+        <div class="shop-card-preview">${previewHtml}</div>
+        <div>
+          <div class="shop-card-title">${item.name}</div>
+          <div class="shop-card-desc">${item.description}</div>
+        </div>
+        <div class="shop-card-footer">
+          <span style="font-size: 0.78rem; font-weight: 700; color: var(--gold);">${isOwned ? 'Owned' : `${item.cost} Coins`}</span>
+          ${actionBtn}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.btn-shop-buy-page').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const itemId = btn.dataset.id;
+      btn.disabled = true;
+      try {
+        const res = await api.buyCosmetic(itemId);
+        currentUser.coins = res.remainingCoins;
+        shopOwned.add(itemId);
+        updateAuthUI();
+        if (coinsEl) coinsEl.textContent = currentUser.coins;
+        if (feedbackEl) {
+          feedbackEl.textContent = '✓ Item purchased successfully!';
+          feedbackEl.style.display = 'block';
+          feedbackEl.style.background = '#dcfce7';
+          feedbackEl.style.color = '#15803d';
+        }
+        renderShopGrid(document.getElementById('shop-page-frames-grid'), 'frame', feedbackEl, coinsEl);
+        renderShopGrid(document.getElementById('shop-page-titles-grid'), 'title', feedbackEl, coinsEl);
+      } catch (err) {
+        if (feedbackEl) {
+          feedbackEl.textContent = '⚠️ ' + (err.message || 'Failed to purchase item');
+          feedbackEl.style.display = 'block';
+          feedbackEl.style.background = '#fee2e2';
+          feedbackEl.style.color = '#b91c1c';
+        }
+        btn.disabled = false;
+      }
+    });
+  });
+
+  container.querySelectorAll('.btn-shop-equip-page').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const itemId = btn.dataset.id;
+      const itemType = btn.dataset.type;
+      btn.disabled = true;
+      try {
+        const payload = itemType === 'frame' ? { frame: itemId } : { title: itemId };
+        const res = await api.equipCosmetic(payload);
+        if (itemType === 'frame') currentUser.selected_frame = res.selectedFrame;
+        else currentUser.selected_title = res.selectedTitle;
+        applyEquippedCosmetics();
+        if (feedbackEl) {
+          feedbackEl.textContent = '✓ Item equipped successfully!';
+          feedbackEl.style.display = 'block';
+          feedbackEl.style.background = '#dcfce7';
+          feedbackEl.style.color = '#15803d';
+        }
+        renderShopGrid(document.getElementById('shop-page-frames-grid'), 'frame', feedbackEl, coinsEl);
+        renderShopGrid(document.getElementById('shop-page-titles-grid'), 'title', feedbackEl, coinsEl);
+      } catch (err) {
+        if (feedbackEl) {
+          feedbackEl.textContent = '⚠️ ' + (err.message || 'Failed to equip item');
+          feedbackEl.style.display = 'block';
+          feedbackEl.style.background = '#fee2e2';
+          feedbackEl.style.color = '#b91c1c';
+        }
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
+// 6. PvP Challenges Route (/challenges)
+async function navigateToChallenges(pushState = true) {
+  if (!currentUser) {
+    openAuthModal('login');
+    return;
+  }
+
+  hideAllDedicatedViews();
+  const targetPath = '/challenges';
+  if (pushState && window.location.pathname !== targetPath) {
+    window.history.pushState({ page: 'challenges' }, '', targetPath);
+  }
+  document.title = 'PvP Challenges — Gamify Puzzle Duels';
+
+  const view = document.getElementById('challenges-page-view');
+  view?.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  await loadChallengesPageData();
+}
+
+async function loadChallengesPageData() {
+  const pendingContainer = document.getElementById('challenges-page-pending-list');
+  const historyContainer = document.getElementById('challenges-page-history-list');
+
+  try {
+    const res = await api.getChallenges();
+    challengesCache = res;
+
+    const pending = res.pendingIncoming || [];
+    const completed = res.completedIncoming || [];
+
+    if (pendingContainer) {
+      if (pending.length === 0) {
+        pendingContainer.innerHTML = `<div style="text-align:center; padding: 1.5rem; color: var(--text-muted); font-size: 0.9rem; background:#f8fafc; border-radius:12px; border:1px dashed var(--border-color);">No pending challenges waiting for you. Challenge friends to start a rivalry!</div>`;
+      } else {
+        pendingContainer.innerHTML = pending.map(c => `
+          <div class="challenge-card pending">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong style="cursor:pointer;" class="feed-user-link" data-username="${c.challenger_username}">${c.challenger_display_name}</strong>
+                <span style="font-size:0.75rem; color:var(--text-muted);">(@${c.challenger_username})</span>
+              </div>
+              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">${formatRelativeTime(c.created_at)}</span>
+            </div>
+            <div style="font-size:0.88rem; color:var(--text-color); margin: 0.35rem 0;">
+              Challenged you to beat <strong style="color:var(--accent); font-size:1.05rem;">${c.target_score} Pts</strong> on <strong style="text-transform:capitalize;">${c.game_id} (${c.difficulty})</strong>!
+            </div>
+            <div style="display:flex; gap:0.5rem; margin-top:0.35rem;">
+              <button class="btn-challenge-play btn-play" data-id="${c.id}" style="padding:0.4rem 0.9rem; font-size:0.82rem; border-radius:8px;">⚔️ Play Now</button>
+              <button class="btn-challenge-decline btn-lock" data-id="${c.id}" style="padding:0.4rem 0.8rem; font-size:0.82rem; border-radius:8px;">Decline</button>
+            </div>
+          </div>
+        `).join('');
+
+        pendingContainer.querySelectorAll('.btn-challenge-play').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const chal = pending.find(c => c.id === id);
+            if (chal) playChallenge(chal);
+          });
+        });
+
+        pendingContainer.querySelectorAll('.btn-challenge-decline').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            try {
+              await api.declineChallenge(id);
+              await loadChallengesPageData();
+            } catch (err) {
+              alert(err.message || 'Failed to decline challenge');
+            }
+          });
+        });
+
+        pendingContainer.querySelectorAll('.feed-user-link').forEach(el => {
+          el.addEventListener('click', () => navigateToPublicProfile(el.dataset.username, true));
+        });
+      }
+    }
+
+    if (historyContainer) {
+      if (completed.length === 0) {
+        historyContainer.innerHTML = `<div style="text-align:center; padding: 1.5rem; color: var(--text-muted); font-size: 0.9rem; background:#f8fafc; border-radius:12px; border:1px dashed var(--border-color);">No completed challenges history yet.</div>`;
+      } else {
+        historyContainer.innerHTML = completed.map(c => {
+          const isMeWinner = currentUser && c.winner_user_id === currentUser.id;
+          return `
+            <div class="challenge-card ${isMeWinner ? 'won' : 'lost'}">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div><strong style="cursor:pointer;" class="feed-user-link" data-username="${c.challenger_username}">${c.challenger_display_name}</strong> vs You</div>
+                <span style="font-size:0.78rem; font-weight:800; color:${isMeWinner ? '#16a34a' : '#ef4444'};">
+                  ${isMeWinner ? '🏆 VICTORY' : 'DEFEAT'}
+                </span>
+              </div>
+              <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">
+                Game: <strong style="text-transform:capitalize;">${c.game_id} (${c.difficulty})</strong> · Target: ${c.target_score} Pts · Your Score: ${c.opponent_score} Pts
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        historyContainer.querySelectorAll('.feed-user-link').forEach(el => {
+          el.addEventListener('click', () => navigateToPublicProfile(el.dataset.username, true));
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to load challenges page:', err);
+  }
+}
+
+// Dedicated Page Action Event Listeners
+function setupDedicatedPageActionListeners() {
+  document.getElementById('btn-save-profile-page')?.addEventListener('click', async () => {
+    const input = document.getElementById('profile-page-about-input');
+    const btn = document.getElementById('btn-save-profile-page');
+    if (!currentUser || !input || !btn) return;
+    try {
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      const res = await api.updateProfile(currentUser.displayName, input.value.trim());
+      currentUser.about = res.user.about;
+      currentUser.displayName = res.user.display_name;
+      api.setSession(api.token, currentUser);
+      btn.textContent = 'Saved ✓';
+      setTimeout(() => {
+        btn.textContent = 'Save About';
+        btn.disabled = false;
+      }, 1500);
+    } catch (err) {
+      alert(err.message || 'Failed to update profile');
+      btn.disabled = false;
+      btn.textContent = 'Save About';
+    }
+  });
+
+  document.getElementById('btn-profile-page-install-app')?.addEventListener('click', triggerInstallApp);
+  document.getElementById('btn-profile-page-logout')?.addEventListener('click', handleUserLogout);
+
+  const tabBtnFollowing = document.getElementById('tab-page-btn-following');
+  const tabBtnFollowers = document.getElementById('tab-page-btn-followers');
+  const followingList = document.getElementById('profile-page-following-list');
+  const followersList = document.getElementById('profile-page-followers-list');
+
+  tabBtnFollowing?.addEventListener('click', () => {
+    tabBtnFollowing.classList.add('active');
+    tabBtnFollowers?.classList.remove('active');
+    followingList?.classList.remove('hidden');
+    followersList?.classList.add('hidden');
+  });
+
+  tabBtnFollowers?.addEventListener('click', async () => {
+    tabBtnFollowers?.classList.add('active');
+    tabBtnFollowing?.classList.remove('active');
+    followersList?.classList.remove('hidden');
+    followingList?.classList.add('hidden');
+
+    try {
+      const res = await api.getFriends();
+      if (res.followers) {
+        userFollowers = res.followers;
+        userFollowersCount = res.followersCount ?? userFollowers.length;
+        renderFollowersFollowingUI();
+      }
+    } catch (err) {
+      console.warn('Load followers note:', err);
+    }
+  });
+
+  const btnAddFriendPage = document.getElementById('btn-add-friend-page');
+  const addFriendPageInput = document.getElementById('add-friend-page-input');
+  const profilePageFeedback = document.getElementById('profile-page-friends-feedback');
+
+  btnAddFriendPage?.addEventListener('click', async () => {
+    const targetUsername = addFriendPageInput?.value?.trim();
+    if (!targetUsername) return;
+    btnAddFriendPage.disabled = true;
+    try {
+      const res = await api.addFriend(targetUsername);
+      if (res.friend) {
+        userFollowing.push(res.friend);
+        userFollowingCount = userFollowing.length;
+        idbSet('gamify_following', userFollowing).catch(() => {});
+        renderFollowersFollowingUI();
+        if (profilePageFeedback) {
+          profilePageFeedback.textContent = `✓ Now following @${targetUsername}!`;
+          profilePageFeedback.style.color = 'var(--correct-bg)';
+          profilePageFeedback.style.display = 'block';
+        }
+        if (addFriendPageInput) addFriendPageInput.value = '';
+      }
+    } catch (err) {
+      if (profilePageFeedback) {
+        profilePageFeedback.textContent = `⚠️ ${err.message || 'Failed to follow player'}`;
+        profilePageFeedback.style.color = 'var(--danger)';
+        profilePageFeedback.style.display = 'block';
+      }
+    } finally {
+      btnAddFriendPage.disabled = false;
+    }
+  });
+
+  const tabWwGlobal = document.getElementById('tab-ww-page-global');
+  const tabWwWeekly = document.getElementById('tab-ww-page-weekly');
+  const wwGlobalContent = document.getElementById('ww-page-global-content');
+  const wwWeeklyContent = document.getElementById('ww-page-weekly-content');
+  const wwGameFilter = document.getElementById('ww-page-game-filter');
+
+  tabWwGlobal?.addEventListener('click', () => {
+    tabWwGlobal.classList.add('active');
+    tabWwWeekly?.classList.remove('active');
+    wwGlobalContent?.classList.remove('hidden');
+    wwWeeklyContent?.classList.add('hidden');
+  });
+
+  tabWwWeekly?.addEventListener('click', () => {
+    tabWwWeekly?.classList.add('active');
+    tabWwGlobal?.classList.remove('active');
+    wwWeeklyContent?.classList.remove('hidden');
+    wwGlobalContent?.classList.add('hidden');
+  });
+
+  wwGameFilter?.addEventListener('change', (e) => {
+    currentWwFilter = e.target.value;
+    loadWorldWarsPageData(currentWwFilter);
+  });
+
+  document.getElementById('btn-create-challenge-open-page')?.addEventListener('click', () => {
+    openCreateChallengeModal('');
+  });
+}
+
+// 7. URL Router (SPA Multi-Page Routing)
 function handleUrlRouting(pushState = false) {
   const path = window.location.pathname.replace(/\/$/, '');
+
   if (path.startsWith('/games/')) {
     const slug = path.replace('/games/', '');
     const game = getGameBySlugOrId(slug);
@@ -2931,6 +3872,7 @@ function handleUrlRouting(pushState = false) {
       return;
     }
   }
+
   if (path === '/privacy' || path === '/privacy.html') {
     navigateToStaticPage('privacy', pushState);
     return;
@@ -2947,6 +3889,43 @@ function handleUrlRouting(pushState = false) {
     navigateToStaticPage('terms', pushState);
     return;
   }
+
+  if (path === '/profile') {
+    navigateToProfile(pushState);
+    return;
+  }
+
+  if (path.startsWith('/users/')) {
+    const username = decodeURIComponent(path.replace('/users/', ''));
+    if (username) {
+      navigateToPublicProfile(username, pushState);
+      return;
+    }
+  }
+
+  if (path === '/world-wars') {
+    navigateToWorldWars(pushState);
+    return;
+  }
+
+  if (path.startsWith('/tournaments/')) {
+    const weekId = decodeURIComponent(path.replace('/tournaments/', ''));
+    if (weekId) {
+      navigateToTournament(weekId, pushState);
+      return;
+    }
+  }
+
+  if (path === '/shop') {
+    navigateToShop(pushState);
+    return;
+  }
+
+  if (path === '/challenges') {
+    navigateToChallenges(pushState);
+    return;
+  }
+
   // Default: Home
   if (path === '' || path === '/') {
     returnToHome(pushState);
@@ -2963,6 +3942,33 @@ function setupRoutingListeners() {
       e.preventDefault();
       returnToHome(true);
     });
+  });
+
+  document.querySelectorAll('.btn-route-world-wars').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigateToWorldWars(true);
+    });
+  });
+
+  document.querySelectorAll('.btn-nav-shop').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigateToShop(true);
+    });
+  });
+
+  document.querySelectorAll('.btn-nav-challenges').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigateToChallenges(true);
+    });
+  });
+
+  const headerBadge = document.getElementById('header-updates-badge');
+  headerBadge?.addEventListener('click', (e) => {
+    e.preventDefault();
+    navigateToChallenges(true);
   });
 
   document.querySelectorAll('.footer-nav-link').forEach(link => {
@@ -2994,10 +4000,11 @@ async function bootstrap() {
   // 1. Instant 0ms Offline Restore from IndexedDB
   await restoreOfflineState();
 
-  // 2. Setup Dedicated Routing & Footer Links
+  // 2. Setup Dedicated Routing & Action Listeners
   setupRoutingListeners();
+  setupDedicatedPageActionListeners();
 
-  // 3. Resolve Initial URL Route (/games/sudoku, /privacy, /about, etc.)
+  // 3. Resolve Initial URL Route (/games/sudoku, /privacy, /world-wars, etc.)
   handleUrlRouting(false);
 
   // 4. Single Batched Roundtrip to /api/me

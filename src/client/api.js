@@ -18,6 +18,7 @@ class GamifyApiClient {
     // In-memory caches to eliminate unnecessary Cloudflare worker calls
     this._leaderboardCache = new Map();
     this._profileCache = new Map();
+    this._tournamentCache = new Map();
     this._searchCache = new Map();
     this._shopCache = null;
     this._lastMeCache = null;
@@ -182,6 +183,22 @@ class GamifyApiClient {
     this._leaderboardCache.set(cacheKey, { data, timestamp: now });
     return data;
   }
+
+  /**
+   * Fast weekly tournament championship archive query with memory caching.
+   */
+  async getTournamentArchive(weekId, forceRefresh = false) {
+    if (!weekId) return null;
+    const now = Date.now();
+    const cached = this._tournamentCache.get(weekId);
+    if (!forceRefresh && cached && (now - cached.timestamp < 120000)) {
+      return cached.data;
+    }
+    const data = await this.request(`/tournaments/${encodeURIComponent(weekId)}`);
+    this._tournamentCache.set(weekId, { data, timestamp: now });
+    return data;
+  }
+
 
   // Friends & Profile Management
   async getFriends() {

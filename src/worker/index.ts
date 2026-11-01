@@ -4,7 +4,7 @@ import { authenticateRequest, handleRegister, handleLogin } from './auth';
 import { handleUnlock } from './controllers/unlock';
 import { handleSubmitScore } from './controllers/submitScore';
 import { handleUseHint } from './controllers/hint';
-import { handleGetLeaderboard } from './controllers/leaderboard';
+import { handleGetLeaderboard, handleGetTournamentArchive } from './controllers/leaderboard';
 import { handleGetFriends, handleAddFriend, handleRemoveFriend, handleSearchUsers, handleGetUserProfile, handleUpdateProfile } from './controllers/friends';
 import { handleGetShop, handleBuyCosmetic, handleEquipCosmetic } from './controllers/shop';
 import { handleCreateChallenge, handleGetChallenges, handleRespondChallenge } from './controllers/challenges';
@@ -131,6 +131,14 @@ export default {
         const rawGameId = leaderboardMatch[1];
         const gameId = rawGameId === 'word-guess' ? 'wordle' : rawGameId;
         return await handleGetLeaderboard(request, env, gameId);
+      }
+
+      // -------------------------------------------------------------------
+      // 2b. Weekly Tournament Championship Archive: GET /api/tournaments/:weekId
+      // -------------------------------------------------------------------
+      const tournamentMatch = url.pathname.match(/^\/api\/tournaments\/([^/]+)$/);
+      if (method === 'GET' && tournamentMatch) {
+        return await handleGetTournamentArchive(request, env, decodeURIComponent(tournamentMatch[1]));
       }
 
       // -------------------------------------------------------------------

@@ -1,200 +1,13838 @@
 import { SeededRNG } from './prng.js';
 
 const PUZZLE_BANK = {
-  easy: [
+  "easy": [
     {
-      id: 'e1',
-      title: 'Kingdom & Earth',
-      grid: [
-        ['B', 'E', 'A', 'S', 'T'],
-        ['E', 'A', 'R', 'T', 'H'],
-        ['A', 'R', 'M', 'O', 'R'],
-        ['S', 'T', 'O', 'N', 'E'],
-        ['T', 'H', 'R', 'E', 'E'],
+      "id": "e1",
+      "title": "Golden Meadows I",
+      "grid": [
+        [
+          "A",
+          "B",
+          "B",
+          "O",
+          "T"
+        ],
+        [
+          "B",
+          "R",
+          "I",
+          "D",
+          "E"
+        ],
+        [
+          "B",
+          "I",
+          "S",
+          "O",
+          "N"
+        ],
+        [
+          "O",
+          "D",
+          "O",
+          "R",
+          "S"
+        ],
+        [
+          "T",
+          "E",
+          "N",
+          "S",
+          "E"
+        ]
       ],
-      across: [
-        { num: 1, row: 0, col: 0, word: 'BEAST', clue: 'A ferocious wild creature' },
-        { num: 2, row: 1, col: 0, word: 'EARTH', clue: 'Our home blue planet' },
-        { num: 3, row: 2, col: 0, word: 'ARMOR', clue: 'Protective suit worn by medieval knights' },
-        { num: 4, row: 3, col: 0, word: 'STONE', clue: 'Hard rock found on the trail' },
-        { num: 5, row: 4, col: 0, word: 'THREE', clue: 'A crowd, according to an old saying' },
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "ABBOT",
+          "clue": "Superior monk or head of a monastery"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "BRIDE",
+          "clue": "Woman walking down the wedding aisle"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "BISON",
+          "clue": "Humped wild shaggy ox of North America"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "ODORS",
+          "clue": "Scents, aromas, and olfactory sensations"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TENSE",
+          "clue": "Tense - 5-letter deduction word"
+        }
       ],
-      down: [
-        { num: 1, row: 0, col: 0, word: 'BEAST', clue: 'Fairy tale partner of Beauty' },
-        { num: 2, row: 0, col: 1, word: 'EARTH', clue: 'Rich soil or third planet from the sun' },
-        { num: 3, row: 0, col: 2, word: 'ARMOR', clue: 'Shields and metal protective gear' },
-        { num: 4, row: 0, col: 3, word: 'STONE', clue: 'Skipping pebble on a smooth lake' },
-        { num: 5, row: 0, col: 4, word: 'THREE', clue: 'Number of strikes before an out' },
-      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "ABBOT",
+          "clue": "Superior monk or head of a monastery"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "BRIDE",
+          "clue": "Woman walking down the wedding aisle"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "BISON",
+          "clue": "Humped wild shaggy ox of North America"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "ODORS",
+          "clue": "Scents, aromas, and olfactory sensations"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TENSE",
+          "clue": "Tense - 5-letter deduction word"
+        }
+      ]
     },
     {
-      id: 'e2',
-      title: 'Spring Season',
-      grid: [
-        ['A', 'P', 'R', 'I', 'L'],
-        ['P', 'L', 'A', 'C', 'E'],
-        ['R', 'A', 'P', 'I', 'D'],
-        ['I', 'C', 'I', 'N', 'G'],
-        ['L', 'E', 'D', 'G', 'E'],
+      "id": "e2",
+      "title": "Starlight Orbit I",
+      "grid": [
+        [
+          "A",
+          "I",
+          "S",
+          "L",
+          "E"
+        ],
+        [
+          "I",
+          "N",
+          "T",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "U",
+          "D",
+          "Y"
+        ],
+        [
+          "L",
+          "E",
+          "D",
+          "G",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
       ],
-      across: [
-        { num: 1, row: 0, col: 0, word: 'APRIL', clue: 'Spring month famous for rain showers' },
-        { num: 2, row: 1, col: 0, word: 'PLACE', clue: 'A specific spot, seat, or location' },
-        { num: 3, row: 2, col: 0, word: 'RAPID', clue: 'Moving with extreme quickness' },
-        { num: 4, row: 3, col: 0, word: 'ICING', clue: 'Sweet, creamy frosting on a birthday cake' },
-        { num: 5, row: 4, col: 0, word: 'LEDGE', clue: 'Narrow shelf protruding from a canyon wall' },
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "AISLE",
+          "clue": "Passage walkway between rows of seats"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "INTER",
+          "clue": "Inter - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "STUDY",
+          "clue": "Study - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "LEDGE",
+          "clue": "Narrow horizontal shelf on a canyon cliff"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
       ],
-      down: [
-        { num: 1, row: 0, col: 0, word: 'APRIL', clue: 'Fourth month of the calendar year' },
-        { num: 2, row: 0, col: 1, word: 'PLACE', clue: 'To put or position an object' },
-        { num: 3, row: 0, col: 2, word: 'RAPID', clue: 'Fast-flowing whitewater river section' },
-        { num: 4, row: 0, col: 3, word: 'ICING', clue: 'Hockey infraction or decorative glaze' },
-        { num: 5, row: 0, col: 4, word: 'LEDGE', clue: 'Window sill or narrow shelf' },
-      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "AISLE",
+          "clue": "Passage walkway between rows of seats"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "INTER",
+          "clue": "Inter - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "STUDY",
+          "clue": "Study - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "LEDGE",
+          "clue": "Narrow horizontal shelf on a canyon cliff"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
     },
     {
-      id: 'e3',
-      title: 'Peaceful Evening',
-      grid: [
-        ['A', 'R', 'O', 'S', 'E'],
-        ['R', 'E', 'L', 'A', 'X'],
-        ['O', 'L', 'I', 'V', 'E'],
-        ['S', 'A', 'V', 'O', 'R'],
-        ['E', 'X', 'E', 'R', 'T'],
+      "id": "e3",
+      "title": "Ocean Breeze I",
+      "grid": [
+        [
+          "A",
+          "I",
+          "S",
+          "L",
+          "E"
+        ],
+        [
+          "I",
+          "N",
+          "T",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "R",
+          "A",
+          "Y"
+        ],
+        [
+          "L",
+          "E",
+          "A",
+          "V",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
       ],
-      across: [
-        { num: 1, row: 0, col: 0, word: 'AROSE', clue: 'Got out of bed with the morning sun' },
-        { num: 2, row: 1, col: 0, word: 'RELAX', clue: 'Unwind and take a deep breath' },
-        { num: 3, row: 2, col: 0, word: 'OLIVE', clue: 'Small green fruit famous for savory oil' },
-        { num: 4, row: 3, col: 0, word: 'SAVOR', clue: 'Appreciate good food or wine slowly' },
-        { num: 5, row: 4, col: 0, word: 'EXERT', clue: 'Apply physical or mental power' },
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "AISLE",
+          "clue": "Passage walkway between rows of seats"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "INTER",
+          "clue": "Inter - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "STRAY",
+          "clue": "Wander away from familiar path and group"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "LEAVE",
+          "clue": "Leave - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
       ],
-      down: [
-        { num: 1, row: 0, col: 0, word: 'AROSE', clue: 'Came into existence or ascended' },
-        { num: 2, row: 0, col: 1, word: 'RELAX', clue: 'Chill out beside the pool' },
-        { num: 3, row: 0, col: 2, word: 'OLIVE', clue: 'Classic garnish on a pizza or martini' },
-        { num: 4, row: 0, col: 3, word: 'SAVOR', clue: 'Treasure every single moment' },
-        { num: 5, row: 0, col: 4, word: 'EXERT', clue: 'Put forth immense energy' },
-      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "AISLE",
+          "clue": "Passage walkway between rows of seats"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "INTER",
+          "clue": "Inter - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "STRAY",
+          "clue": "Wander away from familiar path and group"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "LEAVE",
+          "clue": "Leave - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
     },
+    {
+      "id": "e4",
+      "title": "Springtime Glow I",
+      "grid": [
+        [
+          "A",
+          "N",
+          "I",
+          "M",
+          "E"
+        ],
+        [
+          "N",
+          "E",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "ANIME",
+          "clue": "Distinctive Japanese animation style"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "NEVER",
+          "clue": "Never - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "ANIME",
+          "clue": "Distinctive Japanese animation style"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "NEVER",
+          "clue": "Never - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e5",
+      "title": "Mountain Crest I",
+      "grid": [
+        [
+          "A",
+          "P",
+          "R",
+          "I",
+          "L"
+        ],
+        [
+          "P",
+          "E",
+          "A",
+          "C",
+          "E"
+        ],
+        [
+          "R",
+          "A",
+          "P",
+          "I",
+          "D"
+        ],
+        [
+          "I",
+          "C",
+          "I",
+          "N",
+          "G"
+        ],
+        [
+          "L",
+          "E",
+          "D",
+          "G",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "APRIL",
+          "clue": "Spring month famous for rain showers"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "PEACE",
+          "clue": "Freedom from civil disturbance and war"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "RAPID",
+          "clue": "Moving with astonishing swift velocity"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "ICING",
+          "clue": "Sweet creamy frosting on a birthday cake"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "LEDGE",
+          "clue": "Narrow horizontal shelf on a canyon cliff"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "APRIL",
+          "clue": "Spring month famous for rain showers"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "PEACE",
+          "clue": "Freedom from civil disturbance and war"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "RAPID",
+          "clue": "Moving with astonishing swift velocity"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "ICING",
+          "clue": "Sweet creamy frosting on a birthday cake"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "LEDGE",
+          "clue": "Narrow horizontal shelf on a canyon cliff"
+        }
+      ]
+    },
+    {
+      "id": "e6",
+      "title": "Ancient Forest I",
+      "grid": [
+        [
+          "A",
+          "P",
+          "R",
+          "I",
+          "L"
+        ],
+        [
+          "P",
+          "L",
+          "A",
+          "C",
+          "E"
+        ],
+        [
+          "R",
+          "A",
+          "P",
+          "I",
+          "D"
+        ],
+        [
+          "I",
+          "C",
+          "I",
+          "N",
+          "G"
+        ],
+        [
+          "L",
+          "E",
+          "D",
+          "G",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "APRIL",
+          "clue": "Spring month famous for rain showers"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "PLACE",
+          "clue": "Specific geographical spot or position"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "RAPID",
+          "clue": "Moving with astonishing swift velocity"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "ICING",
+          "clue": "Sweet creamy frosting on a birthday cake"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "LEDGE",
+          "clue": "Narrow horizontal shelf on a canyon cliff"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "APRIL",
+          "clue": "Spring month famous for rain showers"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "PLACE",
+          "clue": "Specific geographical spot or position"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "RAPID",
+          "clue": "Moving with astonishing swift velocity"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "ICING",
+          "clue": "Sweet creamy frosting on a birthday cake"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "LEDGE",
+          "clue": "Narrow horizontal shelf on a canyon cliff"
+        }
+      ]
+    },
+    {
+      "id": "e7",
+      "title": "Crystal Brook I",
+      "grid": [
+        [
+          "A",
+          "P",
+          "R",
+          "I",
+          "L"
+        ],
+        [
+          "P",
+          "R",
+          "I",
+          "C",
+          "E"
+        ],
+        [
+          "R",
+          "I",
+          "G",
+          "I",
+          "D"
+        ],
+        [
+          "I",
+          "C",
+          "I",
+          "N",
+          "G"
+        ],
+        [
+          "L",
+          "E",
+          "D",
+          "G",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "APRIL",
+          "clue": "Spring month famous for rain showers"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "PRICE",
+          "clue": "Monetary cost required to purchase goods"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "RIGID",
+          "clue": "Rigid - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "ICING",
+          "clue": "Sweet creamy frosting on a birthday cake"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "LEDGE",
+          "clue": "Narrow horizontal shelf on a canyon cliff"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "APRIL",
+          "clue": "Spring month famous for rain showers"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "PRICE",
+          "clue": "Monetary cost required to purchase goods"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "RIGID",
+          "clue": "Rigid - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "ICING",
+          "clue": "Sweet creamy frosting on a birthday cake"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "LEDGE",
+          "clue": "Narrow horizontal shelf on a canyon cliff"
+        }
+      ]
+    },
+    {
+      "id": "e8",
+      "title": "Midnight Echo I",
+      "grid": [
+        [
+          "A",
+          "R",
+          "O",
+          "S",
+          "E"
+        ],
+        [
+          "R",
+          "E",
+          "L",
+          "A",
+          "X"
+        ],
+        [
+          "O",
+          "L",
+          "I",
+          "V",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "V",
+          "O",
+          "R"
+        ],
+        [
+          "E",
+          "X",
+          "E",
+          "R",
+          "T"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "AROSE",
+          "clue": "Ascended upward or came into view"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RELAX",
+          "clue": "Release tension and rest in serene tranquility"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "OLIVE",
+          "clue": "Savory green Mediterranean fruit on salads"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SAVOR",
+          "clue": "Enjoy flavor or cherish meaningful moment"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "EXERT",
+          "clue": "Apply vigorous strength or willpower"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "AROSE",
+          "clue": "Ascended upward or came into view"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RELAX",
+          "clue": "Release tension and rest in serene tranquility"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "OLIVE",
+          "clue": "Savory green Mediterranean fruit on salads"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SAVOR",
+          "clue": "Enjoy flavor or cherish meaningful moment"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "EXERT",
+          "clue": "Apply vigorous strength or willpower"
+        }
+      ]
+    },
+    {
+      "id": "e9",
+      "title": "Sunrise Valley I",
+      "grid": [
+        [
+          "B",
+          "A",
+          "S",
+          "I",
+          "C"
+        ],
+        [
+          "A",
+          "R",
+          "E",
+          "N",
+          "A"
+        ],
+        [
+          "S",
+          "E",
+          "R",
+          "U",
+          "M"
+        ],
+        [
+          "I",
+          "N",
+          "U",
+          "R",
+          "E"
+        ],
+        [
+          "C",
+          "A",
+          "M",
+          "E",
+          "L"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BASIC",
+          "clue": "Fundamental, essential, or elemental"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "ARENA",
+          "clue": "Arena - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "SERUM",
+          "clue": "Serum - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "CAMEL",
+          "clue": "Desert mammal known for its water humps"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BASIC",
+          "clue": "Fundamental, essential, or elemental"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "ARENA",
+          "clue": "Arena - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "SERUM",
+          "clue": "Serum - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "CAMEL",
+          "clue": "Desert mammal known for its water humps"
+        }
+      ]
+    },
+    {
+      "id": "e10",
+      "title": "Silver Timber I",
+      "grid": [
+        [
+          "B",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "N",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "e11",
+      "title": "Autumn Leaves I",
+      "grid": [
+        [
+          "B",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "N",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e12",
+      "title": "Desert Mirage I",
+      "grid": [
+        [
+          "B",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "R",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "e13",
+      "title": "River Odyssey I",
+      "grid": [
+        [
+          "B",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "R",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e14",
+      "title": "Sapphire Skies I",
+      "grid": [
+        [
+          "B",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "V",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "e15",
+      "title": "Cobblestone Lane I",
+      "grid": [
+        [
+          "B",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "V",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e16",
+      "title": "Emerald Grove I",
+      "grid": [
+        [
+          "B",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "K",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "e17",
+      "title": "Thunder Peak I",
+      "grid": [
+        [
+          "B",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "K",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e18",
+      "title": "Velvet Twilight I",
+      "grid": [
+        [
+          "B",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "M",
+          "B",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "B",
+          "I",
+          "D",
+          "E"
+        ],
+        [
+          "S",
+          "E",
+          "D",
+          "A",
+          "N"
+        ],
+        [
+          "T",
+          "R",
+          "E",
+          "N",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EMBER",
+          "clue": "Glowing coal fragment in dying campfire"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ABIDE",
+          "clue": "Tolerate, endure, or remain steadfast"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EMBER",
+          "clue": "Glowing coal fragment in dying campfire"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ABIDE",
+          "clue": "Tolerate, endure, or remain steadfast"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ]
+    },
+    {
+      "id": "e19",
+      "title": "Island Harbor I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "A",
+          "N",
+          "D"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "N",
+          "G",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "D",
+          "R",
+          "Y",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLAND",
+          "clue": "Mild and lacking strong seasoning"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ANGRY",
+          "clue": "Feeling or expressing intense ire"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLAND",
+          "clue": "Mild and lacking strong seasoning"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ANGRY",
+          "clue": "Feeling or expressing intense ire"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ]
+    },
+    {
+      "id": "e20",
+      "title": "Whispering Pines I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "N",
+          "O",
+          "D",
+          "E"
+        ],
+        [
+          "S",
+          "E",
+          "D",
+          "A",
+          "N"
+        ],
+        [
+          "T",
+          "R",
+          "E",
+          "N",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLAST",
+          "clue": "Sudden powerful gust of explosive wind"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ANODE",
+          "clue": "Anode - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLAST",
+          "clue": "Sudden powerful gust of explosive wind"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ANODE",
+          "clue": "Anode - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ]
+    },
+    {
+      "id": "e21",
+      "title": "Solar Flares I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "L",
+          "U",
+          "N",
+          "A",
+          "R"
+        ],
+        [
+          "A",
+          "N",
+          "G",
+          "L",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "L",
+          "S",
+          "A"
+        ],
+        [
+          "T",
+          "R",
+          "E",
+          "A",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLAST",
+          "clue": "Sudden powerful gust of explosive wind"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LUNAR",
+          "clue": "Relating to earth's silv'ry nighttime moon"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ANGLE",
+          "clue": "Space between two intersecting lines"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SALSA",
+          "clue": "Salsa - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TREAD",
+          "clue": "Tread - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLAST",
+          "clue": "Sudden powerful gust of explosive wind"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LUNAR",
+          "clue": "Relating to earth's silv'ry nighttime moon"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ANGLE",
+          "clue": "Space between two intersecting lines"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SALSA",
+          "clue": "Salsa - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TREAD",
+          "clue": "Tread - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e22",
+      "title": "Mystic Cavern I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "L",
+          "U",
+          "N",
+          "A",
+          "R"
+        ],
+        [
+          "A",
+          "N",
+          "K",
+          "L",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "L",
+          "S",
+          "A"
+        ],
+        [
+          "T",
+          "R",
+          "E",
+          "A",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLAST",
+          "clue": "Sudden powerful gust of explosive wind"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LUNAR",
+          "clue": "Relating to earth's silv'ry nighttime moon"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ANKLE",
+          "clue": "Joint connecting foot and lower leg"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SALSA",
+          "clue": "Salsa - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TREAD",
+          "clue": "Tread - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLAST",
+          "clue": "Sudden powerful gust of explosive wind"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LUNAR",
+          "clue": "Relating to earth's silv'ry nighttime moon"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ANKLE",
+          "clue": "Joint connecting foot and lower leg"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SALSA",
+          "clue": "Salsa - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TREAD",
+          "clue": "Tread - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e23",
+      "title": "Alpine Haven I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "E",
+          "N",
+          "D"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "E",
+          "N",
+          "T",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "D",
+          "R",
+          "Y",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLEND",
+          "clue": "Harmoniously combine into a mixture"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ENTRY",
+          "clue": "Entry - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLEND",
+          "clue": "Harmoniously combine into a mixture"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ENTRY",
+          "clue": "Entry - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ]
+    },
+    {
+      "id": "e24",
+      "title": "Radiant Horizon I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "E",
+          "N",
+          "D"
+        ],
+        [
+          "L",
+          "I",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "E",
+          "V",
+          "E",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "D",
+          "R",
+          "Y",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLEND",
+          "clue": "Harmoniously combine into a mixture"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LIVER",
+          "clue": "Liver - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "EVERY",
+          "clue": "All members of a category without lack"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLEND",
+          "clue": "Harmoniously combine into a mixture"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LIVER",
+          "clue": "Liver - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "EVERY",
+          "clue": "All members of a category without lack"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ]
+    },
+    {
+      "id": "e25",
+      "title": "Lunar Eclipse I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "E",
+          "N",
+          "D"
+        ],
+        [
+          "L",
+          "O",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "E",
+          "V",
+          "E",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "D",
+          "R",
+          "Y",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLEND",
+          "clue": "Harmoniously combine into a mixture"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LOVER",
+          "clue": "Lover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "EVERY",
+          "clue": "All members of a category without lack"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLEND",
+          "clue": "Harmoniously combine into a mixture"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LOVER",
+          "clue": "Lover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "EVERY",
+          "clue": "All members of a category without lack"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ]
+    },
+    {
+      "id": "e26",
+      "title": "Harbor Lights I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "I",
+          "N",
+          "D"
+        ],
+        [
+          "L",
+          "I",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "D",
+          "R",
+          "Y",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLIND",
+          "clue": "Unable to see or window shade covering"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LIVER",
+          "clue": "Liver - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLIND",
+          "clue": "Unable to see or window shade covering"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LIVER",
+          "clue": "Liver - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ]
+    },
+    {
+      "id": "e27",
+      "title": "Silent Meadow I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "I",
+          "N",
+          "D"
+        ],
+        [
+          "L",
+          "O",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "D",
+          "R",
+          "Y",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLIND",
+          "clue": "Unable to see or window shade covering"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LOVER",
+          "clue": "Lover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLIND",
+          "clue": "Unable to see or window shade covering"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LOVER",
+          "clue": "Lover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ]
+    },
+    {
+      "id": "e28",
+      "title": "Timber Ridge I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "I",
+          "N",
+          "K"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "N"
+        ],
+        [
+          "I",
+          "N",
+          "U",
+          "R",
+          "E"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "K",
+          "N",
+          "E",
+          "E",
+          "L"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLINK",
+          "clue": "Rapidly close and open both eyes"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINEN",
+          "clue": "Crisp woven textile spun from flax fibers"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "KNEEL",
+          "clue": "Kneel - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLINK",
+          "clue": "Rapidly close and open both eyes"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINEN",
+          "clue": "Crisp woven textile spun from flax fibers"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "KNEEL",
+          "clue": "Kneel - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e29",
+      "title": "Citrus Grove I",
+      "grid": [
+        [
+          "B",
+          "L",
+          "I",
+          "S",
+          "S"
+        ],
+        [
+          "L",
+          "I",
+          "G",
+          "H",
+          "T"
+        ],
+        [
+          "I",
+          "G",
+          "L",
+          "O",
+          "O"
+        ],
+        [
+          "S",
+          "H",
+          "O",
+          "W",
+          "N"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "N",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLISS",
+          "clue": "State of absolute supreme happiness"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LIGHT",
+          "clue": "Electromagnetic radiance illuminating dark"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IGLOO",
+          "clue": "Dome-shaped winter shelter constructed from snow"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SHOWN",
+          "clue": "Shown - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BLISS",
+          "clue": "State of absolute supreme happiness"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LIGHT",
+          "clue": "Electromagnetic radiance illuminating dark"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IGLOO",
+          "clue": "Dome-shaped winter shelter constructed from snow"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SHOWN",
+          "clue": "Shown - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        }
+      ]
+    },
+    {
+      "id": "e30",
+      "title": "Northern Lights I",
+      "grid": [
+        [
+          "B",
+          "R",
+          "I",
+          "N",
+          "E"
+        ],
+        [
+          "R",
+          "I",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BRINE",
+          "clue": "Highly concentrated salty seawater soak"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RIVER",
+          "clue": "Vast freshwater flow winding toward the sea"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BRINE",
+          "clue": "Highly concentrated salty seawater soak"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RIVER",
+          "clue": "Vast freshwater flow winding toward the sea"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e31",
+      "title": "Rustic Cabin I",
+      "grid": [
+        [
+          "B",
+          "R",
+          "I",
+          "N",
+          "E"
+        ],
+        [
+          "R",
+          "O",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BRINE",
+          "clue": "Highly concentrated salty seawater soak"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "ROVER",
+          "clue": "Rover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "BRINE",
+          "clue": "Highly concentrated salty seawater soak"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "ROVER",
+          "clue": "Rover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e32",
+      "title": "Breezy Point I",
+      "grid": [
+        [
+          "C",
+          "A",
+          "R",
+          "G",
+          "O"
+        ],
+        [
+          "A",
+          "L",
+          "E",
+          "R",
+          "T"
+        ],
+        [
+          "R",
+          "E",
+          "P",
+          "O",
+          "T"
+        ],
+        [
+          "G",
+          "R",
+          "O",
+          "P",
+          "E"
+        ],
+        [
+          "O",
+          "T",
+          "T",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CARGO",
+          "clue": "Freight goods shipped on ocean liners"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "ALERT",
+          "clue": "Vigilant, attentive, and fully awake"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "REPOT",
+          "clue": "Repot - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "GROPE",
+          "clue": "Grope - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "OTTER",
+          "clue": "Otter - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CARGO",
+          "clue": "Freight goods shipped on ocean liners"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "ALERT",
+          "clue": "Vigilant, attentive, and fully awake"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "REPOT",
+          "clue": "Repot - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "GROPE",
+          "clue": "Grope - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "OTTER",
+          "clue": "Otter - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e33",
+      "title": "Twilight Shadows I",
+      "grid": [
+        [
+          "C",
+          "H",
+          "A",
+          "O",
+          "S"
+        ],
+        [
+          "H",
+          "A",
+          "U",
+          "N",
+          "T"
+        ],
+        [
+          "A",
+          "U",
+          "D",
+          "I",
+          "O"
+        ],
+        [
+          "O",
+          "N",
+          "I",
+          "O",
+          "N"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "N",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CHAOS",
+          "clue": "Utter confusion and disordered disarray"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "HAUNT",
+          "clue": "Frequent ghostlike presence in old castle"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AUDIO",
+          "clue": "Sound reproduction and acoustic recording"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "ONION",
+          "clue": "Onion - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CHAOS",
+          "clue": "Utter confusion and disordered disarray"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "HAUNT",
+          "clue": "Frequent ghostlike presence in old castle"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AUDIO",
+          "clue": "Sound reproduction and acoustic recording"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "ONION",
+          "clue": "Onion - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        }
+      ]
+    },
+    {
+      "id": "e34",
+      "title": "Sunken Reef I",
+      "grid": [
+        [
+          "C",
+          "H",
+          "A",
+          "S",
+          "E"
+        ],
+        [
+          "H",
+          "A",
+          "V",
+          "E",
+          "N"
+        ],
+        [
+          "A",
+          "V",
+          "O",
+          "I",
+          "D"
+        ],
+        [
+          "S",
+          "E",
+          "I",
+          "Z",
+          "E"
+        ],
+        [
+          "E",
+          "N",
+          "D",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CHASE",
+          "clue": "Pursue rapidly in an energetic sprint"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "HAVEN",
+          "clue": "Place of safe harbor, refuge, and calm"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AVOID",
+          "clue": "Stay away from or prevent happening"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SEIZE",
+          "clue": "Seize - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ENDED",
+          "clue": "Reached the final concluding curtain drop"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CHASE",
+          "clue": "Pursue rapidly in an energetic sprint"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "HAVEN",
+          "clue": "Place of safe harbor, refuge, and calm"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AVOID",
+          "clue": "Stay away from or prevent happening"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SEIZE",
+          "clue": "Seize - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ENDED",
+          "clue": "Reached the final concluding curtain drop"
+        }
+      ]
+    },
+    {
+      "id": "e35",
+      "title": "Glacial Peaks I",
+      "grid": [
+        [
+          "C",
+          "L",
+          "A",
+          "S",
+          "P"
+        ],
+        [
+          "L",
+          "E",
+          "G",
+          "A",
+          "L"
+        ],
+        [
+          "A",
+          "G",
+          "I",
+          "L",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "L",
+          "S",
+          "A"
+        ],
+        [
+          "P",
+          "L",
+          "E",
+          "A",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLASP",
+          "clue": "Fasten securely with a mechanical latch"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SALSA",
+          "clue": "Salsa - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "PLEAD",
+          "clue": "Plead - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLASP",
+          "clue": "Fasten securely with a mechanical latch"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SALSA",
+          "clue": "Salsa - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "PLEAD",
+          "clue": "Plead - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e36",
+      "title": "Orchard Path I",
+      "grid": [
+        [
+          "C",
+          "L",
+          "A",
+          "S",
+          "S"
+        ],
+        [
+          "L",
+          "E",
+          "G",
+          "A",
+          "L"
+        ],
+        [
+          "A",
+          "G",
+          "I",
+          "L",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "L",
+          "V",
+          "E"
+        ],
+        [
+          "S",
+          "L",
+          "E",
+          "E",
+          "K"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLASS",
+          "clue": "Category of students or social elegance"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "SLEEK",
+          "clue": "Sleek - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLASS",
+          "clue": "Category of students or social elegance"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "SLEEK",
+          "clue": "Sleek - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "e37",
+      "title": "Azure Lagoon I",
+      "grid": [
+        [
+          "C",
+          "L",
+          "A",
+          "S",
+          "S"
+        ],
+        [
+          "L",
+          "E",
+          "G",
+          "A",
+          "L"
+        ],
+        [
+          "A",
+          "G",
+          "I",
+          "L",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "L",
+          "V",
+          "E"
+        ],
+        [
+          "S",
+          "L",
+          "E",
+          "E",
+          "T"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLASS",
+          "clue": "Category of students or social elegance"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "SLEET",
+          "clue": "Chilly freezing rain pellets falling winter"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLASS",
+          "clue": "Category of students or social elegance"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "SLEET",
+          "clue": "Chilly freezing rain pellets falling winter"
+        }
+      ]
+    },
+    {
+      "id": "e38",
+      "title": "Winding Stream I",
+      "grid": [
+        [
+          "C",
+          "L",
+          "A",
+          "S",
+          "S"
+        ],
+        [
+          "L",
+          "E",
+          "G",
+          "A",
+          "L"
+        ],
+        [
+          "A",
+          "G",
+          "I",
+          "L",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "L",
+          "V",
+          "E"
+        ],
+        [
+          "S",
+          "L",
+          "E",
+          "E",
+          "P"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLASS",
+          "clue": "Category of students or social elegance"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "SLEEP",
+          "clue": "Periodic natural state of restful slumber"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLASS",
+          "clue": "Category of students or social elegance"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "SLEEP",
+          "clue": "Periodic natural state of restful slumber"
+        }
+      ]
+    },
+    {
+      "id": "e39",
+      "title": "Starry Night I",
+      "grid": [
+        [
+          "C",
+          "L",
+          "A",
+          "W",
+          "S"
+        ],
+        [
+          "L",
+          "I",
+          "G",
+          "H",
+          "T"
+        ],
+        [
+          "A",
+          "G",
+          "R",
+          "E",
+          "E"
+        ],
+        [
+          "W",
+          "H",
+          "E",
+          "R",
+          "E"
+        ],
+        [
+          "S",
+          "T",
+          "E",
+          "E",
+          "L"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLAWS",
+          "clue": "Claws - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LIGHT",
+          "clue": "Electromagnetic radiance illuminating dark"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGREE",
+          "clue": "Concur or share the identical opinion"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "WHERE",
+          "clue": "Where - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "STEEL",
+          "clue": "Strong resilient alloy of iron and carbon"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLAWS",
+          "clue": "Claws - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LIGHT",
+          "clue": "Electromagnetic radiance illuminating dark"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGREE",
+          "clue": "Concur or share the identical opinion"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "WHERE",
+          "clue": "Where - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "STEEL",
+          "clue": "Strong resilient alloy of iron and carbon"
+        }
+      ]
+    },
+    {
+      "id": "e40",
+      "title": "Hearth & Home I",
+      "grid": [
+        [
+          "C",
+          "L",
+          "A",
+          "W",
+          "S"
+        ],
+        [
+          "L",
+          "I",
+          "G",
+          "H",
+          "T"
+        ],
+        [
+          "A",
+          "G",
+          "R",
+          "E",
+          "E"
+        ],
+        [
+          "W",
+          "H",
+          "E",
+          "R",
+          "E"
+        ],
+        [
+          "S",
+          "T",
+          "E",
+          "E",
+          "P"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLAWS",
+          "clue": "Claws - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LIGHT",
+          "clue": "Electromagnetic radiance illuminating dark"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGREE",
+          "clue": "Concur or share the identical opinion"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "WHERE",
+          "clue": "Where - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "STEEP",
+          "clue": "Steep - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLAWS",
+          "clue": "Claws - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LIGHT",
+          "clue": "Electromagnetic radiance illuminating dark"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGREE",
+          "clue": "Concur or share the identical opinion"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "WHERE",
+          "clue": "Where - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "STEEP",
+          "clue": "Steep - 5-letter deduction word"
+        }
+      ]
+    }
   ],
-  medium: [
+  "medium": [
     {
-      id: 'm1',
-      title: 'Starry Orbit',
-      grid: [
-        ['C', 'O', 'A', 'S', 'T'],
-        ['O', 'R', 'B', 'I', 'T'],
-        ['A', 'B', 'A', 'T', 'E'],
-        ['S', 'I', 'T', 'E', 'S'],
-        ['T', 'T', 'E', 'S', 'T'],
+      "id": "m41",
+      "title": "Golden Meadows II",
+      "grid": [
+        [
+          "C",
+          "L",
+          "A",
+          "W",
+          "S"
+        ],
+        [
+          "L",
+          "I",
+          "G",
+          "H",
+          "T"
+        ],
+        [
+          "A",
+          "G",
+          "R",
+          "E",
+          "E"
+        ],
+        [
+          "W",
+          "H",
+          "E",
+          "R",
+          "E"
+        ],
+        [
+          "S",
+          "T",
+          "E",
+          "E",
+          "R"
+        ]
       ],
-      across: [
-        { num: 1, row: 0, col: 0, word: 'COAST', clue: 'Where golden sands meet ocean waves' },
-        { num: 2, row: 1, col: 0, word: 'ORBIT', clue: 'Gravitational circular flight around Earth' },
-        { num: 3, row: 2, col: 0, word: 'ABATE', clue: 'Subside or lessen in intensity' },
-        { num: 4, row: 3, col: 0, word: 'SITES', clue: 'Locations on the World Wide Web' },
-        { num: 5, row: 4, col: 0, word: 'TTEST', clue: 'Statistical difference assessment in science' },
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLAWS",
+          "clue": "Claws - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LIGHT",
+          "clue": "Electromagnetic radiance illuminating dark"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGREE",
+          "clue": "Concur or share the identical opinion"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "WHERE",
+          "clue": "Where - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "STEER",
+          "clue": "Guide navigation wheel of automobile"
+        }
       ],
-      down: [
-        { num: 1, row: 0, col: 0, word: 'COAST', clue: 'Sail smoothly along without pedaling' },
-        { num: 2, row: 0, col: 1, word: 'ORBIT', clue: 'Planetary track around the sun' },
-        { num: 3, row: 0, col: 2, word: 'ABATE', clue: 'Fade into tranquil calm' },
-        { num: 4, row: 0, col: 3, word: 'SITES', clue: 'Excavation grounds or web addresses' },
-        { num: 5, row: 0, col: 4, word: 'TTEST', clue: 'Math comparison of sample averages' },
-      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLAWS",
+          "clue": "Claws - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LIGHT",
+          "clue": "Electromagnetic radiance illuminating dark"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGREE",
+          "clue": "Concur or share the identical opinion"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "WHERE",
+          "clue": "Where - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "STEER",
+          "clue": "Guide navigation wheel of automobile"
+        }
+      ]
     },
     {
-      id: 'm2',
-      title: 'Stage & Story',
-      grid: [
-        ['S', 'C', 'E', 'N', 'E'],
-        ['C', 'O', 'V', 'E', 'R'],
-        ['E', 'V', 'E', 'R', 'Y'],
-        ['N', 'E', 'R', 'V', 'E'],
-        ['E', 'R', 'Y', 'E', 'D'],
+      "id": "m42",
+      "title": "Starlight Orbit II",
+      "grid": [
+        [
+          "C",
+          "L",
+          "A",
+          "W",
+          "S"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "N"
+        ],
+        [
+          "A",
+          "N",
+          "O",
+          "D",
+          "E"
+        ],
+        [
+          "W",
+          "E",
+          "D",
+          "G",
+          "E"
+        ],
+        [
+          "S",
+          "N",
+          "E",
+          "E",
+          "R"
+        ]
       ],
-      across: [
-        { num: 1, row: 0, col: 0, word: 'SCENE', clue: 'Part of an act in theater or cinema' },
-        { num: 2, row: 1, col: 0, word: 'COVER', clue: 'Front jacket of a bestseller novel' },
-        { num: 3, row: 2, col: 0, word: 'EVERY', clue: 'Each single individual in a group' },
-        { num: 4, row: 3, col: 0, word: 'NERVE', clue: 'Audacious courage under pressure' },
-        { num: 5, row: 4, col: 0, word: 'ERYED', clue: 'Having an eerie or haunted look' },
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLAWS",
+          "clue": "Claws - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINEN",
+          "clue": "Crisp woven textile spun from flax fibers"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ANODE",
+          "clue": "Anode - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "WEDGE",
+          "clue": "Wedge - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "SNEER",
+          "clue": "Sneer - 5-letter deduction word"
+        }
       ],
-      down: [
-        { num: 1, row: 0, col: 0, word: 'SCENE', clue: 'Setting of a dramatic film shoot' },
-        { num: 2, row: 0, col: 1, word: 'COVER', clue: 'Protective umbrella or book binding' },
-        { num: 3, row: 0, col: 2, word: 'EVERY', clue: 'All without a single exception' },
-        { num: 4, row: 0, col: 3, word: 'NERVE', clue: 'Biological impulse transmitter' },
-        { num: 5, row: 0, col: 4, word: 'ERYED', clue: 'Mysterious and otherworldly' },
-      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLAWS",
+          "clue": "Claws - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINEN",
+          "clue": "Crisp woven textile spun from flax fibers"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ANODE",
+          "clue": "Anode - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "WEDGE",
+          "clue": "Wedge - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "SNEER",
+          "clue": "Sneer - 5-letter deduction word"
+        }
+      ]
     },
+    {
+      "id": "m43",
+      "title": "Ocean Breeze II",
+      "grid": [
+        [
+          "C",
+          "L",
+          "I",
+          "M",
+          "B"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "N",
+          "U",
+          "R",
+          "E"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "B",
+          "R",
+          "E",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLIMB",
+          "clue": "Ascend rugged mountain peak via trails"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "BREED",
+          "clue": "Specific strain of domesticated pet"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLIMB",
+          "clue": "Ascend rugged mountain peak via trails"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "BREED",
+          "clue": "Specific strain of domesticated pet"
+        }
+      ]
+    },
+    {
+      "id": "m44",
+      "title": "Springtime Glow II",
+      "grid": [
+        [
+          "C",
+          "L",
+          "I",
+          "N",
+          "G"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "N",
+          "U",
+          "R",
+          "E"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "G",
+          "R",
+          "E",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLING",
+          "clue": "Cling - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "GREED",
+          "clue": "Excessive insatiable desire for wealth"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLING",
+          "clue": "Cling - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "GREED",
+          "clue": "Excessive insatiable desire for wealth"
+        }
+      ]
+    },
+    {
+      "id": "m45",
+      "title": "Mountain Crest II",
+      "grid": [
+        [
+          "C",
+          "L",
+          "I",
+          "N",
+          "G"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "N",
+          "U",
+          "R",
+          "E"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "G",
+          "R",
+          "E",
+          "E",
+          "T"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLING",
+          "clue": "Cling - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "GREET",
+          "clue": "Welcome someone with a warm handshake"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CLING",
+          "clue": "Cling - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "GREET",
+          "clue": "Welcome someone with a warm handshake"
+        }
+      ]
+    },
+    {
+      "id": "m46",
+      "title": "Ancient Forest II",
+      "grid": [
+        [
+          "C",
+          "O",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "O",
+          "R",
+          "B",
+          "I",
+          "T"
+        ],
+        [
+          "A",
+          "B",
+          "A",
+          "T",
+          "E"
+        ],
+        [
+          "S",
+          "I",
+          "T",
+          "E",
+          "S"
+        ],
+        [
+          "T",
+          "T",
+          "E",
+          "S",
+          "T"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "COAST",
+          "clue": "Shoreline border where land meets water"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "ORBIT",
+          "clue": "Curved path of celestial satellite around sun"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ABATE",
+          "clue": "Abate - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SITES",
+          "clue": "Locations across the World Wide Web network"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TTEST",
+          "clue": "Statistical assessment comparing data samples"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "COAST",
+          "clue": "Shoreline border where land meets water"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "ORBIT",
+          "clue": "Curved path of celestial satellite around sun"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ABATE",
+          "clue": "Abate - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SITES",
+          "clue": "Locations across the World Wide Web network"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TTEST",
+          "clue": "Statistical assessment comparing data samples"
+        }
+      ]
+    },
+    {
+      "id": "m47",
+      "title": "Crystal Brook II",
+      "grid": [
+        [
+          "C",
+          "O",
+          "B",
+          "R",
+          "A"
+        ],
+        [
+          "O",
+          "C",
+          "E",
+          "A",
+          "N"
+        ],
+        [
+          "B",
+          "E",
+          "I",
+          "N",
+          "G"
+        ],
+        [
+          "R",
+          "A",
+          "N",
+          "G",
+          "E"
+        ],
+        [
+          "A",
+          "N",
+          "G",
+          "E",
+          "L"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "COBRA",
+          "clue": "Venomous hooded snake of the jungle"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "OCEAN",
+          "clue": "Immense body of saltwater covering earth"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "BEING",
+          "clue": "Existence or living sentient entity"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "RANGE",
+          "clue": "Range - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ANGEL",
+          "clue": "Celestial winged messenger of grace"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "COBRA",
+          "clue": "Venomous hooded snake of the jungle"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "OCEAN",
+          "clue": "Immense body of saltwater covering earth"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "BEING",
+          "clue": "Existence or living sentient entity"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "RANGE",
+          "clue": "Range - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ANGEL",
+          "clue": "Celestial winged messenger of grace"
+        }
+      ]
+    },
+    {
+      "id": "m48",
+      "title": "Midnight Echo II",
+      "grid": [
+        [
+          "C",
+          "O",
+          "B",
+          "R",
+          "A"
+        ],
+        [
+          "O",
+          "C",
+          "E",
+          "A",
+          "N"
+        ],
+        [
+          "B",
+          "E",
+          "I",
+          "N",
+          "G"
+        ],
+        [
+          "R",
+          "A",
+          "N",
+          "G",
+          "E"
+        ],
+        [
+          "A",
+          "N",
+          "G",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "COBRA",
+          "clue": "Venomous hooded snake of the jungle"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "OCEAN",
+          "clue": "Immense body of saltwater covering earth"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "BEING",
+          "clue": "Existence or living sentient entity"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "RANGE",
+          "clue": "Range - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ANGER",
+          "clue": "Strong passionate displeasure or fury"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "COBRA",
+          "clue": "Venomous hooded snake of the jungle"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "OCEAN",
+          "clue": "Immense body of saltwater covering earth"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "BEING",
+          "clue": "Existence or living sentient entity"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "RANGE",
+          "clue": "Range - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ANGER",
+          "clue": "Strong passionate displeasure or fury"
+        }
+      ]
+    },
+    {
+      "id": "m49",
+      "title": "Sunrise Valley II",
+      "grid": [
+        [
+          "C",
+          "O",
+          "R",
+          "A",
+          "L"
+        ],
+        [
+          "O",
+          "P",
+          "E",
+          "R",
+          "A"
+        ],
+        [
+          "R",
+          "E",
+          "P",
+          "O",
+          "T"
+        ],
+        [
+          "A",
+          "R",
+          "O",
+          "S",
+          "E"
+        ],
+        [
+          "L",
+          "A",
+          "T",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CORAL",
+          "clue": "Marine invertebrate forming vibrant reefs"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "OPERA",
+          "clue": "Staged theatrical drama set entirely to song"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "REPOT",
+          "clue": "Repot - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "AROSE",
+          "clue": "Ascended upward or came into view"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "LATER",
+          "clue": "At a subsequent period in the afternoon"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CORAL",
+          "clue": "Marine invertebrate forming vibrant reefs"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "OPERA",
+          "clue": "Staged theatrical drama set entirely to song"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "REPOT",
+          "clue": "Repot - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "AROSE",
+          "clue": "Ascended upward or came into view"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "LATER",
+          "clue": "At a subsequent period in the afternoon"
+        }
+      ]
+    },
+    {
+      "id": "m50",
+      "title": "Silver Timber II",
+      "grid": [
+        [
+          "C",
+          "R",
+          "E",
+          "S",
+          "T"
+        ],
+        [
+          "R",
+          "A",
+          "N",
+          "C",
+          "H"
+        ],
+        [
+          "E",
+          "N",
+          "T",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "C",
+          "E",
+          "N",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CREST",
+          "clue": "Highest ridge peak of a breaking wave"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RANCH",
+          "clue": "Ranch - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ENTER",
+          "clue": "Step inside through the open threshold"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SCENE",
+          "clue": "Visual backdrop or division of theatrical play"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CREST",
+          "clue": "Highest ridge peak of a breaking wave"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RANCH",
+          "clue": "Ranch - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ENTER",
+          "clue": "Step inside through the open threshold"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SCENE",
+          "clue": "Visual backdrop or division of theatrical play"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "m51",
+      "title": "Autumn Leaves II",
+      "grid": [
+        [
+          "C",
+          "R",
+          "E",
+          "S",
+          "T"
+        ],
+        [
+          "R",
+          "A",
+          "N",
+          "C",
+          "H"
+        ],
+        [
+          "E",
+          "N",
+          "T",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "C",
+          "E",
+          "N",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CREST",
+          "clue": "Highest ridge peak of a breaking wave"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RANCH",
+          "clue": "Ranch - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ENTER",
+          "clue": "Step inside through the open threshold"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SCENE",
+          "clue": "Visual backdrop or division of theatrical play"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CREST",
+          "clue": "Highest ridge peak of a breaking wave"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RANCH",
+          "clue": "Ranch - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ENTER",
+          "clue": "Step inside through the open threshold"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SCENE",
+          "clue": "Visual backdrop or division of theatrical play"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m52",
+      "title": "Desert Mirage II",
+      "grid": [
+        [
+          "C",
+          "R",
+          "E",
+          "S",
+          "T"
+        ],
+        [
+          "R",
+          "I",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "E",
+          "V",
+          "A",
+          "D",
+          "E"
+        ],
+        [
+          "S",
+          "E",
+          "D",
+          "A",
+          "N"
+        ],
+        [
+          "T",
+          "R",
+          "E",
+          "N",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CREST",
+          "clue": "Highest ridge peak of a breaking wave"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RIVER",
+          "clue": "Vast freshwater flow winding toward the sea"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "EVADE",
+          "clue": "Skillfully escape or slip away from peril"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CREST",
+          "clue": "Highest ridge peak of a breaking wave"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RIVER",
+          "clue": "Vast freshwater flow winding toward the sea"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "EVADE",
+          "clue": "Skillfully escape or slip away from peril"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ]
+    },
+    {
+      "id": "m53",
+      "title": "River Odyssey II",
+      "grid": [
+        [
+          "C",
+          "R",
+          "E",
+          "S",
+          "T"
+        ],
+        [
+          "R",
+          "O",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "E",
+          "V",
+          "A",
+          "D",
+          "E"
+        ],
+        [
+          "S",
+          "E",
+          "D",
+          "A",
+          "N"
+        ],
+        [
+          "T",
+          "R",
+          "E",
+          "N",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CREST",
+          "clue": "Highest ridge peak of a breaking wave"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "ROVER",
+          "clue": "Rover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "EVADE",
+          "clue": "Skillfully escape or slip away from peril"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CREST",
+          "clue": "Highest ridge peak of a breaking wave"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "ROVER",
+          "clue": "Rover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "EVADE",
+          "clue": "Skillfully escape or slip away from peril"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ]
+    },
+    {
+      "id": "m54",
+      "title": "Sapphire Skies II",
+      "grid": [
+        [
+          "C",
+          "R",
+          "U",
+          "S",
+          "T"
+        ],
+        [
+          "R",
+          "A",
+          "N",
+          "C",
+          "H"
+        ],
+        [
+          "U",
+          "N",
+          "D",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "C",
+          "E",
+          "N",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CRUST",
+          "clue": "Golden outer layer on fresh sourdough"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RANCH",
+          "clue": "Ranch - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "UNDER",
+          "clue": "Under - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SCENE",
+          "clue": "Visual backdrop or division of theatrical play"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CRUST",
+          "clue": "Golden outer layer on fresh sourdough"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RANCH",
+          "clue": "Ranch - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "UNDER",
+          "clue": "Under - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SCENE",
+          "clue": "Visual backdrop or division of theatrical play"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "m55",
+      "title": "Cobblestone Lane II",
+      "grid": [
+        [
+          "C",
+          "R",
+          "U",
+          "S",
+          "T"
+        ],
+        [
+          "R",
+          "A",
+          "N",
+          "C",
+          "H"
+        ],
+        [
+          "U",
+          "N",
+          "D",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "C",
+          "E",
+          "N",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CRUST",
+          "clue": "Golden outer layer on fresh sourdough"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RANCH",
+          "clue": "Ranch - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "UNDER",
+          "clue": "Under - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SCENE",
+          "clue": "Visual backdrop or division of theatrical play"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CRUST",
+          "clue": "Golden outer layer on fresh sourdough"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RANCH",
+          "clue": "Ranch - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "UNDER",
+          "clue": "Under - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SCENE",
+          "clue": "Visual backdrop or division of theatrical play"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m56",
+      "title": "Emerald Grove II",
+      "grid": [
+        [
+          "C",
+          "R",
+          "U",
+          "S",
+          "T"
+        ],
+        [
+          "R",
+          "U",
+          "L",
+          "E",
+          "R"
+        ],
+        [
+          "U",
+          "L",
+          "T",
+          "R",
+          "A"
+        ],
+        [
+          "S",
+          "E",
+          "R",
+          "U",
+          "M"
+        ],
+        [
+          "T",
+          "R",
+          "A",
+          "M",
+          "P"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CRUST",
+          "clue": "Golden outer layer on fresh sourdough"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RULER",
+          "clue": "Ruler - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ULTRA",
+          "clue": "Ultra - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SERUM",
+          "clue": "Serum - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TRAMP",
+          "clue": "Tramp - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "CRUST",
+          "clue": "Golden outer layer on fresh sourdough"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RULER",
+          "clue": "Ruler - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ULTRA",
+          "clue": "Ultra - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SERUM",
+          "clue": "Serum - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TRAMP",
+          "clue": "Tramp - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m57",
+      "title": "Thunder Peak II",
+      "grid": [
+        [
+          "D",
+          "I",
+          "S",
+          "C",
+          "O"
+        ],
+        [
+          "I",
+          "N",
+          "T",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "E",
+          "A",
+          "D"
+        ],
+        [
+          "C",
+          "E",
+          "A",
+          "S",
+          "E"
+        ],
+        [
+          "O",
+          "R",
+          "D",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "DISCO",
+          "clue": "Glittering nightclub playing dance beats"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "INTER",
+          "clue": "Inter - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "STEAD",
+          "clue": "Stead - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "CEASE",
+          "clue": "Cease - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ORDER",
+          "clue": "Order - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "DISCO",
+          "clue": "Glittering nightclub playing dance beats"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "INTER",
+          "clue": "Inter - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "STEAD",
+          "clue": "Stead - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "CEASE",
+          "clue": "Cease - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ORDER",
+          "clue": "Order - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m58",
+      "title": "Velvet Twilight II",
+      "grid": [
+        [
+          "D",
+          "R",
+          "A",
+          "M",
+          "A"
+        ],
+        [
+          "R",
+          "E",
+          "P",
+          "E",
+          "L"
+        ],
+        [
+          "A",
+          "P",
+          "A",
+          "R",
+          "T"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "A",
+          "L",
+          "T",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "DRAMA",
+          "clue": "Compelling theatrical stage performance"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "REPEL",
+          "clue": "Repel - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "APART",
+          "clue": "Separated by distance or time"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ALTER",
+          "clue": "Modify, reshape, or change slightly"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "DRAMA",
+          "clue": "Compelling theatrical stage performance"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "REPEL",
+          "clue": "Repel - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "APART",
+          "clue": "Separated by distance or time"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ALTER",
+          "clue": "Modify, reshape, or change slightly"
+        }
+      ]
+    },
+    {
+      "id": "m59",
+      "title": "Island Harbor II",
+      "grid": [
+        [
+          "D",
+          "R",
+          "A",
+          "M",
+          "A"
+        ],
+        [
+          "R",
+          "U",
+          "L",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "L",
+          "A",
+          "R",
+          "M"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "DRAMA",
+          "clue": "Compelling theatrical stage performance"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RULER",
+          "clue": "Ruler - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ALARM",
+          "clue": "Warning sound signaling sudden danger"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ARMED",
+          "clue": "Equipped with protective weapons"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "DRAMA",
+          "clue": "Compelling theatrical stage performance"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RULER",
+          "clue": "Ruler - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ALARM",
+          "clue": "Warning sound signaling sudden danger"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ARMED",
+          "clue": "Equipped with protective weapons"
+        }
+      ]
+    },
+    {
+      "id": "m60",
+      "title": "Whispering Pines II",
+      "grid": [
+        [
+          "D",
+          "R",
+          "A",
+          "P",
+          "E"
+        ],
+        [
+          "R",
+          "U",
+          "L",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "L",
+          "L",
+          "A",
+          "Y"
+        ],
+        [
+          "P",
+          "E",
+          "A",
+          "C",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "DRAPE",
+          "clue": "Hang or arrange cloth in graceful folds"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RULER",
+          "clue": "Ruler - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ALLAY",
+          "clue": "Diminish fear, anxiety, or suspicion"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "PEACE",
+          "clue": "Freedom from civil disturbance and war"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "DRAPE",
+          "clue": "Hang or arrange cloth in graceful folds"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RULER",
+          "clue": "Ruler - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ALLAY",
+          "clue": "Diminish fear, anxiety, or suspicion"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "PEACE",
+          "clue": "Freedom from civil disturbance and war"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m61",
+      "title": "Solar Flares II",
+      "grid": [
+        [
+          "E",
+          "S",
+          "S",
+          "A",
+          "Y"
+        ],
+        [
+          "S",
+          "H",
+          "I",
+          "R",
+          "E"
+        ],
+        [
+          "S",
+          "I",
+          "G",
+          "M",
+          "A"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "Y",
+          "E",
+          "A",
+          "R",
+          "N"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "ESSAY",
+          "clue": "Structured analytical piece of prose"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "SHIRE",
+          "clue": "Traditional administrative county in Britain"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "SIGMA",
+          "clue": "Sigma - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "YEARN",
+          "clue": "Yearn - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "ESSAY",
+          "clue": "Structured analytical piece of prose"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "SHIRE",
+          "clue": "Traditional administrative county in Britain"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "SIGMA",
+          "clue": "Sigma - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "YEARN",
+          "clue": "Yearn - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m62",
+      "title": "Mystic Cavern II",
+      "grid": [
+        [
+          "F",
+          "A",
+          "L",
+          "S",
+          "E"
+        ],
+        [
+          "A",
+          "R",
+          "O",
+          "M",
+          "A"
+        ],
+        [
+          "L",
+          "O",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "M",
+          "E",
+          "L",
+          "L"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "L",
+          "Y"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FALSE",
+          "clue": "Untrue or contrary to established fact"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "AROMA",
+          "clue": "Pleasant and distinctive fragrant scent"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "LOVER",
+          "clue": "Lover - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SMELL",
+          "clue": "Smell - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "EARLY",
+          "clue": "Arriving before appointed scheduled hour"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FALSE",
+          "clue": "Untrue or contrary to established fact"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "AROMA",
+          "clue": "Pleasant and distinctive fragrant scent"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "LOVER",
+          "clue": "Lover - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SMELL",
+          "clue": "Smell - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "EARLY",
+          "clue": "Arriving before appointed scheduled hour"
+        }
+      ]
+    },
+    {
+      "id": "m63",
+      "title": "Alpine Haven II",
+      "grid": [
+        [
+          "F",
+          "A",
+          "L",
+          "S",
+          "E"
+        ],
+        [
+          "A",
+          "R",
+          "O",
+          "M",
+          "A"
+        ],
+        [
+          "L",
+          "O",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "M",
+          "E",
+          "L",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FALSE",
+          "clue": "Untrue or contrary to established fact"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "AROMA",
+          "clue": "Pleasant and distinctive fragrant scent"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "LOVER",
+          "clue": "Lover - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SMELT",
+          "clue": "Smelt - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FALSE",
+          "clue": "Untrue or contrary to established fact"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "AROMA",
+          "clue": "Pleasant and distinctive fragrant scent"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "LOVER",
+          "clue": "Lover - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SMELT",
+          "clue": "Smelt - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        }
+      ]
+    },
+    {
+      "id": "m64",
+      "title": "Radiant Horizon II",
+      "grid": [
+        [
+          "F",
+          "A",
+          "L",
+          "S",
+          "E"
+        ],
+        [
+          "A",
+          "R",
+          "O",
+          "M",
+          "A"
+        ],
+        [
+          "L",
+          "O",
+          "W",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "M",
+          "E",
+          "L",
+          "L"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "L",
+          "Y"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FALSE",
+          "clue": "Untrue or contrary to established fact"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "AROMA",
+          "clue": "Pleasant and distinctive fragrant scent"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "LOWER",
+          "clue": "Reduce in altitude, volume, or placement"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SMELL",
+          "clue": "Smell - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "EARLY",
+          "clue": "Arriving before appointed scheduled hour"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FALSE",
+          "clue": "Untrue or contrary to established fact"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "AROMA",
+          "clue": "Pleasant and distinctive fragrant scent"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "LOWER",
+          "clue": "Reduce in altitude, volume, or placement"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SMELL",
+          "clue": "Smell - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "EARLY",
+          "clue": "Arriving before appointed scheduled hour"
+        }
+      ]
+    },
+    {
+      "id": "m65",
+      "title": "Lunar Eclipse II",
+      "grid": [
+        [
+          "F",
+          "A",
+          "L",
+          "S",
+          "E"
+        ],
+        [
+          "A",
+          "R",
+          "O",
+          "M",
+          "A"
+        ],
+        [
+          "L",
+          "O",
+          "W",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "M",
+          "E",
+          "L",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FALSE",
+          "clue": "Untrue or contrary to established fact"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "AROMA",
+          "clue": "Pleasant and distinctive fragrant scent"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "LOWER",
+          "clue": "Reduce in altitude, volume, or placement"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SMELT",
+          "clue": "Smelt - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FALSE",
+          "clue": "Untrue or contrary to established fact"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "AROMA",
+          "clue": "Pleasant and distinctive fragrant scent"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "LOWER",
+          "clue": "Reduce in altitude, volume, or placement"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SMELT",
+          "clue": "Smelt - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        }
+      ]
+    },
+    {
+      "id": "m66",
+      "title": "Harbor Lights II",
+      "grid": [
+        [
+          "F",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "N",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "m67",
+      "title": "Silent Meadow II",
+      "grid": [
+        [
+          "F",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "N",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m68",
+      "title": "Timber Ridge II",
+      "grid": [
+        [
+          "F",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "R",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "m69",
+      "title": "Citrus Grove II",
+      "grid": [
+        [
+          "F",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "R",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m70",
+      "title": "Northern Lights II",
+      "grid": [
+        [
+          "F",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "V",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "m71",
+      "title": "Rustic Cabin II",
+      "grid": [
+        [
+          "F",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "V",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m72",
+      "title": "Breezy Point II",
+      "grid": [
+        [
+          "F",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "K",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "m73",
+      "title": "Twilight Shadows II",
+      "grid": [
+        [
+          "F",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "K",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m74",
+      "title": "Sunken Reef II",
+      "grid": [
+        [
+          "F",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "M",
+          "B",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "B",
+          "I",
+          "D",
+          "E"
+        ],
+        [
+          "S",
+          "E",
+          "D",
+          "A",
+          "N"
+        ],
+        [
+          "T",
+          "R",
+          "E",
+          "N",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EMBER",
+          "clue": "Glowing coal fragment in dying campfire"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ABIDE",
+          "clue": "Tolerate, endure, or remain steadfast"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FEAST",
+          "clue": "Sumptuous banquet celebration of food"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EMBER",
+          "clue": "Glowing coal fragment in dying campfire"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ABIDE",
+          "clue": "Tolerate, endure, or remain steadfast"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ]
+    },
+    {
+      "id": "m75",
+      "title": "Glacial Peaks II",
+      "grid": [
+        [
+          "F",
+          "L",
+          "A",
+          "M",
+          "E"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "N",
+          "G",
+          "R",
+          "Y"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FLAME",
+          "clue": "Hot glowing tongue of fiery campfire"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ANGRY",
+          "clue": "Feeling or expressing intense ire"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FLAME",
+          "clue": "Hot glowing tongue of fiery campfire"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ANGRY",
+          "clue": "Feeling or expressing intense ire"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "m76",
+      "title": "Orchard Path II",
+      "grid": [
+        [
+          "F",
+          "L",
+          "I",
+          "N",
+          "G"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "N",
+          "U",
+          "R",
+          "E"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "G",
+          "R",
+          "E",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FLING",
+          "clue": "Fling - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "GREED",
+          "clue": "Excessive insatiable desire for wealth"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FLING",
+          "clue": "Fling - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "GREED",
+          "clue": "Excessive insatiable desire for wealth"
+        }
+      ]
+    },
+    {
+      "id": "m77",
+      "title": "Azure Lagoon II",
+      "grid": [
+        [
+          "F",
+          "L",
+          "I",
+          "N",
+          "G"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "N",
+          "U",
+          "R",
+          "E"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "G",
+          "R",
+          "E",
+          "E",
+          "T"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FLING",
+          "clue": "Fling - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "GREET",
+          "clue": "Welcome someone with a warm handshake"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FLING",
+          "clue": "Fling - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "INURE",
+          "clue": "Inure - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "GREET",
+          "clue": "Welcome someone with a warm handshake"
+        }
+      ]
+    },
+    {
+      "id": "m78",
+      "title": "Winding Stream II",
+      "grid": [
+        [
+          "F",
+          "O",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "O",
+          "P",
+          "E",
+          "R",
+          "A"
+        ],
+        [
+          "R",
+          "E",
+          "F",
+          "E",
+          "R"
+        ],
+        [
+          "G",
+          "R",
+          "E",
+          "E",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FORGE",
+          "clue": "Furnace where blacksmith hammers steel"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "OPERA",
+          "clue": "Staged theatrical drama set entirely to song"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "REFER",
+          "clue": "Refer - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "GREET",
+          "clue": "Welcome someone with a warm handshake"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FORGE",
+          "clue": "Furnace where blacksmith hammers steel"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "OPERA",
+          "clue": "Staged theatrical drama set entirely to song"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "REFER",
+          "clue": "Refer - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "GREET",
+          "clue": "Welcome someone with a warm handshake"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        }
+      ]
+    },
+    {
+      "id": "m79",
+      "title": "Starry Night II",
+      "grid": [
+        [
+          "F",
+          "R",
+          "A",
+          "M",
+          "E"
+        ],
+        [
+          "R",
+          "E",
+          "L",
+          "A",
+          "X"
+        ],
+        [
+          "A",
+          "L",
+          "O",
+          "N",
+          "E"
+        ],
+        [
+          "M",
+          "A",
+          "N",
+          "O",
+          "R"
+        ],
+        [
+          "E",
+          "X",
+          "E",
+          "R",
+          "T"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FRAME",
+          "clue": "Rigid decorative border around an artwork"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RELAX",
+          "clue": "Release tension and rest in serene tranquility"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ALONE",
+          "clue": "Having no others present; solitary"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "MANOR",
+          "clue": "Stately historical mansion on country estate"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "EXERT",
+          "clue": "Apply vigorous strength or willpower"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FRAME",
+          "clue": "Rigid decorative border around an artwork"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RELAX",
+          "clue": "Release tension and rest in serene tranquility"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ALONE",
+          "clue": "Having no others present; solitary"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "MANOR",
+          "clue": "Stately historical mansion on country estate"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "EXERT",
+          "clue": "Apply vigorous strength or willpower"
+        }
+      ]
+    },
+    {
+      "id": "m80",
+      "title": "Hearth & Home II",
+      "grid": [
+        [
+          "F",
+          "R",
+          "O",
+          "S",
+          "T"
+        ],
+        [
+          "R",
+          "U",
+          "L",
+          "E",
+          "R"
+        ],
+        [
+          "O",
+          "L",
+          "I",
+          "V",
+          "E"
+        ],
+        [
+          "S",
+          "E",
+          "V",
+          "E",
+          "N"
+        ],
+        [
+          "T",
+          "R",
+          "E",
+          "N",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FROST",
+          "clue": "Delicate icy crystalline coating at dawn"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RULER",
+          "clue": "Ruler - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "OLIVE",
+          "clue": "Savory green Mediterranean fruit on salads"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SEVEN",
+          "clue": "Seven - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "FROST",
+          "clue": "Delicate icy crystalline coating at dawn"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RULER",
+          "clue": "Ruler - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "OLIVE",
+          "clue": "Savory green Mediterranean fruit on salads"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SEVEN",
+          "clue": "Seven - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ]
+    }
   ],
-  hard: [
+  "hard": [
     {
-      id: 'h1',
-      title: 'Royal Enigma',
-      grid: [
-        ['C', 'R', 'O', 'W', 'N'],
-        ['R', 'A', 'D', 'A', 'R'],
-        ['O', 'D', 'O', 'R', 'S'],
-        ['W', 'A', 'R', 'E', 'D'],
-        ['N', 'R', 'S', 'D', 'Y'],
+      "id": "h81",
+      "title": "Golden Meadows III",
+      "grid": [
+        [
+          "G",
+          "L",
+          "A",
+          "N",
+          "D"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "N",
+          "G",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "D",
+          "R",
+          "Y",
+          "E",
+          "R"
+        ]
       ],
-      across: [
-        { num: 1, row: 0, col: 0, word: 'CROWN', clue: 'Jeweled headwear of kings and queens' },
-        { num: 2, row: 1, col: 0, word: 'RADAR', clue: 'Radio wave detection scanner (palindrome)' },
-        { num: 3, row: 2, col: 0, word: 'ODORS', clue: 'Scents, perfumes, or potent aromas' },
-        { num: 4, row: 3, col: 0, word: 'WARED', clue: 'Cautiously mindful and on alert' },
-        { num: 5, row: 4, col: 0, word: 'NRSDY', clue: 'Early childhood preschool room (abbr.)' },
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GLAND",
+          "clue": "Organ secreting biochemical hormones"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ANGRY",
+          "clue": "Feeling or expressing intense ire"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
       ],
-      down: [
-        { num: 1, row: 0, col: 0, word: 'CROWN', clue: 'The supreme pinnacle or royal tiara' },
-        { num: 2, row: 0, col: 1, word: 'RADAR', clue: 'Aircraft tracking echo device' },
-        { num: 3, row: 0, col: 2, word: 'ODORS', clue: 'Olfactory sensations' },
-        { num: 4, row: 0, col: 3, word: 'WARED', clue: 'Heeded an advance warning' },
-        { num: 5, row: 0, col: 4, word: 'NRSDY', clue: 'Kindergarten playspace' },
-      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GLAND",
+          "clue": "Organ secreting biochemical hormones"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ANGRY",
+          "clue": "Feeling or expressing intense ire"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ]
     },
     {
-      id: 'h2',
-      title: 'Mind Labyrinth',
-      grid: [
-        ['S', 'H', 'A', 'R', 'P'],
-        ['H', 'O', 'U', 'S', 'E'],
-        ['A', 'U', 'D', 'I', 'T'],
-        ['R', 'S', 'I', 'N', 'G'],
-        ['P', 'E', 'T', 'G', 'Y'],
+      "id": "h82",
+      "title": "Starlight Orbit III",
+      "grid": [
+        [
+          "G",
+          "L",
+          "A",
+          "S",
+          "S"
+        ],
+        [
+          "L",
+          "E",
+          "G",
+          "A",
+          "L"
+        ],
+        [
+          "A",
+          "G",
+          "I",
+          "L",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "L",
+          "V",
+          "E"
+        ],
+        [
+          "S",
+          "L",
+          "E",
+          "E",
+          "K"
+        ]
       ],
-      across: [
-        { num: 1, row: 0, col: 0, word: 'SHARP', clue: 'Having a keen slicing edge or quick intellect' },
-        { num: 2, row: 1, col: 0, word: 'HOUSE', clue: 'A cozy home or legislative assembly' },
-        { num: 3, row: 2, col: 0, word: 'AUDIT', clue: 'Formal accounting verification of finances' },
-        { num: 4, row: 3, col: 0, word: 'RSING', clue: 'Ascending upward to the heights' },
-        { num: 5, row: 4, col: 0, word: 'PETGY', clue: 'Pampered like a favorite companion' },
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GLASS",
+          "clue": "Hard brittle transparent silicate pane"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "SLEEK",
+          "clue": "Sleek - 5-letter deduction word"
+        }
       ],
-      down: [
-        { num: 1, row: 0, col: 0, word: 'SHARP', clue: 'Musical pitch raised half a step (♯)' },
-        { num: 2, row: 0, col: 1, word: 'HOUSE', clue: 'Shelter under a shingled roof' },
-        { num: 3, row: 0, col: 2, word: 'AUDIT', clue: 'Thorough review of corporate books' },
-        { num: 4, row: 0, col: 3, word: 'RSING', clue: 'Soaring high into the sky' },
-        { num: 5, row: 0, col: 4, word: 'PETGY', clue: 'Treated with tender affection' },
-      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GLASS",
+          "clue": "Hard brittle transparent silicate pane"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "SLEEK",
+          "clue": "Sleek - 5-letter deduction word"
+        }
+      ]
     },
-  ],
+    {
+      "id": "h83",
+      "title": "Ocean Breeze III",
+      "grid": [
+        [
+          "G",
+          "L",
+          "A",
+          "S",
+          "S"
+        ],
+        [
+          "L",
+          "E",
+          "G",
+          "A",
+          "L"
+        ],
+        [
+          "A",
+          "G",
+          "I",
+          "L",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "L",
+          "V",
+          "E"
+        ],
+        [
+          "S",
+          "L",
+          "E",
+          "E",
+          "T"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GLASS",
+          "clue": "Hard brittle transparent silicate pane"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "SLEET",
+          "clue": "Chilly freezing rain pellets falling winter"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GLASS",
+          "clue": "Hard brittle transparent silicate pane"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "SLEET",
+          "clue": "Chilly freezing rain pellets falling winter"
+        }
+      ]
+    },
+    {
+      "id": "h84",
+      "title": "Springtime Glow III",
+      "grid": [
+        [
+          "G",
+          "L",
+          "A",
+          "S",
+          "S"
+        ],
+        [
+          "L",
+          "E",
+          "G",
+          "A",
+          "L"
+        ],
+        [
+          "A",
+          "G",
+          "I",
+          "L",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "L",
+          "V",
+          "E"
+        ],
+        [
+          "S",
+          "L",
+          "E",
+          "E",
+          "P"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GLASS",
+          "clue": "Hard brittle transparent silicate pane"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "SLEEP",
+          "clue": "Periodic natural state of restful slumber"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GLASS",
+          "clue": "Hard brittle transparent silicate pane"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LEGAL",
+          "clue": "Legal - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SALVE",
+          "clue": "Salve - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "SLEEP",
+          "clue": "Periodic natural state of restful slumber"
+        }
+      ]
+    },
+    {
+      "id": "h85",
+      "title": "Mountain Crest III",
+      "grid": [
+        [
+          "G",
+          "R",
+          "A",
+          "C",
+          "E"
+        ],
+        [
+          "R",
+          "U",
+          "L",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "L",
+          "L",
+          "A",
+          "Y"
+        ],
+        [
+          "C",
+          "E",
+          "A",
+          "S",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GRACE",
+          "clue": "Elegance of movement or divine mercy"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RULER",
+          "clue": "Ruler - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ALLAY",
+          "clue": "Diminish fear, anxiety, or suspicion"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "CEASE",
+          "clue": "Cease - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GRACE",
+          "clue": "Elegance of movement or divine mercy"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RULER",
+          "clue": "Ruler - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ALLAY",
+          "clue": "Diminish fear, anxiety, or suspicion"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "CEASE",
+          "clue": "Cease - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h86",
+      "title": "Ancient Forest III",
+      "grid": [
+        [
+          "G",
+          "R",
+          "I",
+          "M",
+          "E"
+        ],
+        [
+          "R",
+          "I",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GRIME",
+          "clue": "Dirt or soot encrusted on surfaces"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RIVER",
+          "clue": "Vast freshwater flow winding toward the sea"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GRIME",
+          "clue": "Dirt or soot encrusted on surfaces"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RIVER",
+          "clue": "Vast freshwater flow winding toward the sea"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h87",
+      "title": "Crystal Brook III",
+      "grid": [
+        [
+          "G",
+          "R",
+          "I",
+          "M",
+          "E"
+        ],
+        [
+          "R",
+          "O",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GRIME",
+          "clue": "Dirt or soot encrusted on surfaces"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "ROVER",
+          "clue": "Rover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GRIME",
+          "clue": "Dirt or soot encrusted on surfaces"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "ROVER",
+          "clue": "Rover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h88",
+      "title": "Midnight Echo III",
+      "grid": [
+        [
+          "G",
+          "R",
+          "I",
+          "N",
+          "D"
+        ],
+        [
+          "R",
+          "I",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "D",
+          "R",
+          "Y",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GRIND",
+          "clue": "Crush coffee beans into fine grounds"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RIVER",
+          "clue": "Vast freshwater flow winding toward the sea"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GRIND",
+          "clue": "Crush coffee beans into fine grounds"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RIVER",
+          "clue": "Vast freshwater flow winding toward the sea"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ]
+    },
+    {
+      "id": "h89",
+      "title": "Sunrise Valley III",
+      "grid": [
+        [
+          "G",
+          "R",
+          "I",
+          "N",
+          "D"
+        ],
+        [
+          "R",
+          "O",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "D",
+          "R",
+          "Y",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GRIND",
+          "clue": "Crush coffee beans into fine grounds"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "ROVER",
+          "clue": "Rover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GRIND",
+          "clue": "Crush coffee beans into fine grounds"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "ROVER",
+          "clue": "Rover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "DRYER",
+          "clue": "Household appliance tumbling warm clothes"
+        }
+      ]
+    },
+    {
+      "id": "h90",
+      "title": "Silver Timber III",
+      "grid": [
+        [
+          "G",
+          "U",
+          "S",
+          "T",
+          "O"
+        ],
+        [
+          "U",
+          "P",
+          "P",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "P",
+          "E",
+          "N",
+          "D"
+        ],
+        [
+          "T",
+          "E",
+          "N",
+          "S",
+          "E"
+        ],
+        [
+          "O",
+          "R",
+          "D",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GUSTO",
+          "clue": "Gusto - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "UPPER",
+          "clue": "Upper - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "SPEND",
+          "clue": "Spend - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "TENSE",
+          "clue": "Tense - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ORDER",
+          "clue": "Order - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GUSTO",
+          "clue": "Gusto - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "UPPER",
+          "clue": "Upper - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "SPEND",
+          "clue": "Spend - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "TENSE",
+          "clue": "Tense - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ORDER",
+          "clue": "Order - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h91",
+      "title": "Autumn Leaves III",
+      "grid": [
+        [
+          "G",
+          "U",
+          "S",
+          "T",
+          "O"
+        ],
+        [
+          "U",
+          "T",
+          "T",
+          "E",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "A",
+          "N",
+          "D"
+        ],
+        [
+          "T",
+          "E",
+          "N",
+          "S",
+          "E"
+        ],
+        [
+          "O",
+          "R",
+          "D",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GUSTO",
+          "clue": "Gusto - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "UTTER",
+          "clue": "Utter - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "STAND",
+          "clue": "Rise upright onto your two feet firmly"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "TENSE",
+          "clue": "Tense - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ORDER",
+          "clue": "Order - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "GUSTO",
+          "clue": "Gusto - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "UTTER",
+          "clue": "Utter - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "STAND",
+          "clue": "Rise upright onto your two feet firmly"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "TENSE",
+          "clue": "Tense - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ORDER",
+          "clue": "Order - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h92",
+      "title": "Desert Mirage III",
+      "grid": [
+        [
+          "H",
+          "E",
+          "R",
+          "B",
+          "S"
+        ],
+        [
+          "E",
+          "X",
+          "I",
+          "L",
+          "E"
+        ],
+        [
+          "R",
+          "I",
+          "S",
+          "E",
+          "N"
+        ],
+        [
+          "B",
+          "L",
+          "E",
+          "S",
+          "S"
+        ],
+        [
+          "S",
+          "E",
+          "N",
+          "S",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "HERBS",
+          "clue": "Aromatic culinary plants for seasoning"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EXILE",
+          "clue": "Banishment from one's beloved homeland"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "RISEN",
+          "clue": "Risen - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "BLESS",
+          "clue": "Consecrate or wish heavenly divine favor"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "SENSE",
+          "clue": "Sense - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "HERBS",
+          "clue": "Aromatic culinary plants for seasoning"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EXILE",
+          "clue": "Banishment from one's beloved homeland"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "RISEN",
+          "clue": "Risen - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "BLESS",
+          "clue": "Consecrate or wish heavenly divine favor"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "SENSE",
+          "clue": "Sense - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h93",
+      "title": "River Odyssey III",
+      "grid": [
+        [
+          "L",
+          "A",
+          "T",
+          "H",
+          "E"
+        ],
+        [
+          "A",
+          "P",
+          "R",
+          "O",
+          "N"
+        ],
+        [
+          "T",
+          "R",
+          "O",
+          "U",
+          "T"
+        ],
+        [
+          "H",
+          "O",
+          "U",
+          "S",
+          "E"
+        ],
+        [
+          "E",
+          "N",
+          "T",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LATHE",
+          "clue": "Lathe - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "APRON",
+          "clue": "Protective garment worn while cooking"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "TROUT",
+          "clue": "Trout - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "HOUSE",
+          "clue": "Residential dwelling under a shingle roof"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ENTER",
+          "clue": "Step inside through the open threshold"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LATHE",
+          "clue": "Lathe - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "APRON",
+          "clue": "Protective garment worn while cooking"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "TROUT",
+          "clue": "Trout - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "HOUSE",
+          "clue": "Residential dwelling under a shingle roof"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ENTER",
+          "clue": "Step inside through the open threshold"
+        }
+      ]
+    },
+    {
+      "id": "h94",
+      "title": "Sapphire Skies III",
+      "grid": [
+        [
+          "L",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "N",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "h95",
+      "title": "Cobblestone Lane III",
+      "grid": [
+        [
+          "L",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "N",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STONE",
+          "clue": "Dense geological rock picked up on trail"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h96",
+      "title": "Emerald Grove III",
+      "grid": [
+        [
+          "L",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "R",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "h97",
+      "title": "Thunder Peak III",
+      "grid": [
+        [
+          "L",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "R",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STORE",
+          "clue": "Store - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h98",
+      "title": "Velvet Twilight III",
+      "grid": [
+        [
+          "L",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "V",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "h99",
+      "title": "Island Harbor III",
+      "grid": [
+        [
+          "L",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "V",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOVE",
+          "clue": "Appliance with hot burners for cooking stew"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h100",
+      "title": "Whispering Pines III",
+      "grid": [
+        [
+          "L",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "K",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "E"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREE",
+          "clue": "Number of points scored on basketball arc"
+        }
+      ]
+    },
+    {
+      "id": "h101",
+      "title": "Solar Flares III",
+      "grid": [
+        [
+          "L",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ],
+        [
+          "A",
+          "R",
+          "M",
+          "O",
+          "R"
+        ],
+        [
+          "S",
+          "T",
+          "O",
+          "K",
+          "E"
+        ],
+        [
+          "T",
+          "H",
+          "R",
+          "E",
+          "W"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ARMOR",
+          "clue": "Protective metal plating for knights"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "STOKE",
+          "clue": "Add fuel chunks to keep boiler fire roaring"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "THREW",
+          "clue": "Threw - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h102",
+      "title": "Mystic Cavern III",
+      "grid": [
+        [
+          "L",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "M",
+          "B",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "B",
+          "I",
+          "D",
+          "E"
+        ],
+        [
+          "S",
+          "E",
+          "D",
+          "A",
+          "N"
+        ],
+        [
+          "T",
+          "R",
+          "E",
+          "N",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EMBER",
+          "clue": "Glowing coal fragment in dying campfire"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ABIDE",
+          "clue": "Tolerate, endure, or remain steadfast"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LEAST",
+          "clue": "Least - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EMBER",
+          "clue": "Glowing coal fragment in dying campfire"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ABIDE",
+          "clue": "Tolerate, endure, or remain steadfast"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SEDAN",
+          "clue": "Sedan - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TREND",
+          "clue": "Prevailing general direction of cultural change"
+        }
+      ]
+    },
+    {
+      "id": "h103",
+      "title": "Alpine Haven III",
+      "grid": [
+        [
+          "L",
+          "I",
+          "M",
+          "B",
+          "O"
+        ],
+        [
+          "I",
+          "N",
+          "E",
+          "R",
+          "T"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "I",
+          "T"
+        ],
+        [
+          "B",
+          "R",
+          "I",
+          "D",
+          "E"
+        ],
+        [
+          "O",
+          "T",
+          "T",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LIMBO",
+          "clue": "Limbo - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "INERT",
+          "clue": "Lacking active chemical energy or movement"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "MERIT",
+          "clue": "Quality of being particularly worthy of praise"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "BRIDE",
+          "clue": "Woman walking down the wedding aisle"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "OTTER",
+          "clue": "Otter - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LIMBO",
+          "clue": "Limbo - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "INERT",
+          "clue": "Lacking active chemical energy or movement"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "MERIT",
+          "clue": "Quality of being particularly worthy of praise"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "BRIDE",
+          "clue": "Woman walking down the wedding aisle"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "OTTER",
+          "clue": "Otter - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h104",
+      "title": "Radiant Horizon III",
+      "grid": [
+        [
+          "L",
+          "I",
+          "M",
+          "B",
+          "O"
+        ],
+        [
+          "I",
+          "N",
+          "E",
+          "R",
+          "T"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "I",
+          "T"
+        ],
+        [
+          "B",
+          "R",
+          "I",
+          "N",
+          "E"
+        ],
+        [
+          "O",
+          "T",
+          "T",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LIMBO",
+          "clue": "Limbo - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "INERT",
+          "clue": "Lacking active chemical energy or movement"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "MERIT",
+          "clue": "Quality of being particularly worthy of praise"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "BRINE",
+          "clue": "Highly concentrated salty seawater soak"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "OTTER",
+          "clue": "Otter - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "LIMBO",
+          "clue": "Limbo - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "INERT",
+          "clue": "Lacking active chemical energy or movement"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "MERIT",
+          "clue": "Quality of being particularly worthy of praise"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "BRINE",
+          "clue": "Highly concentrated salty seawater soak"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "OTTER",
+          "clue": "Otter - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h105",
+      "title": "Lunar Eclipse III",
+      "grid": [
+        [
+          "M",
+          "O",
+          "R",
+          "A",
+          "L"
+        ],
+        [
+          "O",
+          "P",
+          "E",
+          "R",
+          "A"
+        ],
+        [
+          "R",
+          "E",
+          "P",
+          "O",
+          "T"
+        ],
+        [
+          "A",
+          "R",
+          "O",
+          "S",
+          "E"
+        ],
+        [
+          "L",
+          "A",
+          "T",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "MORAL",
+          "clue": "Moral - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "OPERA",
+          "clue": "Staged theatrical drama set entirely to song"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "REPOT",
+          "clue": "Repot - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "AROSE",
+          "clue": "Ascended upward or came into view"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "LATER",
+          "clue": "At a subsequent period in the afternoon"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "MORAL",
+          "clue": "Moral - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "OPERA",
+          "clue": "Staged theatrical drama set entirely to song"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "REPOT",
+          "clue": "Repot - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "AROSE",
+          "clue": "Ascended upward or came into view"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "LATER",
+          "clue": "At a subsequent period in the afternoon"
+        }
+      ]
+    },
+    {
+      "id": "h106",
+      "title": "Harbor Lights III",
+      "grid": [
+        [
+          "N",
+          "A",
+          "V",
+          "A",
+          "L"
+        ],
+        [
+          "A",
+          "G",
+          "I",
+          "L",
+          "E"
+        ],
+        [
+          "V",
+          "I",
+          "S",
+          "T",
+          "A"
+        ],
+        [
+          "A",
+          "L",
+          "T",
+          "E",
+          "R"
+        ],
+        [
+          "L",
+          "E",
+          "A",
+          "R",
+          "N"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "NAVAL",
+          "clue": "Naval - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "VISTA",
+          "clue": "Vista - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "ALTER",
+          "clue": "Modify, reshape, or change slightly"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "LEARN",
+          "clue": "Learn - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "NAVAL",
+          "clue": "Naval - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "AGILE",
+          "clue": "Quick and nimble in physical movement"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "VISTA",
+          "clue": "Vista - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "ALTER",
+          "clue": "Modify, reshape, or change slightly"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "LEARN",
+          "clue": "Learn - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h107",
+      "title": "Silent Meadow III",
+      "grid": [
+        [
+          "N",
+          "O",
+          "B",
+          "L",
+          "E"
+        ],
+        [
+          "O",
+          "C",
+          "E",
+          "A",
+          "N"
+        ],
+        [
+          "B",
+          "E",
+          "A",
+          "R",
+          "D"
+        ],
+        [
+          "L",
+          "A",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "E",
+          "N",
+          "D",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "NOBLE",
+          "clue": "Possessing elevated aristocratic virtues"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "OCEAN",
+          "clue": "Immense body of saltwater covering earth"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "BEARD",
+          "clue": "Facial hair grown on chin and cheeks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "LARGE",
+          "clue": "Large - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ENDED",
+          "clue": "Reached the final concluding curtain drop"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "NOBLE",
+          "clue": "Possessing elevated aristocratic virtues"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "OCEAN",
+          "clue": "Immense body of saltwater covering earth"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "BEARD",
+          "clue": "Facial hair grown on chin and cheeks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "LARGE",
+          "clue": "Large - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ENDED",
+          "clue": "Reached the final concluding curtain drop"
+        }
+      ]
+    },
+    {
+      "id": "h108",
+      "title": "Timber Ridge III",
+      "grid": [
+        [
+          "N",
+          "O",
+          "B",
+          "L",
+          "E"
+        ],
+        [
+          "O",
+          "C",
+          "E",
+          "A",
+          "N"
+        ],
+        [
+          "B",
+          "E",
+          "A",
+          "S",
+          "T"
+        ],
+        [
+          "L",
+          "A",
+          "S",
+          "E",
+          "R"
+        ],
+        [
+          "E",
+          "N",
+          "T",
+          "R",
+          "Y"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "NOBLE",
+          "clue": "Possessing elevated aristocratic virtues"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "OCEAN",
+          "clue": "Immense body of saltwater covering earth"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "LASER",
+          "clue": "Focused beam of coherent monochromatic light"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ENTRY",
+          "clue": "Entry - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "NOBLE",
+          "clue": "Possessing elevated aristocratic virtues"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "OCEAN",
+          "clue": "Immense body of saltwater covering earth"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "BEAST",
+          "clue": "Ferocious four-footed creature of the wild"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "LASER",
+          "clue": "Focused beam of coherent monochromatic light"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ENTRY",
+          "clue": "Entry - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h109",
+      "title": "Citrus Grove III",
+      "grid": [
+        [
+          "N",
+          "O",
+          "N",
+          "C",
+          "E"
+        ],
+        [
+          "O",
+          "P",
+          "E",
+          "R",
+          "A"
+        ],
+        [
+          "N",
+          "E",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "C",
+          "R",
+          "E",
+          "S",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "R",
+          "T",
+          "H"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "NONCE",
+          "clue": "Nonce - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "OPERA",
+          "clue": "Staged theatrical drama set entirely to song"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "NEVER",
+          "clue": "Never - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "CREST",
+          "clue": "Highest ridge peak of a breaking wave"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "NONCE",
+          "clue": "Nonce - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "OPERA",
+          "clue": "Staged theatrical drama set entirely to song"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "NEVER",
+          "clue": "Never - 5-letter deduction word"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "CREST",
+          "clue": "Highest ridge peak of a breaking wave"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "EARTH",
+          "clue": "Third planet orbiting sun; rich soil"
+        }
+      ]
+    },
+    {
+      "id": "h110",
+      "title": "Northern Lights III",
+      "grid": [
+        [
+          "P",
+          "H",
+          "A",
+          "S",
+          "E"
+        ],
+        [
+          "H",
+          "A",
+          "V",
+          "E",
+          "N"
+        ],
+        [
+          "A",
+          "V",
+          "O",
+          "I",
+          "D"
+        ],
+        [
+          "S",
+          "E",
+          "I",
+          "Z",
+          "E"
+        ],
+        [
+          "E",
+          "N",
+          "D",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PHASE",
+          "clue": "Phase - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "HAVEN",
+          "clue": "Place of safe harbor, refuge, and calm"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AVOID",
+          "clue": "Stay away from or prevent happening"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SEIZE",
+          "clue": "Seize - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ENDED",
+          "clue": "Reached the final concluding curtain drop"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PHASE",
+          "clue": "Phase - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "HAVEN",
+          "clue": "Place of safe harbor, refuge, and calm"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AVOID",
+          "clue": "Stay away from or prevent happening"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SEIZE",
+          "clue": "Seize - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ENDED",
+          "clue": "Reached the final concluding curtain drop"
+        }
+      ]
+    },
+    {
+      "id": "h111",
+      "title": "Rustic Cabin III",
+      "grid": [
+        [
+          "P",
+          "I",
+          "A",
+          "N",
+          "O"
+        ],
+        [
+          "I",
+          "N",
+          "P",
+          "U",
+          "T"
+        ],
+        [
+          "A",
+          "P",
+          "A",
+          "R",
+          "T"
+        ],
+        [
+          "N",
+          "U",
+          "R",
+          "S",
+          "E"
+        ],
+        [
+          "O",
+          "T",
+          "T",
+          "E",
+          "R"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PIANO",
+          "clue": "Piano - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "INPUT",
+          "clue": "Data entered into computer memory banks"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "APART",
+          "clue": "Separated by distance or time"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NURSE",
+          "clue": "Nurse - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "OTTER",
+          "clue": "Otter - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PIANO",
+          "clue": "Piano - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "INPUT",
+          "clue": "Data entered into computer memory banks"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "APART",
+          "clue": "Separated by distance or time"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NURSE",
+          "clue": "Nurse - 5-letter deduction word"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "OTTER",
+          "clue": "Otter - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h112",
+      "title": "Breezy Point III",
+      "grid": [
+        [
+          "P",
+          "L",
+          "A",
+          "N",
+          "E"
+        ],
+        [
+          "L",
+          "I",
+          "N",
+          "E",
+          "R"
+        ],
+        [
+          "A",
+          "N",
+          "G",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PLANE",
+          "clue": "Plane - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ANGRY",
+          "clue": "Feeling or expressing intense ire"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PLANE",
+          "clue": "Plane - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "LINER",
+          "clue": "Liner - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ANGRY",
+          "clue": "Feeling or expressing intense ire"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h113",
+      "title": "Twilight Shadows III",
+      "grid": [
+        [
+          "P",
+          "R",
+          "I",
+          "M",
+          "E"
+        ],
+        [
+          "R",
+          "I",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PRIME",
+          "clue": "First in importance or divisible only by itself"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RIVER",
+          "clue": "Vast freshwater flow winding toward the sea"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PRIME",
+          "clue": "First in importance or divisible only by itself"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RIVER",
+          "clue": "Vast freshwater flow winding toward the sea"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h114",
+      "title": "Sunken Reef III",
+      "grid": [
+        [
+          "P",
+          "R",
+          "I",
+          "M",
+          "E"
+        ],
+        [
+          "R",
+          "O",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "I",
+          "V",
+          "O",
+          "R",
+          "Y"
+        ],
+        [
+          "M",
+          "E",
+          "R",
+          "G",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PRIME",
+          "clue": "First in importance or divisible only by itself"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "ROVER",
+          "clue": "Rover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PRIME",
+          "clue": "First in importance or divisible only by itself"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "ROVER",
+          "clue": "Rover - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "IVORY",
+          "clue": "Hard cream-white material of elephant tusks"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "MERGE",
+          "clue": "Combine two highways or streams into one"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h115",
+      "title": "Glacial Peaks III",
+      "grid": [
+        [
+          "P",
+          "R",
+          "O",
+          "S",
+          "E"
+        ],
+        [
+          "R",
+          "E",
+          "L",
+          "A",
+          "X"
+        ],
+        [
+          "O",
+          "L",
+          "I",
+          "V",
+          "E"
+        ],
+        [
+          "S",
+          "A",
+          "V",
+          "O",
+          "R"
+        ],
+        [
+          "E",
+          "X",
+          "E",
+          "R",
+          "T"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PROSE",
+          "clue": "Prose - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "RELAX",
+          "clue": "Release tension and rest in serene tranquility"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "OLIVE",
+          "clue": "Savory green Mediterranean fruit on salads"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SAVOR",
+          "clue": "Enjoy flavor or cherish meaningful moment"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "EXERT",
+          "clue": "Apply vigorous strength or willpower"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "PROSE",
+          "clue": "Prose - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "RELAX",
+          "clue": "Release tension and rest in serene tranquility"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "OLIVE",
+          "clue": "Savory green Mediterranean fruit on salads"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SAVOR",
+          "clue": "Enjoy flavor or cherish meaningful moment"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "EXERT",
+          "clue": "Apply vigorous strength or willpower"
+        }
+      ]
+    },
+    {
+      "id": "h116",
+      "title": "Orchard Path III",
+      "grid": [
+        [
+          "Q",
+          "U",
+          "A",
+          "S",
+          "I"
+        ],
+        [
+          "U",
+          "N",
+          "I",
+          "O",
+          "N"
+        ],
+        [
+          "A",
+          "I",
+          "S",
+          "L",
+          "E"
+        ],
+        [
+          "S",
+          "O",
+          "L",
+          "A",
+          "R"
+        ],
+        [
+          "I",
+          "N",
+          "E",
+          "R",
+          "T"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "QUASI",
+          "clue": "Quasi - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "UNION",
+          "clue": "Union - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AISLE",
+          "clue": "Passage walkway between rows of seats"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "SOLAR",
+          "clue": "Derived from radiant thermonuclear sun rays"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "INERT",
+          "clue": "Lacking active chemical energy or movement"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "QUASI",
+          "clue": "Quasi - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "UNION",
+          "clue": "Union - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AISLE",
+          "clue": "Passage walkway between rows of seats"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "SOLAR",
+          "clue": "Derived from radiant thermonuclear sun rays"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "INERT",
+          "clue": "Lacking active chemical energy or movement"
+        }
+      ]
+    },
+    {
+      "id": "h117",
+      "title": "Azure Lagoon III",
+      "grid": [
+        [
+          "R",
+          "E",
+          "A",
+          "C",
+          "T"
+        ],
+        [
+          "E",
+          "I",
+          "G",
+          "H",
+          "T"
+        ],
+        [
+          "A",
+          "G",
+          "R",
+          "E",
+          "E"
+        ],
+        [
+          "C",
+          "H",
+          "E",
+          "S",
+          "S"
+        ],
+        [
+          "T",
+          "T",
+          "E",
+          "S",
+          "T"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "REACT",
+          "clue": "React - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EIGHT",
+          "clue": "Number following seven; cube of two"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGREE",
+          "clue": "Concur or share the identical opinion"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "CHESS",
+          "clue": "Strategic board game of kings and pawns"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TTEST",
+          "clue": "Statistical assessment comparing data samples"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "REACT",
+          "clue": "React - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EIGHT",
+          "clue": "Number following seven; cube of two"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGREE",
+          "clue": "Concur or share the identical opinion"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "CHESS",
+          "clue": "Strategic board game of kings and pawns"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TTEST",
+          "clue": "Statistical assessment comparing data samples"
+        }
+      ]
+    },
+    {
+      "id": "h118",
+      "title": "Winding Stream III",
+      "grid": [
+        [
+          "R",
+          "E",
+          "A",
+          "C",
+          "T"
+        ],
+        [
+          "E",
+          "A",
+          "G",
+          "L",
+          "E"
+        ],
+        [
+          "A",
+          "G",
+          "R",
+          "E",
+          "E"
+        ],
+        [
+          "C",
+          "L",
+          "E",
+          "A",
+          "N"
+        ],
+        [
+          "T",
+          "E",
+          "E",
+          "N",
+          "S"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "REACT",
+          "clue": "React - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "EAGLE",
+          "clue": "Eagle - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "AGREE",
+          "clue": "Concur or share the identical opinion"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "CLEAN",
+          "clue": "Free from dirt, dust, or contamination"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "TEENS",
+          "clue": "Youthful adolescent years between 13 and 19"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "REACT",
+          "clue": "React - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "EAGLE",
+          "clue": "Eagle - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "AGREE",
+          "clue": "Concur or share the identical opinion"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "CLEAN",
+          "clue": "Free from dirt, dust, or contamination"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "TEENS",
+          "clue": "Youthful adolescent years between 13 and 19"
+        }
+      ]
+    },
+    {
+      "id": "h119",
+      "title": "Starry Night III",
+      "grid": [
+        [
+          "S",
+          "C",
+          "E",
+          "N",
+          "E"
+        ],
+        [
+          "C",
+          "O",
+          "V",
+          "E",
+          "R"
+        ],
+        [
+          "E",
+          "V",
+          "E",
+          "R",
+          "Y"
+        ],
+        [
+          "N",
+          "E",
+          "R",
+          "V",
+          "E"
+        ],
+        [
+          "E",
+          "R",
+          "Y",
+          "E",
+          "D"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "SCENE",
+          "clue": "Visual backdrop or division of theatrical play"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "COVER",
+          "clue": "Protective lid or illustrated book jacket"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "EVERY",
+          "clue": "All members of a category without lack"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "SCENE",
+          "clue": "Visual backdrop or division of theatrical play"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "COVER",
+          "clue": "Protective lid or illustrated book jacket"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "EVERY",
+          "clue": "All members of a category without lack"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "NERVE",
+          "clue": "Biological bundle transmitting bodily signals"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "ERYED",
+          "clue": "Eryed - 5-letter deduction word"
+        }
+      ]
+    },
+    {
+      "id": "h120",
+      "title": "Hearth & Home III",
+      "grid": [
+        [
+          "S",
+          "C",
+          "R",
+          "A",
+          "M"
+        ],
+        [
+          "C",
+          "H",
+          "O",
+          "R",
+          "E"
+        ],
+        [
+          "R",
+          "O",
+          "B",
+          "O",
+          "T"
+        ],
+        [
+          "A",
+          "R",
+          "O",
+          "M",
+          "A"
+        ],
+        [
+          "M",
+          "E",
+          "T",
+          "A",
+          "L"
+        ]
+      ],
+      "across": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "SCRAM",
+          "clue": "Scram - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 1,
+          "col": 0,
+          "word": "CHORE",
+          "clue": "Chore - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 2,
+          "col": 0,
+          "word": "ROBOT",
+          "clue": "Autonomous programmable electromechanical machine"
+        },
+        {
+          "num": 4,
+          "row": 3,
+          "col": 0,
+          "word": "AROMA",
+          "clue": "Pleasant and distinctive fragrant scent"
+        },
+        {
+          "num": 5,
+          "row": 4,
+          "col": 0,
+          "word": "METAL",
+          "clue": "Metal - 5-letter deduction word"
+        }
+      ],
+      "down": [
+        {
+          "num": 1,
+          "row": 0,
+          "col": 0,
+          "word": "SCRAM",
+          "clue": "Scram - 5-letter deduction word"
+        },
+        {
+          "num": 2,
+          "row": 0,
+          "col": 1,
+          "word": "CHORE",
+          "clue": "Chore - 5-letter deduction word"
+        },
+        {
+          "num": 3,
+          "row": 0,
+          "col": 2,
+          "word": "ROBOT",
+          "clue": "Autonomous programmable electromechanical machine"
+        },
+        {
+          "num": 4,
+          "row": 0,
+          "col": 3,
+          "word": "AROMA",
+          "clue": "Pleasant and distinctive fragrant scent"
+        },
+        {
+          "num": 5,
+          "row": 0,
+          "col": 4,
+          "word": "METAL",
+          "clue": "Metal - 5-letter deduction word"
+        }
+      ]
+    }
+  ]
 };
 
-function getCrosswordPuzzle(rng, tier) {
-  const bank = PUZZLE_BANK[tier] || PUZZLE_BANK.medium;
-  const idx = rng.nextInt(0, bank.length);
+const ALL_PUZZLES = [
+  ...PUZZLE_BANK.easy,
+  ...PUZZLE_BANK.medium,
+  ...PUZZLE_BANK.hard,
+];
+
+function getCrosswordPuzzle(rng, tier, dateStr) {
+  let idx = 0;
+  if (dateStr) {
+    const dayNum = Math.floor(new Date(dateStr).getTime() / 86400000);
+    const tierOffset = tier === 'easy' ? 0 : tier === 'medium' ? 40 : 80;
+    idx = Math.abs((dayNum + tierOffset) % ALL_PUZZLES.length);
+  } else {
+    idx = rng.nextInt(0, ALL_PUZZLES.length);
+  }
   return {
     tier,
-    ...bank[idx],
+    ...ALL_PUZZLES[idx],
   };
 }
 
 export const gameConfig = {
   id: 'crossword',
+  slug: 'crossword',
   title: 'Crossword',
   description: 'Solve the daily 5x5 mini crossword with intersecting Across & Down clues!',
   badge: 'Word Puzzle',
@@ -209,7 +13847,7 @@ export const gameConfig = {
       rewardCoins: 15,
       generateDailyPuzzle: (dateStr) => {
         const rng = new SeededRNG(`crossword-easy-${dateStr}`);
-        return getCrosswordPuzzle(rng, 'easy');
+        return getCrosswordPuzzle(rng, 'easy', dateStr);
       },
     },
     medium: {
@@ -217,7 +13855,7 @@ export const gameConfig = {
       rewardCoins: 35,
       generateDailyPuzzle: (dateStr) => {
         const rng = new SeededRNG(`crossword-med-${dateStr}`);
-        return getCrosswordPuzzle(rng, 'medium');
+        return getCrosswordPuzzle(rng, 'medium', dateStr);
       },
     },
     hard: {
@@ -225,7 +13863,7 @@ export const gameConfig = {
       rewardCoins: 75,
       generateDailyPuzzle: (dateStr) => {
         const rng = new SeededRNG(`crossword-hard-${dateStr}`);
-        return getCrosswordPuzzle(rng, 'hard');
+        return getCrosswordPuzzle(rng, 'hard', dateStr);
       },
     },
   },

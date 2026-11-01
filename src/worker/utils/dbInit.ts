@@ -1,4 +1,5 @@
 import { Env } from '../types';
+import { getTodayUTC, getYesterdayUTC } from './date';
 
 let schemaReady = false;
 
@@ -187,5 +188,37 @@ export async function ensureDbSchema(env: Env): Promise<void> {
     await env.DB.prepare("UPDATE user_game_unlocks SET playground_unlocked = 1 WHERE game_id = 'wordle'").run();
   } catch {}
 
+  // 4. Sanitize corrupt or invalid streak records in D1 database
+  try {
+    const todayStr = getTodayUTC();
+    const yesterdayStr = getYesterdayUTC();
+
+    // Fix null/negative streaks
+    await env.DB.prepare("UPDATE users SET streak_count = 0 WHERE streak_count < 0 OR streak_count IS NULL").run();
+    await env.DB.prepare("UPDATE users SET best_streak = streak_count WHERE best_streak < streak_count OR best_streak IS NULL").run();
+    await env.DB.prepare("UPDATE user_game_stats SET current_streak = 0 WHERE current_streak < 0 OR current_streak IS NULL").run();
+    await env.DB.prepare("UPDATE user_game_stats SET best_streak = current_streak WHERE best_streak < current_streak OR best_streak IS NULL").run();
+
+    // Reset active streak to 0 if player missed yesterday and hasn't played today
+    await env.DB.prepare(`
+      UPDATE users 
+      SET streak_count = 0 
+      WHERE last_played_date IS NOT NULL 
+        AND last_played_date != ? 
+        AND last_played_date != ?
+    `).bind(todayStr, yesterdayStr).run();
+
+    await env.DB.prepare(`
+      UPDATE user_game_stats 
+      SET current_streak = 0 
+      WHERE last_daily_date IS NOT NULL 
+        AND last_daily_date != ? 
+        AND last_daily_date != ?
+    `).bind(todayStr, yesterdayStr).run();
+  } catch (cleanErr) {
+    console.warn('[D1 Streak Cleanup Warning]', cleanErr);
+  }
+
   schemaReady = true;
 }
+
