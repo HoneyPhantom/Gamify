@@ -483,8 +483,41 @@ export const gameConfig = {
     renderBoard();
     renderKeyboard();
 
-    return () => {
-      window.removeEventListener("keydown", onKeydown);
+    const provideHint = (cost = 10) => {
+      if (isGameOver || currentRow >= maxAttempts) return false;
+      const target = targetWord.toUpperCase();
+      // Find unrevealed column in currentRow
+      const emptyCols = [];
+      for (let c = 0; c < 5; c++) {
+        if (!guesses[currentRow][c] || guesses[currentRow][c] !== target[c]) {
+          emptyCols.push(c);
+        }
+      }
+      if (emptyCols.length === 0) {
+        showStatus("Current row already matches target! Press Enter to submit.", "var(--correct-bg)");
+        return false;
+      }
+      const chosenCol = emptyCols[0];
+      guesses[currentRow][chosenCol] = target[chosenCol];
+      const cellEl = container.querySelector(`#wordle-cell-${currentRow}-${chosenCol}`);
+      if (cellEl) {
+        cellEl.innerText = target[chosenCol];
+        cellEl.classList.add('hinted-cell');
+        cellEl.style.borderColor = 'var(--correct-bg)';
+        cellEl.style.color = 'var(--correct-bg)';
+        cellEl.style.fontWeight = '900';
+      }
+      currentCol = Math.min(4, chosenCol + 1);
+      updateCursor();
+      showStatus(`💡 Hint: Column ${chosenCol + 1} is "${target[chosenCol]}"! (-${cost} 🪙)`, "var(--accent)");
+      return true;
+    };
+
+    return {
+      cleanup: () => {
+        window.removeEventListener("keydown", onKeydown);
+      },
+      provideHint
     };
   }
 };

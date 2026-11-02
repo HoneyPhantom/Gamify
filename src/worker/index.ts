@@ -96,8 +96,12 @@ export default {
     }
 
     try {
-      // Ensure D1 database schema is ready
-      await ensureDbSchema(env);
+      // Ensure D1 database schema is ready safely
+      try {
+        await ensureDbSchema(env);
+      } catch (schemaErr) {
+        console.warn('[Schema Init Warning]', schemaErr);
+      }
       // -------------------------------------------------------------------
       // 1. PIN Credential Auth Endpoints
       // -------------------------------------------------------------------
@@ -151,7 +155,7 @@ export default {
         const todayStr = getTodayUTC();
         const yesterdayStr = getYesterdayUTC();
         const [user, unlocks, stats, todayCompletions, followingResult, followersCountResult, pendingChallengesResult] = await Promise.all([
-          env.DB.prepare('SELECT id, username, display_name, COALESCE(about, "Puzzle solver climbing to the top!") as about, coins, streak_count, COALESCE(best_streak, streak_count) as best_streak, COALESCE(xp, 0) as xp, COALESCE(selected_frame, "default") as selected_frame, COALESCE(selected_title, "") as selected_title, last_played_date, last_login_at FROM users WHERE id = ?')
+          env.DB.prepare(`SELECT id, username, display_name, COALESCE(about, 'Puzzle solver climbing to the top!') as about, coins, streak_count, COALESCE(best_streak, streak_count) as best_streak, COALESCE(xp, 0) as xp, COALESCE(selected_frame, 'default') as selected_frame, COALESCE(selected_title, '') as selected_title, last_played_date, last_login_at FROM users WHERE id = ?`)
             .bind(auth.user.id).first<any>(),
           env.DB.prepare('SELECT * FROM user_game_unlocks WHERE user_id = ?')
             .bind(auth.user.id).all(),
@@ -280,7 +284,7 @@ export default {
       // -------------------------------------------------------------------
       // 7. Puzzle Hint Purchase Mutation: POST /api/games/hint (Protected)
       // -------------------------------------------------------------------
-      if (method === 'POST' && url.pathname === '/api/games/hint') {
+      if (method === 'POST' && (url.pathname === '/api/games/hint' || url.pathname === '/api/game/hint')) {
         const auth = await authenticateRequest(request, env);
         if ('error' in auth) return auth.error;
 

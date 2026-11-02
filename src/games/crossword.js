@@ -14180,8 +14180,51 @@ export const gameConfig = {
     window.addEventListener('keydown', handleKeyDown);
     updateHighlighting();
 
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+    const provideHint = (cost = 10) => {
+      if (isFinished) return false;
+
+      const candidates = [];
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          if (userGrid[r][c] !== grid[r][c]) {
+            candidates.push({ r, c, val: grid[r][c] });
+          }
+        }
+      }
+
+      if (candidates.length === 0) {
+        callbacks.showStatus("All crossword cells are already correct! Great job!", "var(--correct-bg)");
+        return false;
+      }
+
+      // Prefer currently active cell if candidate, else random
+      let target = candidates.find(cand => cand.r === activeRow && cand.c === activeCol);
+      if (!target) {
+        target = candidates[Math.floor(Math.random() * candidates.length)];
+      }
+
+      userGrid[target.r][target.c] = target.val;
+      const span = container.querySelector(`#cw-cell-${target.r}-${target.c}`);
+      if (span) {
+        span.textContent = target.val;
+        span.style.color = 'var(--correct-bg)';
+        span.style.fontWeight = '900';
+      }
+
+      activeRow = target.r;
+      activeCol = target.c;
+      updateHighlighting();
+      checkPuzzleComplete();
+
+      callbacks.showStatus(`💡 Hint: Row ${target.r + 1}, Col ${target.c + 1} is "${target.val}"! (-${cost} 🪙)`, "var(--accent)");
+      return true;
+    };
+
+    return {
+      cleanup: () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      },
+      provideHint
     };
   },
 };

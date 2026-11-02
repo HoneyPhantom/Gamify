@@ -511,15 +511,52 @@ export const gameConfig = {
 
     renderCells();
 
-    return () => {
-      undoBtn.removeEventListener('click', onUndo);
-      resetBtn.removeEventListener('click', onReset);
-      boardEl.removeEventListener('pointerdown', onPointerDown);
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
-      boardEl.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onPointerUp);
+    const provideHint = (cost = 10) => {
+      if (isSolved || !puzzle.solutionPath) return false;
+      
+      // Determine how far current userTrail matches solutionPath
+      let matchCount = 0;
+      while (
+        matchCount < userTrail.length &&
+        matchCount < puzzle.solutionPath.length &&
+        userTrail[matchCount][0] === puzzle.solutionPath[matchCount][0] &&
+        userTrail[matchCount][1] === puzzle.solutionPath[matchCount][1]
+      ) {
+        matchCount++;
+      }
+
+      // If user had deviated from path, reset to longest correct prefix
+      if (matchCount < userTrail.length) {
+        userTrail = userTrail.slice(0, matchCount);
+      }
+
+      if (userTrail.length < puzzle.solutionPath.length) {
+        const nextCoord = puzzle.solutionPath[userTrail.length];
+        userTrail.push(nextCoord);
+        renderCells();
+
+        if (userTrail.length === totalCells) {
+          checkTrailCompletion();
+        }
+
+        showStatus(`💡 Hint: Connected step ${userTrail.length}/${totalCells} at (${nextCoord[0] + 1}, ${nextCoord[1] + 1})! (-${cost} 🪙)`, "var(--accent)");
+        return true;
+      }
+      return false;
+    };
+
+    return {
+      cleanup: () => {
+        undoBtn.removeEventListener('click', onUndo);
+        resetBtn.removeEventListener('click', onReset);
+        boardEl.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+        boardEl.removeEventListener('touchstart', onTouchStart);
+        window.removeEventListener('touchmove', onTouchMove);
+        window.removeEventListener('touchend', onPointerUp);
+      },
+      provideHint
     };
   }
 };

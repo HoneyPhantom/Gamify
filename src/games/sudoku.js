@@ -432,9 +432,52 @@ export const gameConfig = {
 
     renderBoard();
 
-    // Return lifecycle cleanup function
-    return () => {
-      window.removeEventListener('keydown', keyHandler);
+    const provideHint = (cost = 10) => {
+      if (isFinished) return false;
+      
+      const candidates = [];
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (initialGrid[r][c] === 0 && currentGrid[r][c] !== solution[r][c]) {
+            candidates.push({ r, c, val: solution[r][c] });
+          }
+        }
+      }
+
+      if (candidates.length === 0) {
+        callbacks.showStatus("All cells are already correctly filled! Check for any conflicts.", "var(--correct-bg)");
+        return false;
+      }
+
+      // If current selected cell is valid candidate, use it; otherwise pick a random candidate
+      let target = candidates.find(cand => cand.r === selectedCell.r && cand.c === selectedCell.c);
+      if (!target) {
+        target = candidates[Math.floor(Math.random() * candidates.length)];
+      }
+
+      currentGrid[target.r][target.c] = target.val;
+      notesGrid[target.r][target.c].clear();
+      selectedCell = { r: target.r, c: target.c };
+      renderBoard();
+
+      callbacks.showStatus(`💡 Hint: Row ${target.r + 1}, Col ${target.c + 1} is ${target.val}! (-${cost} 🪙)`, "var(--accent)");
+
+      if (checkWinCondition()) {
+        isFinished = true;
+        const timeTakenMs = Math.max(1000, Date.now() - startTime);
+        const score = size * 1000 + Math.max(0, 5000 - Math.floor(timeTakenMs / 10));
+        callbacks.showStatus(`🎉 Sudoku Solved in ${(timeTakenMs / 1000).toFixed(1)}s! (+${score} pts)`, 'var(--correct-bg)');
+        callbacks.onWin(score, timeTakenMs, { moves: 0 });
+      }
+      return true;
+    };
+
+    // Return lifecycle cleanup object
+    return {
+      cleanup: () => {
+        window.removeEventListener('keydown', keyHandler);
+      },
+      provideHint
     };
   },
 };

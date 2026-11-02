@@ -277,8 +277,10 @@ export const gameConfig = {
           hintBtn.textContent = 'Unlocking Hint...';
         }
 
+        let hintCost = 10;
         if (typeof onHint === 'function') {
-          await onHint('number-grid');
+          const res = await onHint('number-grid');
+          if (res?.cost) hintCost = res.cost;
         }
 
         // Pick a random candidate cell to reveal
@@ -287,15 +289,39 @@ export const gameConfig = {
         chosen.inp.disabled = true;
         chosen.inp.classList.add('hinted-cell');
 
-        showStatus(`💡 Hint: Row ${chosen.r + 1}, Col ${chosen.c + 1} is ${chosen.val}! (-10 🪙)`, "var(--accent)");
+        showStatus(`💡 Hint: Row ${chosen.r + 1}, Col ${chosen.c + 1} is ${chosen.val}! (-${hintCost} 🪙)`, "var(--accent)");
       } catch (err) {
         showStatus(`⚠️ ${err.message || 'Could not purchase hint'}`, "var(--danger)");
       } finally {
         if (hintBtn) {
           hintBtn.disabled = false;
-          hintBtn.textContent = '💡 Hint (10 🪙)';
         }
       }
+    };
+
+    const provideHint = (cost = 10) => {
+      if (isSolved || !puzzle.solution) return false;
+      const candidates = [];
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (initialGrid[r][c] === null) {
+            const inp = container.querySelector(`input[data-row="${r}"][data-col="${c}"]`);
+            if (inp && !inp.disabled && (!inp.value || parseInt(inp.value, 10) !== puzzle.solution[r][c])) {
+              candidates.push({ r, c, inp, val: puzzle.solution[r][c] });
+            }
+          }
+        }
+      }
+      if (candidates.length === 0) {
+        showStatus("All cells are already correctly filled! Click Verify Solution.", "var(--correct-bg)");
+        return false;
+      }
+      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+      chosen.inp.value = chosen.val;
+      chosen.inp.disabled = true;
+      chosen.inp.classList.add('hinted-cell');
+      showStatus(`💡 Hint: Row ${chosen.r + 1}, Col ${chosen.c + 1} is ${chosen.val}! (-${cost} 🪙)`, "var(--accent)");
+      return true;
     };
 
     if (verifyBtn) {
@@ -305,13 +331,16 @@ export const gameConfig = {
       hintBtn.addEventListener('click', onHintClick);
     }
 
-    return () => {
-      if (verifyBtn) {
-        verifyBtn.removeEventListener('click', onVerify);
-      }
-      if (hintBtn) {
-        hintBtn.removeEventListener('click', onHintClick);
-      }
+    return {
+      cleanup: () => {
+        if (verifyBtn) {
+          verifyBtn.removeEventListener('click', onVerify);
+        }
+        if (hintBtn) {
+          hintBtn.removeEventListener('click', onHintClick);
+        }
+      },
+      provideHint
     };
   }
 };

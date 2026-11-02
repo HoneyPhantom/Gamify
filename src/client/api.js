@@ -256,10 +256,10 @@ class GamifyApiClient {
     return res;
   }
 
-  async useHint(gameId = 'number-grid') {
+  async useHint(gameId = 'number-grid', hintIndex = 0) {
     return this.request('/games/hint', {
       method: 'POST',
-      body: JSON.stringify({ gameId }),
+      body: JSON.stringify({ gameId, hintIndex }),
     });
   }
 

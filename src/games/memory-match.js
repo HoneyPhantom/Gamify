@@ -246,8 +246,74 @@ export const gameConfig = {
       });
     });
 
-    return () => {
-      // Cleanup
+    const provideHint = (cost = 10) => {
+      if (isFinished || matchedPairIds.size >= totalPairs) return false;
+
+      const unmatched = [];
+      const seenPairs = new Set();
+      for (let i = 0; i < deck.length; i++) {
+        if (!matchedPairIds.has(deck[i].pairId) && !seenPairs.has(deck[i].pairId)) {
+          seenPairs.add(deck[i].pairId);
+          unmatched.push(deck[i].pairId);
+        }
+      }
+
+      if (unmatched.length === 0) return false;
+
+      const targetPairId = unmatched[Math.floor(Math.random() * unmatched.length)];
+      const matchIndices = [];
+      deck.forEach((c, i) => {
+        if (c.pairId === targetPairId) matchIndices.push(i);
+      });
+
+      if (matchIndices.length < 2) return false;
+
+      const [i1, i2] = matchIndices;
+      const el1 = cardEls[i1];
+      const el2 = cardEls[i2];
+
+      if (el1) {
+        el1.style.transform = 'rotateY(180deg)';
+        const front = el1.querySelector('.card-front');
+        if (front) {
+          front.style.borderColor = '#f59e0b';
+          front.style.boxShadow = '0 0 16px rgba(245, 158, 11, 0.6)';
+        }
+      }
+      if (el2) {
+        el2.style.transform = 'rotateY(180deg)';
+        const front = el2.querySelector('.card-front');
+        if (front) {
+          front.style.borderColor = '#f59e0b';
+          front.style.boxShadow = '0 0 16px rgba(245, 158, 11, 0.6)';
+        }
+      }
+
+      callbacks.showStatus(`💡 Hint: Flashed matching pair "${deck[i1].symbol}"! (-${cost} 🪙)`, "var(--accent)");
+
+      setTimeout(() => {
+        if (!matchedPairIds.has(targetPairId)) {
+          if (!flippedIndices.includes(i1) && el1) {
+            el1.style.transform = 'rotateY(0deg)';
+            const front = el1.querySelector('.card-front');
+            if (front) { front.style.borderColor = '#e2e8f0'; front.style.boxShadow = 'none'; }
+          }
+          if (!flippedIndices.includes(i2) && el2) {
+            el2.style.transform = 'rotateY(0deg)';
+            const front = el2.querySelector('.card-front');
+            if (front) { front.style.borderColor = '#e2e8f0'; front.style.boxShadow = 'none'; }
+          }
+        }
+      }, 2500);
+
+      return true;
+    };
+
+    return {
+      cleanup: () => {
+        // Cleanup timers or listeners if any
+      },
+      provideHint
     };
   },
 };

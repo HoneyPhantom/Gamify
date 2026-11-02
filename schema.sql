@@ -13,10 +13,15 @@ CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,                             -- 'usr_' prefixed unique identifier
     username TEXT NOT NULL UNIQUE,                   -- Unique handle (lowercase)
     display_name TEXT NOT NULL,                      -- Public leaderboard display name
+    about TEXT NOT NULL DEFAULT 'Puzzle solver climbing to the top!', -- Player bio
     pin_hash TEXT NOT NULL,                          -- PBKDF2-SHA256 salted hash of 4-digit PIN
     pin_salt TEXT NOT NULL,                          -- Cryptographic random salt (hex string)
     coins INTEGER NOT NULL DEFAULT 100,              -- Initial starter balance (100 coins)
     streak_count INTEGER NOT NULL DEFAULT 0,         -- Consecutive active daily puzzle streaks
+    best_streak INTEGER NOT NULL DEFAULT 0,          -- Best historic streak count
+    xp INTEGER NOT NULL DEFAULT 0,                   -- Experience points for level system
+    selected_frame TEXT DEFAULT 'default',           -- Avatar cosmetic frame
+    selected_title TEXT DEFAULT '',                  -- Cosmetic title badge
     last_played_date TEXT,                           -- ISO-8601 calendar date YYYY-MM-DD (UTC)
     last_login_at TEXT NOT NULL DEFAULT (DATETIME('now')), -- Tracks session issuance
     created_at TEXT NOT NULL DEFAULT (DATETIME('now')),
@@ -55,13 +60,15 @@ CREATE TABLE IF NOT EXISTS user_game_stats (
     total_score INTEGER NOT NULL DEFAULT 0,          -- SUM(score)
     plays_count INTEGER NOT NULL DEFAULT 0,          -- COUNT(*)
     best_score INTEGER NOT NULL DEFAULT 0,           -- MAX(score)
+    best_streak INTEGER NOT NULL DEFAULT 0,          -- Best game streak
+    current_streak INTEGER NOT NULL DEFAULT 0,       -- Current consecutive streak
+    last_daily_date TEXT,                            -- Last UTC date played
     updated_at TEXT NOT NULL DEFAULT (DATETIME('now')),
     PRIMARY KEY (user_id, game_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_game_stats_game_plays 
-ON user_game_stats(game_id, plays_count) 
-WHERE plays_count >= 20;
+ON user_game_stats(game_id, plays_count);
 
 -- ---------------------------------------------------------------------
 -- 4. Daily Puzzle Completions Table (Idempotency Ledger)
@@ -110,6 +117,19 @@ CREATE TABLE IF NOT EXISTS user_badges (
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_badges_lookup ON user_badges(user_id);
+
+-- ---------------------------------------------------------------------
+-- 6b. User Friends / Follows Table
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS user_friends (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    friend_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL DEFAULT (DATETIME('now')),
+    PRIMARY KEY (user_id, friend_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_friends_lookup ON user_friends(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_friends_reverse ON user_friends(friend_id);
 
 -- ---------------------------------------------------------------------
 -- 7. Weekly Tournaments Table

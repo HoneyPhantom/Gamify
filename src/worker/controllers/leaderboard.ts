@@ -63,7 +63,7 @@ export async function handleGetLeaderboard(
         ROUND(AVG(CAST(ugs.total_score AS REAL) / ugs.plays_count), 2) AS global_average_score
       FROM user_game_stats ugs
       JOIN users u ON ugs.user_id = u.id
-      GROUP BY ugs.user_id
+      GROUP BY ugs.user_id, u.display_name, u.username, u.xp, u.selected_frame, u.selected_title
       ORDER BY SUM(ugs.total_score) DESC, SUM(ugs.plays_count) DESC
       LIMIT 50
     `
@@ -128,7 +128,7 @@ export async function handleGetLeaderboard(
             FROM user_game_stats ugs
             JOIN users u ON ugs.user_id = u.id
             WHERE (ugs.user_id = ? OR ugs.user_id IN (SELECT friend_id FROM user_friends WHERE user_id = ?))
-            GROUP BY ugs.user_id
+            GROUP BY ugs.user_id, u.display_name, u.username, u.xp, u.selected_frame, u.selected_title
             ORDER BY SUM(ugs.total_score) DESC
             LIMIT 50
           `
@@ -161,13 +161,22 @@ export async function handleGetLeaderboard(
     })();
   }
 
-  // Execute all queries concurrently
+  // Execute all queries concurrently with resilient fallback
   const [dailyResult, globalResult, weeklyResult, friendsResult, pastWeeksResult] = await Promise.all([
-    env.DB.prepare(dailyQuery).bind(...dailyParams).all(),
-    isAllGames ? env.DB.prepare(globalQuery).all() : env.DB.prepare(globalQuery).bind(effectiveGameId).all(),
-    env.DB.prepare(weeklyQuery).bind(requestedWeek).all(),
+    env.DB.prepare(dailyQuery).bind(...dailyParams).all().catch(err => {
+      console.warn('[Daily Query Note]', err?.message || err);
+      return { results: [] };
+    }),
+    (isAllGames ? env.DB.prepare(globalQuery).all() : env.DB.prepare(globalQuery).bind(effectiveGameId).all()).catch(err => {
+      console.warn('[Global Query Note]', err?.message || err);
+      return { results: [] };
+    }),
+    env.DB.prepare(weeklyQuery).bind(requestedWeek).all().catch(err => {
+      console.warn('[Weekly Query Note]', err?.message || err);
+      return { results: [] };
+    }),
     friendsPromise,
-    env.DB.prepare('SELECT DISTINCT week_id FROM weekly_tournament WHERE week_id != ? ORDER BY week_id DESC LIMIT 10').bind(currentWeekId).all(),
+    env.DB.prepare('SELECT DISTINCT week_id FROM weekly_tournament WHERE week_id != ? ORDER BY week_id DESC LIMIT 10').bind(currentWeekId).all().catch(() => ({ results: [] })),
   ]);
 
   const pastWeeks = (pastWeeksResult.results || []).map((r: any) => r.week_id);
@@ -265,7 +274,10 @@ export async function handleGetTournamentArchive(
     } catch {}
   }
 
-  const top10Result = await env.DB.prepare(top10Query).bind(weekId).all();
+  const top10Result = await env.DB.prepare(top10Query).bind(weekId).all().catch(err => {
+    console.warn('[Tournament Archive Note]', err?.message || err);
+    return { results: [] };
+  });
 
   return jsonResponse(
     {

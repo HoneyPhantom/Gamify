@@ -54,7 +54,17 @@ let currentTier = 'easy';
 let currentPuzzle = null;
 let startTime = Date.now();
 let activeGameCleanup = null; // Cleanup function for currently mounted game
+let activeGameProvideHint = null; // Hint function for currently mounted game
+let sessionHintCount = 0; // Escalating hints per puzzle attempt
 let gameTimerInterval = null;
+
+function calculateHintCost(hintIndex = 0) {
+  const idx = Math.max(0, Math.floor(hintIndex));
+  if (idx === 0) return 10;
+  if (idx === 1) return 25;
+  if (idx === 2) return 50;
+  return Math.min(1000, Math.round(50 * Math.pow(2, idx - 2)));
+}
 
 let activeChallenge = null;
 let activeChallengeTab = 'incoming';
@@ -196,7 +206,22 @@ const totalScoreEl = document.getElementById('total-score');
 const gamesWonEl = document.getElementById('games-won');
 const newGameBtn = document.getElementById('new-game-btn');
 const btnOpenRules = document.getElementById('btn-open-rules');
+const btnGameHint = document.getElementById('btn-game-hint');
+const hintCostLabel = document.getElementById('hint-cost-label');
 const gameRulesBox = document.getElementById('game-rules-box');
+
+function updateHintButtonUI() {
+  const cost = calculateHintCost(sessionHintCount);
+  if (hintCostLabel) hintCostLabel.textContent = cost;
+  if (btnGameHint) {
+    btnGameHint.title = `💡 Use hint for ${cost} coins`;
+    if (currentUser && currentUser.coins < cost) {
+      btnGameHint.style.opacity = '0.65';
+    } else {
+      btnGameHint.style.opacity = '1';
+    }
+  }
+}
 
 // Locked Tier Banner
 const lockedTierContainer = document.getElementById('locked-tier-container');
@@ -1318,24 +1343,77 @@ async function loadCurrentPuzzle(isNewInfinite = false) {
   startTime = Date.now();
   startPuzzleTimer();
 
+  // Reset escalating hints per puzzle session
+  sessionHintCount = 0;
+  updateHintButtonUI();
+
   // Mount active game dynamically via plug-and-play lifecycle
   const game = await loadGameConfig(activeGameId);
   if (typeof game.mount === 'function') {
-    activeGameCleanup = game.mount(gameArenaContent, currentPuzzle, {
+    const mounted = game.mount(gameArenaContent, currentPuzzle, {
       onWin: (score, timeTakenMs, extraCtx) => handleGameWin(activeGameId, currentTier, score, timeTakenMs, extraCtx),
       showStatus: (msg, color) => showStatus(msg, color),
       setRules: (html) => { if (gameRulesBox) gameRulesBox.innerHTML = html; },
       onHint: async (gameId) => {
-        const res = await api.useHint(gameId);
+        const cost = calculateHintCost(sessionHintCount);
+        const res = await api.useHint(gameId, sessionHintCount);
         currentUser.coins = res.remainingCoins;
+        sessionHintCount++;
+        updateHintButtonUI();
         updateAuthUI();
+        updateScoreDisplay();
         return res;
       }
     });
+
+    if (typeof mounted === 'function') {
+      activeGameCleanup = mounted;
+      activeGameProvideHint = null;
+    } else if (mounted && typeof mounted === 'object') {
+      activeGameCleanup = mounted.cleanup;
+      activeGameProvideHint = mounted.provideHint;
+    }
   } else {
     gameArenaContent.innerHTML = `<p style="color:var(--danger); padding:2rem; text-align:center;">Game module for '${activeGameId}' has no mount export.</p>`;
   }
 }
+
+// Global In-Game Hint Button Handler (Escalating per attempt)
+btnGameHint?.addEventListener('click', async () => {
+  if (!currentUser) {
+    openAuthModal('login', '', 'Please login to use hints.');
+    return;
+  }
+  const cost = calculateHintCost(sessionHintCount);
+  if (currentUser.coins < cost) {
+    showStatus(`💡 You need ${cost} coins for this hint! (Current balance: ${currentUser.coins} 🪙)`, 'var(--warning)');
+    return;
+  }
+
+  try {
+    btnGameHint.disabled = true;
+    btnGameHint.textContent = '💡 Revealing...';
+
+    const res = await api.useHint(activeGameId, sessionHintCount);
+    currentUser.coins = res.remainingCoins;
+    updateAuthUI();
+    updateScoreDisplay();
+
+    if (typeof activeGameProvideHint === 'function') {
+      activeGameProvideHint(res.cost || cost);
+    }
+
+    sessionHintCount++;
+    updateHintButtonUI();
+  } catch (err) {
+    showStatus(`⚠️ ${err.message || 'Could not purchase hint'}`, 'var(--danger)');
+  } finally {
+    if (btnGameHint) {
+      btnGameHint.disabled = false;
+      updateHintButtonUI();
+    }
+  }
+});
 
 // -------------------------------------------------------------------------
 // OPTIMISTIC SCORE SUBMISSION & CONFETTI VICTORY (Requirements 7, 9)
@@ -1772,7 +1850,7 @@ publicProfileModal?.addEventListener('click', (e) => {
   if (e.target === publicProfileModal) publicProfileModal?.classList.add('hidden');
 });
 
-// Debounced Player Search (350ms debounce)
+// Debounced Player Search (1000ms debounce as requested)
 let playerSearchTimeout = null;
 playerSearchInput?.addEventListener('input', () => {
   const q = playerSearchInput.value.trim();
@@ -1811,7 +1889,7 @@ playerSearchInput?.addEventListener('input', () => {
     } catch (err) {
       console.warn('Player search error:', err);
     }
-  }, 350);
+  }, 1000);
 });
 
 document.addEventListener('click', (e) => {
@@ -2816,9 +2894,17 @@ function hideAllDedicatedViews() {
 }
 
 // 1. My Profile Route (/profile)
-function navigateToProfile(pushState = true) {
+async function navigateToProfile(pushState = true) {
+  if (!currentUser && api.token) {
+    try {
+      await fetchUserProfile();
+    } catch (e) {
+      console.warn('Profile fetch note:', e);
+    }
+  }
+
   if (!currentUser) {
-    openAuthModal('login');
+    openAuthModal('login', '', 'Please login to view your profile.');
     return;
   }
 
@@ -3951,6 +4037,12 @@ function setupRoutingListeners() {
     });
   });
 
+  const worldWarsCardEl = document.getElementById('world-wars-card');
+  worldWarsCardEl?.addEventListener('click', (e) => {
+    if (e.target.closest('#btn-open-world-wars')) return;
+    navigateToWorldWars(true);
+  });
+
   document.querySelectorAll('.btn-nav-shop').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -4004,15 +4096,17 @@ async function bootstrap() {
   setupRoutingListeners();
   setupDedicatedPageActionListeners();
 
-  // 3. Resolve Initial URL Route (/games/sudoku, /privacy, /world-wars, etc.)
-  handleUrlRouting(false);
-
-  // 4. Single Batched Roundtrip to /api/me
-  try {
-    await fetchUserProfile();
-  } catch (err) {
-    console.warn('Profile bootstrap note:', err);
+  // 3. Batched Sync with /api/me if session token exists
+  if (api.token) {
+    try {
+      await fetchUserProfile();
+    } catch (err) {
+      console.warn('Profile bootstrap note:', err);
+    }
   }
+
+  // 4. Resolve Initial URL Route (/games/sudoku, /profile, /world-wars, etc.)
+  handleUrlRouting(false);
 }
 
 bootstrap();
