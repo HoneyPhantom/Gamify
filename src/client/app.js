@@ -1649,7 +1649,7 @@ function renderFollowersFollowingUI() {
       `).join('');
 
       container.querySelectorAll('.friend-name').forEach(el => {
-        el.addEventListener('click', () => navigateToPublicProfile(el.dataset.username, true));
+        el.addEventListener('click', () => openPublicProfile(el.dataset.username));
       });
 
       container.querySelectorAll('.unfollow-btn').forEach(btn => {
@@ -1683,7 +1683,7 @@ function renderFollowersFollowingUI() {
       }).join('');
 
       container.querySelectorAll('.friend-name').forEach(el => {
-        el.addEventListener('click', () => navigateToPublicProfile(el.dataset.username, true));
+        el.addEventListener('click', () => openPublicProfile(el.dataset.username));
       });
 
       container.querySelectorAll('.follow-back-btn').forEach(btn => {
@@ -1775,18 +1775,111 @@ btnAddFriend?.addEventListener('click', async () => {
 // 8. PROFILE MODALS & 350MS DEBOUNCED SEARCH (Requirement 12)
 // =========================================================================
 
-function openProfileModal() {
-  navigateToProfile(true);
+async function openProfileModal() {
+  if (!currentUser && api.token) {
+    try {
+      await fetchUserProfile();
+    } catch (e) {
+      console.warn('Profile fetch note:', e);
+    }
+  }
+
+  // If still no currentUser, provide interactive Guest profile so profile ALWAYS displays
+  if (!currentUser) {
+    currentUser = {
+      id: 'guest',
+      username: 'guest',
+      displayName: 'Guest Player',
+      coins: 100,
+      streakCount: 0,
+      bestStreak: 0,
+      xp: 0,
+      level: 1,
+      levelTitle: 'Novice',
+      about: 'Guest player solving daily logic puzzles.',
+      selected_frame: 'default',
+      selected_title: '',
+      isGuest: true,
+    };
+  }
+
+  const displayNameEl = document.getElementById('profile-display-name');
+  const usernameEl = document.getElementById('profile-username');
+  const customTitleEl = document.getElementById('profile-custom-title');
+  const avatarEl = document.getElementById('profile-avatar');
+  const levelEl = document.getElementById('profile-user-level');
+  const levelTitleEl = document.getElementById('profile-level-title');
+  const xpFillEl = document.getElementById('profile-xp-fill');
+  const xpTextEl = document.getElementById('profile-xp-text');
+  const streakCountEl = document.getElementById('profile-streak-count');
+  const aboutInput = document.getElementById('profile-about-input');
+  const streaksGrid = document.getElementById('profile-streaks-grid');
+  const btnLogoutEl = document.getElementById('btn-profile-logout');
+
+  if (displayNameEl) displayNameEl.textContent = currentUser.displayName || currentUser.username || 'Player';
+  if (usernameEl) usernameEl.textContent = `@${currentUser.username || 'player'}`;
+  if (aboutInput) aboutInput.value = currentUser.about || '';
+  if (streakCountEl) streakCountEl.textContent = currentUser.streakCount ?? 0;
+
+  applyCosmeticToAvatar(avatarEl, currentUser.selected_frame || currentUser.selectedFrame);
+
+  if (customTitleEl) {
+    const titleVal = currentUser.selected_title || currentUser.selectedTitle;
+    if (titleVal) {
+      customTitleEl.textContent = formatTitleName(titleVal);
+      customTitleEl.classList.remove('hidden');
+    } else {
+      customTitleEl.classList.add('hidden');
+    }
+  }
+
+  // Level & XP
+  const lvl = currentUser.level || 1;
+  const xp = currentUser.xp || 0;
+  if (levelEl) levelEl.textContent = `Lvl ${lvl}`;
+  if (levelTitleEl) levelTitleEl.textContent = currentUser.levelTitle || 'Novice';
+
+  const xpCurrentLevelBase = (lvl - 1) * 25;
+  const xpInLevel = Math.max(0, xp - xpCurrentLevelBase);
+  const xpNeeded = 25;
+  const pct = Math.min(100, Math.floor((xpInLevel / xpNeeded) * 100));
+  if (xpFillEl) xpFillEl.style.width = `${pct}%`;
+  if (xpTextEl) xpTextEl.textContent = `${xpInLevel} / ${xpNeeded} XP`;
+
+  // Best Streaks Maintained in descending order
+  if (streaksGrid) {
+    const allGames = getAllGames();
+    const sortedGames = [...allGames].map(g => {
+      const stats = userStats[g.id] || {};
+      return { ...g, bestStreak: stats.best_streak ?? 0 };
+    }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
+
+    streaksGrid.innerHTML = sortedGames.map(g => `
+      <div class="streak-card" style="padding: 0.65rem 0.5rem; text-align: center; background: var(--card-bg, #f8fafc); border-radius: 12px; border: 1px solid var(--border-color, #e2e8f0);">
+        <div class="game-label" style="font-size: 0.76rem; font-weight: 800; text-transform: uppercase;">${g.title}</div>
+        <div class="streak-val" style="font-size: 1.2rem; font-weight: 900; margin-top: 3px;">🔥 ${g.bestStreak}</div>
+      </div>
+    `).join('');
+  }
+
+  renderFollowersFollowingUI();
+
+  if (btnLogoutEl) {
+    btnLogoutEl.textContent = currentUser.isGuest ? '🔑 Log In / Register' : '🚪 Logout';
+  }
+
+  profileModal?.classList.remove('hidden');
 }
 
 btnOpenProfile?.addEventListener('click', (e) => {
   e.preventDefault();
-  navigateToProfile(true);
+  e.stopPropagation();
+  openProfileModal();
 });
 
-profileModalClose?.addEventListener('click', () => profileModal.classList.add('hidden'));
+profileModalClose?.addEventListener('click', () => profileModal?.classList.add('hidden'));
 profileModal?.addEventListener('click', (e) => {
-  if (e.target === profileModal) profileModal.classList.add('hidden');
+  if (e.target === profileModal) profileModal?.classList.add('hidden');
 });
 
 btnSaveProfile?.addEventListener('click', async () => {
@@ -1810,9 +1903,77 @@ btnSaveProfile?.addEventListener('click', async () => {
   }
 });
 
-// Public Player Profile
+// Public Player Profile Modal
 async function openPublicProfile(username) {
-  await navigateToPublicProfile(username, true);
+  try {
+    const res = await api.getUserProfile(username);
+    currentPublicUser = res.profile;
+
+    if (publicProfileGamertag) publicProfileGamertag.textContent = currentPublicUser.gamertag || currentPublicUser.displayName || currentPublicUser.username;
+    if (publicProfileHandle) publicProfileHandle.textContent = `@${currentPublicUser.username}`;
+    if (publicProfileAbout) publicProfileAbout.textContent = currentPublicUser.about || 'No description provided yet.';
+    if (publicProfileFollowersCount) publicProfileFollowersCount.textContent = currentPublicUser.followersCount ?? 0;
+    if (publicProfileFollowingCount) publicProfileFollowingCount.textContent = currentPublicUser.followingCount ?? 0;
+
+    applyCosmeticToAvatar(publicProfileAvatar, currentPublicUser.selectedFrame);
+
+    if (publicProfileCustomTitle) {
+      if (currentPublicUser.selectedTitle) {
+        publicProfileCustomTitle.textContent = formatTitleName(currentPublicUser.selectedTitle);
+        publicProfileCustomTitle.classList.remove('hidden');
+      } else {
+        publicProfileCustomTitle.classList.add('hidden');
+      }
+    }
+
+    if (publicProfileLevel) {
+      publicProfileLevel.textContent = `Lvl ${currentPublicUser.level || 1} · ${currentPublicUser.levelTitle || 'Novice'}`;
+    }
+
+    const isFollowing = userFollowing.some(f => f.username?.toLowerCase() === currentPublicUser.username?.toLowerCase());
+    const isSelf = currentUser && currentUser.username === currentPublicUser.username;
+
+    if (isSelf) {
+      btnToggleFriendPublic.style.display = 'none';
+    } else {
+      btnToggleFriendPublic.style.display = 'block';
+      btnToggleFriendPublic.textContent = isFollowing ? 'Unfollow' : 'Follow Player';
+      btnToggleFriendPublic.className = isFollowing ? 'btn-lock' : 'btn-login';
+      btnToggleFriendPublic.onclick = async () => {
+        if (isFollowing) {
+          await unfollowPlayer(currentPublicUser.id, currentPublicUser.username);
+        } else {
+          await followPlayer(currentPublicUser.username);
+        }
+        await openPublicProfile(currentPublicUser.username);
+      };
+    }
+
+    // Streaks in descending order
+    const publicStreaksGrid = document.getElementById('public-profile-streaks-grid');
+    if (publicStreaksGrid) {
+      const allGames = getAllGames();
+      const userStreaks = currentPublicUser.streaks || [];
+      const streakMap = new Map();
+      userStreaks.forEach(s => streakMap.set(s.game_id, s.best_streak ?? 0));
+
+      const sortedGames = [...allGames].map(g => {
+        const best = streakMap.get(g.id) || 0;
+        return { ...g, bestStreak: best };
+      }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
+
+      publicStreaksGrid.innerHTML = sortedGames.map(g => `
+        <div class="streak-card" style="padding: 0.65rem 0.5rem; text-align: center; background: var(--card-bg, #f8fafc); border-radius: 12px; border: 1px solid var(--border-color, #e2e8f0);">
+          <div class="game-label" style="font-size: 0.76rem; font-weight: 800; text-transform: uppercase;">${g.title}</div>
+          <div class="streak-val" style="font-size: 1.2rem; font-weight: 900; margin-top: 3px;">🔥 ${g.bestStreak}</div>
+        </div>
+      `).join('');
+    }
+
+    publicProfileModal?.classList.remove('hidden');
+  } catch (err) {
+    alert(err.message || 'Could not find player');
+  }
 }
 
 publicProfileClose?.addEventListener('click', () => publicProfileModal?.classList.add('hidden'));
@@ -2494,13 +2655,15 @@ btnWwTabGlobal?.addEventListener('click', () => switchWwTab('global'));
 btnWwTabTournaments?.addEventListener('click', () => switchWwTab('tournaments'));
 
 function openWorldWarsModal() {
-  navigateToWorldWars(true);
+  switchWwTab('global');
+  loadWorldWarsData(currentWwFilter);
+  worldWarsModal?.classList.remove('hidden');
 }
 
 btnOpenWorldWars?.addEventListener('click', (e) => {
   e.preventDefault();
   e.stopPropagation();
-  navigateToWorldWars(true);
+  openWorldWarsModal();
 });
 
 worldWarsModalClose?.addEventListener('click', () => {
@@ -3963,20 +4126,23 @@ function handleUrlRouting(pushState = false) {
   }
 
   if (path === '/profile') {
-    navigateToProfile(pushState);
+    returnToHome(false);
+    openProfileModal();
     return;
   }
 
   if (path.startsWith('/users/')) {
     const username = decodeURIComponent(path.replace('/users/', ''));
     if (username) {
-      navigateToPublicProfile(username, pushState);
+      returnToHome(false);
+      openPublicProfile(username);
       return;
     }
   }
 
   if (path === '/world-wars') {
-    navigateToWorldWars(pushState);
+    returnToHome(false);
+    openWorldWarsModal();
     return;
   }
 
@@ -4019,25 +4185,26 @@ function setupRoutingListeners() {
   document.querySelectorAll('.btn-route-world-wars').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      navigateToWorldWars(true);
+      openWorldWarsModal();
     });
   });
 
   const worldWarsCardEl = document.getElementById('world-wars-card');
-  worldWarsCardEl?.addEventListener('click', () => {
-    navigateToWorldWars(true);
+  worldWarsCardEl?.addEventListener('click', (e) => {
+    if (e.target.closest('#btn-open-world-wars')) return;
+    openWorldWarsModal();
   });
 
   document.getElementById('btn-open-world-wars')?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    navigateToWorldWars(true);
+    openWorldWarsModal();
   });
 
   document.getElementById('btn-open-profile')?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    navigateToProfile(true);
+    openProfileModal();
   });
 
   document.querySelectorAll('.btn-nav-shop').forEach(btn => {

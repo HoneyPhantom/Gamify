@@ -201,16 +201,12 @@ export const gameConfig = {
         <button id="verify-matrix-btn" class="game-action-btn btn-play" style="max-width: 220px;">
           Verify Solution & Submit
         </button>
-        <button id="hint-matrix-btn" class="game-action-btn btn-hint-amber" style="max-width: 170px;">
-          💡 Hint (10 🪙)
-        </button>
       </div>
     </div>`;
 
     container.innerHTML = html;
 
     const verifyBtn = container.querySelector('#verify-matrix-btn');
-    const hintBtn = container.querySelector('#hint-matrix-btn');
 
     const onVerify = () => {
       if (isSolved) return;
@@ -242,61 +238,7 @@ export const gameConfig = {
       showStatus(`🎉 Matrix Solved in ${(timeTakenMs / 1000).toFixed(1)}s! (+${score} pts)`, "var(--correct-bg)");
       verifyBtn.disabled = true;
       verifyBtn.textContent = 'Solved! ✓';
-      if (hintBtn) hintBtn.style.display = 'none';
       onWin(score, timeTakenMs);
-    };
-
-    const onHintClick = async () => {
-      if (isSolved) return;
-      if (!puzzle.solution) {
-        showStatus("Hints not available for this puzzle.", "var(--text-muted)");
-        return;
-      }
-
-      // Collect candidate empty/unrevealed cells
-      const candidates = [];
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          if (initialGrid[r][c] === null) {
-            const inp = container.querySelector(`input[data-row="${r}"][data-col="${c}"]`);
-            if (inp && !inp.disabled && (!inp.value || parseInt(inp.value, 10) !== puzzle.solution[r][c])) {
-              candidates.push({ r, c, inp, val: puzzle.solution[r][c] });
-            }
-          }
-        }
-      }
-
-      if (candidates.length === 0) {
-        showStatus("All cells are already filled with correct values! Click Verify Solution.", "var(--correct-bg)");
-        return;
-      }
-
-      try {
-        if (hintBtn) {
-          hintBtn.disabled = true;
-          hintBtn.textContent = 'Unlocking Hint...';
-        }
-
-        let hintCost = 10;
-        if (typeof onHint === 'function') {
-          const res = await onHint('number-grid');
-          if (res?.cost) hintCost = res.cost;
-        }
-
-        // Pick a random candidate cell to reveal
-        const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-        chosen.inp.value = chosen.val;
-        chosen.inp.disabled = true;
-        chosen.inp.classList.add('hinted-cell');
-
-        showStatus(`💡 Hint: Row ${chosen.r + 1}, Col ${chosen.c + 1} is ${chosen.val}! (-${hintCost} 🪙)`, "var(--accent)");
-      } catch (err) {
-        showStatus(`⚠️ ${err.message || 'Could not purchase hint'}`, "var(--danger)");
-      } finally {
-        if (hintBtn) {
-          hintBtn.disabled = false;
-        }
-      }
     };
 
     const provideHint = (cost = 10) => {
@@ -327,17 +269,11 @@ export const gameConfig = {
     if (verifyBtn) {
       verifyBtn.addEventListener('click', onVerify);
     }
-    if (hintBtn) {
-      hintBtn.addEventListener('click', onHintClick);
-    }
 
     return {
       cleanup: () => {
         if (verifyBtn) {
           verifyBtn.removeEventListener('click', onVerify);
-        }
-        if (hintBtn) {
-          hintBtn.removeEventListener('click', onHintClick);
         }
       },
       provideHint
