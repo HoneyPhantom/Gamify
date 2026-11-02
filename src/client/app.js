@@ -36,6 +36,16 @@ function getStreakStatus(lastDate, count, best = 0) {
   return { currentStreak: 0, activeStreak: 0, bestStreak: rawBest, maintainedToday: false };
 }
 
+function safePushState(state, title, url) {
+  try {
+    if (window.location.protocol !== 'file:' && window.location.pathname !== url) {
+      window.history.pushState(state, title, url);
+    }
+  } catch (e) {
+    console.warn('Navigation pushState note:', e);
+  }
+}
+
 // =========================================================================
 // APPLICATION STATE
 // =========================================================================
@@ -923,8 +933,8 @@ function navigateToStaticPage(pageName, pushState = true) {
 
   const cleanPage = pageName.replace(/^\//, '').replace(/\.html$/, '');
   const targetPath = `/${cleanPage}`;
-  if (pushState && window.location.pathname !== targetPath) {
-    window.history.pushState({ page: cleanPage }, '', targetPath);
+  if (pushState) {
+    safePushState({ page: cleanPage }, '', targetPath);
   }
 
   const pageTitles = {
@@ -957,8 +967,8 @@ async function enterGame(gameIdOrSlug, pushState = true) {
 
   // 1. Update Dedicated URL & Document Title (Google AdSense & SEO indexability)
   const targetPath = `/games/${gameSlug}`;
-  if (pushState && window.location.pathname !== targetPath) {
-    window.history.pushState({ page: 'game', gameId: gameId, slug: gameSlug }, '', targetPath);
+  if (pushState) {
+    safePushState({ page: 'game', gameId: gameId, slug: gameSlug }, '', targetPath);
   }
   document.title = `${gameTitle} - Free Daily Puzzle Online | Gamify`;
 
@@ -1003,7 +1013,7 @@ launcherBtnPlay?.addEventListener('click', async () => {
   if (!isGameUnlocked(activeGameId)) {
     const game = getAllGames().find(g => g.id === activeGameId);
     const cost = game?.gameUnlockCost || 100;
-    const confirmUnlock = confirm(`Unlock ${game?.title || activeGameId} for ${cost} coins?\n\nYour Balance: ${currentUser.coins ?? 0} coins`);
+    const confirmUnlock = confirm(`Unlock ${game?.title || activeGameId} for ${cost} coins?\n\nYour Balance: ${currentUser?.coins ?? 0} coins`);
     if (confirmUnlock) {
       await unlockGameBase(activeGameId, cost);
     }
@@ -1014,7 +1024,7 @@ launcherBtnPlay?.addEventListener('click', async () => {
   if (!isTierUnlocked(activeGameId, currentTier)) {
     const tierCosts = { easy: 50, medium: 150, hard: 300 };
     const cost = tierCosts[currentTier] || 150;
-    const confirmUnlock = confirm(`Unlock ${currentTier.toUpperCase()} tier for ${cost} coins?\n\nYour Balance: ${currentUser.coins ?? 0} coins`);
+    const confirmUnlock = confirm(`Unlock ${currentTier.toUpperCase()} tier for ${cost} coins?\n\nYour Balance: ${currentUser?.coins ?? 0} coins`);
     if (confirmUnlock) {
       await unlockSpecificTier(activeGameId, currentTier);
     }
@@ -1048,8 +1058,8 @@ function returnToHome(pushState = true) {
     try { activeGameCleanup(); } catch {}
     activeGameCleanup = null;
   }
-  if (pushState && window.location.pathname !== '/') {
-    window.history.pushState({ page: 'home' }, '', '/');
+  if (pushState) {
+    safePushState({ page: 'home' }, '', '/');
   }
   document.title = 'Gamify — Minimalist Daily Puzzle Universe';
 
@@ -1766,54 +1776,14 @@ btnAddFriend?.addEventListener('click', async () => {
 // =========================================================================
 
 function openProfileModal() {
-  if (!currentUser) {
-    openAuthModal('login');
-    return;
-  }
-  profileDisplayName.textContent = currentUser.displayName || currentUser.username;
-  profileUsername.textContent = `@${currentUser.username}`;
-  profileAboutInput.value = currentUser.about || '';
-  if (profileFriendsFeedback) profileFriendsFeedback.style.display = 'none';
-
-  // Overall streak count and active status
-  let totalActiveStreak = 0;
-  let maintainedAnyToday = false;
-  const allGames = getAllGames();
-  const sortedGames = [...allGames].map(g => {
-    const stats = userStats[g.id] || {};
-    const lastDate = stats.last_daily_date || stats.last_played_date;
-    const isCompletedToday = Array.from(todayCompletions).some(c => c.startsWith(`${g.id}:`));
-    const streakInfo = getStreakStatus(lastDate, stats.current_streak, stats.best_streak);
-    const maintainedToday = isCompletedToday || streakInfo.maintainedToday;
-    const activeStreak = streakInfo.activeStreak;
-    totalActiveStreak += activeStreak;
-    if (maintainedToday && activeStreak > 0) maintainedAnyToday = true;
-    return { ...g, bestStreak: streakInfo.bestStreak, currentStreak: activeStreak, maintainedToday };
-  }).sort((a, b) => b.bestStreak - a.bestStreak || a.title.localeCompare(b.title));
-
-  if (profileStreakCount) profileStreakCount.textContent = totalActiveStreak;
-  const profileStreakBadge = document.getElementById('profile-streak-badge');
-  if (profileStreakBadge) {
-    profileStreakBadge.className = maintainedAnyToday && totalActiveStreak > 0 ? 'badge streak-fire-active' : 'badge streak-fire-inactive';
-  }
-
-  // Render best streaks in descending order with fire condition
-  if (profileStreaksGrid) {
-    profileStreaksGrid.innerHTML = sortedGames.map(g => `
-      <div class="streak-card ${g.maintainedToday && g.currentStreak > 0 ? 'streak-fire-active' : 'streak-fire-inactive'}" style="padding: 10px 12px; border-radius: 12px; transition: all 0.2s;">
-        <div class="game-label" style="font-size: 0.76rem; font-weight: 800; text-transform: uppercase;">${g.title}</div>
-        <div class="streak-val" style="font-size: 1.2rem; font-weight: 900; margin-top: 3px;">
-          🔥 ${g.bestStreak}
-        </div>
-      </div>
-    `).join('');
-  }
-
-  renderFollowersFollowingUI();
-  profileModal.classList.remove('hidden');
+  navigateToProfile(true);
 }
 
-btnOpenProfile?.addEventListener('click', () => navigateToProfile(true));
+btnOpenProfile?.addEventListener('click', (e) => {
+  e.preventDefault();
+  navigateToProfile(true);
+});
+
 profileModalClose?.addEventListener('click', () => profileModal.classList.add('hidden'));
 profileModal?.addEventListener('click', (e) => {
   if (e.target === profileModal) profileModal.classList.add('hidden');
@@ -2523,7 +2493,13 @@ function switchWwTab(tabName) {
 btnWwTabGlobal?.addEventListener('click', () => switchWwTab('global'));
 btnWwTabTournaments?.addEventListener('click', () => switchWwTab('tournaments'));
 
-btnOpenWorldWars?.addEventListener('click', () => {
+function openWorldWarsModal() {
+  navigateToWorldWars(true);
+}
+
+btnOpenWorldWars?.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
   navigateToWorldWars(true);
 });
 
@@ -2903,21 +2879,34 @@ async function navigateToProfile(pushState = true) {
     }
   }
 
+  // If still no currentUser, provide interactive Guest profile so profile ALWAYS displays
   if (!currentUser) {
-    openAuthModal('login', '', 'Please login to view your profile.');
-    return;
+    currentUser = {
+      id: 'guest',
+      username: 'guest',
+      displayName: 'Guest Player',
+      coins: 100,
+      streakCount: 0,
+      bestStreak: 0,
+      xp: 0,
+      level: 1,
+      levelTitle: 'Novice',
+      about: 'Guest player solving daily logic puzzles.',
+      selected_frame: 'default',
+      selected_title: '',
+      isGuest: true,
+    };
   }
 
   hideAllDedicatedViews();
-  const targetPath = '/profile';
-  if (pushState && window.location.pathname !== targetPath) {
-    window.history.pushState({ page: 'profile' }, '', targetPath);
-  }
-  document.title = 'My Profile — Gamify Daily Logic Puzzles';
-
   const view = document.getElementById('profile-page-view');
   view?.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (pushState) {
+    safePushState({ page: 'profile' }, '', '/profile');
+  }
+  document.title = 'My Profile — Gamify Daily Logic Puzzles';
 
   renderProfilePageData();
 }
@@ -3004,15 +2993,15 @@ async function navigateToPublicProfile(username, pushState = true) {
   if (!username) return;
   hideAllDedicatedViews();
 
-  const targetPath = `/users/${encodeURIComponent(username)}`;
-  if (pushState && window.location.pathname !== targetPath) {
-    window.history.pushState({ page: 'public-profile', username }, '', targetPath);
-  }
-  document.title = `@${username}'s Profile — Gamify`;
-
   const view = document.getElementById('public-profile-page-view');
   view?.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const targetPath = `/users/${encodeURIComponent(username)}`;
+  if (pushState) {
+    safePushState({ page: 'public-profile', username }, '', targetPath);
+  }
+  document.title = `@${username}'s Profile — Gamify`;
 
   await loadPublicProfilePage(username);
 }
@@ -3122,15 +3111,14 @@ async function loadPublicProfilePage(username) {
 async function navigateToWorldWars(pushState = true) {
   hideAllDedicatedViews();
 
-  const targetPath = '/world-wars';
-  if (pushState && window.location.pathname !== targetPath) {
-    window.history.pushState({ page: 'world-wars' }, '', targetPath);
-  }
-  document.title = 'World Wars Arena — Gamify Global Leaderboard & Weekly Championships';
-
   const view = document.getElementById('world-wars-page-view');
   view?.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (pushState) {
+    safePushState({ page: 'world-wars' }, '', '/world-wars');
+  }
+  document.title = 'World Wars Arena — Gamify Global Leaderboard & Weekly Championships';
 
   await loadWorldWarsPageData(currentWwFilter);
 }
@@ -3368,15 +3356,15 @@ async function navigateToTournament(weekId, pushState = true) {
   if (!weekId) return;
   hideAllDedicatedViews();
 
-  const targetPath = `/tournaments/${encodeURIComponent(weekId)}`;
-  if (pushState && window.location.pathname !== targetPath) {
-    window.history.pushState({ page: 'tournament', weekId }, '', targetPath);
-  }
-  document.title = `Season ${weekId} Championship — Gamify World Wars`;
-
   const view = document.getElementById('tournament-page-view');
   view?.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  const targetPath = `/tournaments/${encodeURIComponent(weekId)}`;
+  if (pushState) {
+    safePushState({ page: 'tournament', weekId }, '', targetPath);
+  }
+  document.title = `Season ${weekId} Championship — Gamify World Wars`;
 
   await loadTournamentPageData(weekId);
 }
@@ -3560,15 +3548,14 @@ async function navigateToShop(pushState = true) {
   }
 
   hideAllDedicatedViews();
-  const targetPath = '/shop';
-  if (pushState && window.location.pathname !== targetPath) {
-    window.history.pushState({ page: 'shop' }, '', targetPath);
-  }
-  document.title = 'Cosmetic Shop — Gamify Avatar Frames & Titles';
-
   const view = document.getElementById('shop-page-view');
   view?.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (pushState) {
+    safePushState({ page: 'shop' }, '', '/shop');
+  }
+  document.title = 'Cosmetic Shop — Gamify Avatar Frames & Titles';
 
   await loadShopPageData();
 }
@@ -3721,15 +3708,14 @@ async function navigateToChallenges(pushState = true) {
   }
 
   hideAllDedicatedViews();
-  const targetPath = '/challenges';
-  if (pushState && window.location.pathname !== targetPath) {
-    window.history.pushState({ page: 'challenges' }, '', targetPath);
-  }
-  document.title = 'PvP Challenges — Gamify Puzzle Duels';
-
   const view = document.getElementById('challenges-page-view');
   view?.classList.remove('hidden');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (pushState) {
+    safePushState({ page: 'challenges' }, '', '/challenges');
+  }
+  document.title = 'PvP Challenges — Gamify Puzzle Duels';
 
   await loadChallengesPageData();
 }
@@ -4038,9 +4024,20 @@ function setupRoutingListeners() {
   });
 
   const worldWarsCardEl = document.getElementById('world-wars-card');
-  worldWarsCardEl?.addEventListener('click', (e) => {
-    if (e.target.closest('#btn-open-world-wars')) return;
+  worldWarsCardEl?.addEventListener('click', () => {
     navigateToWorldWars(true);
+  });
+
+  document.getElementById('btn-open-world-wars')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigateToWorldWars(true);
+  });
+
+  document.getElementById('btn-open-profile')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigateToProfile(true);
   });
 
   document.querySelectorAll('.btn-nav-shop').forEach(btn => {

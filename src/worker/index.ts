@@ -155,23 +155,60 @@ export default {
         const todayStr = getTodayUTC();
         const yesterdayStr = getYesterdayUTC();
         const [user, unlocks, stats, todayCompletions, followingResult, followersCountResult, pendingChallengesResult] = await Promise.all([
-          env.DB.prepare(`SELECT id, username, display_name, COALESCE(about, 'Puzzle solver climbing to the top!') as about, coins, streak_count, COALESCE(best_streak, streak_count) as best_streak, COALESCE(xp, 0) as xp, COALESCE(selected_frame, 'default') as selected_frame, COALESCE(selected_title, '') as selected_title, last_played_date, last_login_at FROM users WHERE id = ?`)
-            .bind(auth.user.id).first<any>(),
-          env.DB.prepare('SELECT * FROM user_game_unlocks WHERE user_id = ?')
-            .bind(auth.user.id).all(),
-          env.DB.prepare('SELECT game_id, total_score, plays_count, best_score, best_streak, current_streak, last_daily_date, ROUND(CAST(total_score AS REAL) / plays_count, 2) AS average_score FROM user_game_stats WHERE user_id = ?')
-            .bind(auth.user.id).all(),
+          (async () => {
+            try {
+              return await env.DB.prepare(`SELECT id, username, display_name, COALESCE(about, 'Puzzle solver climbing to the top!') as about, coins, streak_count, COALESCE(best_streak, streak_count) as best_streak, COALESCE(xp, 0) as xp, COALESCE(selected_frame, 'default') as selected_frame, COALESCE(selected_title, '') as selected_title, last_played_date, last_login_at FROM users WHERE id = ?`)
+                .bind(auth.user.id).first<any>();
+            } catch {
+              try {
+                const u = await env.DB.prepare(`SELECT id, username, display_name, coins, streak_count, last_played_date, last_login_at FROM users WHERE id = ?`)
+                  .bind(auth.user.id).first<any>();
+                if (u) {
+                  u.about = 'Puzzle solver climbing to the top!';
+                  u.best_streak = u.streak_count || 0;
+                  u.xp = 0;
+                  u.selected_frame = 'default';
+                  u.selected_title = '';
+                }
+                return u;
+              } catch {
+                return null;
+              }
+            }
+          })(),
+          env.DB.prepare('SELECT * FROM user_game_unlocks WHERE user_id = ?').bind(auth.user.id).all().catch(() => ({ results: [] })),
+          (async () => {
+            try {
+              return await env.DB.prepare('SELECT game_id, total_score, plays_count, best_score, best_streak, current_streak, last_daily_date, ROUND(CAST(total_score AS REAL) / plays_count, 2) AS average_score FROM user_game_stats WHERE user_id = ?')
+                .bind(auth.user.id).all();
+            } catch {
+              try {
+                const res = await env.DB.prepare('SELECT game_id, total_score, plays_count, best_score, ROUND(CAST(total_score AS REAL) / plays_count, 2) AS average_score FROM user_game_stats WHERE user_id = ?')
+                  .bind(auth.user.id).all();
+                return {
+                  results: ((res.results || []) as any[]).map(s => ({
+                    ...s,
+                    best_streak: 0,
+                    current_streak: 0,
+                    last_daily_date: null,
+                  }))
+                };
+              } catch {
+                return { results: [] };
+              }
+            }
+          })(),
           env.DB.prepare('SELECT game_id, difficulty FROM daily_completions WHERE user_id = ? AND played_date = ?')
-            .bind(auth.user.id, todayStr).all(),
+            .bind(auth.user.id, todayStr).all().catch(() => ({ results: [] })),
           env.DB.prepare(`
             SELECT u.id, u.username, u.display_name, COALESCE(u.about, 'Puzzle solver climbing to the top!') as about
             FROM user_friends f
             JOIN users u ON f.friend_id = u.id
             WHERE f.user_id = ?
             ORDER BY u.display_name ASC
-          `).bind(auth.user.id).all(),
+          `).bind(auth.user.id).all().catch(() => ({ results: [] })),
           env.DB.prepare('SELECT COUNT(*) as count FROM user_friends WHERE friend_id = ?')
-            .bind(auth.user.id).first<{ count: number }>(),
+            .bind(auth.user.id).first<{ count: number }>().catch(() => ({ count: 0 })),
           env.DB.prepare(`
             SELECT 
               c.id, c.from_user_id, c.game_id, c.difficulty, c.target_score, c.challenger_time_ms, c.status, c.created_at,
@@ -180,8 +217,9 @@ export default {
             JOIN users u ON c.from_user_id = u.id
             WHERE c.to_user_id = ? AND c.status = 'pending'
             ORDER BY c.created_at DESC
-          `).bind(auth.user.id).all(),
+          `).bind(auth.user.id).all().catch(() => ({ results: [] })),
         ]);
+
 
         if (user) {
           const { activeStreak, isMaintainedToday } = evaluateActiveStreak(user.last_played_date, user.streak_count, todayStr, yesterdayStr);
