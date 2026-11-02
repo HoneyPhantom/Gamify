@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Tournaments — World Wars Championship Hub | Gamify</title>
+  <meta name="description" content="Compete in Gamify Weekly Tournaments. Climb the World Wars championship tiers, conquer weekly logic seasons, and inspect past tournament results." />
+  <link rel="canonical" href="https://gamify.com/world_wars/weekly_tournaments" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/index.html" />
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --ww-red: #dc2626;
+      --ww-red-dark: #991b1b;
+      --gold: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header.site-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #0f172a;
+    }
+    .brand-logo span.logo-badge {
+      background: linear-gradient(135deg, #ef4444, #f59e0b, #10b981, #2563eb, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .btn-nav {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      padding: 0.4rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-nav:hover { background: #e2e8f0; }
+
+    /* Desktop Side Ads Layout (Requirement 6 & Image 4) */
+    .page-layout {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 2rem;
+      padding: 2rem 1rem;
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .side-ad-rail {
+      width: 160px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: sticky;
+      top: 80px;
+    }
+    .ad-banner-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      text-align: center;
+      display: block;
+    }
+    .ad-slot-box {
+      width: 160px;
+      min-height: 600px;
+      border: 1px dashed #cbd5e1;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 0.5rem;
+    }
+    .main-content {
+      flex: 1;
+      max-width: 760px;
+      min-width: 0;
+    }
+    .mobile-ad-banner {
+      display: none;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .mobile-ad-box {
+      width: 100%;
+      min-height: 90px;
+      border: 1px dashed #cbd5e1;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+    }
+    @media (max-width: 959px) {
+      .side-ad-rail { display: none; }
+      .mobile-ad-banner { display: block; }
+    }
+
+    /* Red Hero Vibe for World Wars */
+    .hero-card {
+      background: linear-gradient(135deg, #b91c1c 0%, #dc2626 50%, #991b1b 100%);
+      border-radius: 24px;
+      padding: 2.25rem 1.75rem;
+      color: #ffffff;
+      box-shadow: 0 12px 30px rgba(185, 28, 28, 0.35);
+      margin-bottom: 2rem;
+      text-align: center;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+    }
+    .hero-card h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      margin-bottom: 0.35rem;
+      letter-spacing: -0.5px;
+    }
+    .hero-card p {
+      font-size: 1rem;
+      color: #fecaca;
+      max-width: 580px;
+      margin: 0 auto 1.5rem;
+      line-height: 1.5;
+    }
+    .championship-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      color: #991b1b;
+      font-weight: 900;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.4rem;
+      border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+      transition: transform 0.15s;
+    }
+    .championship-cta:hover { transform: translateY(-2px); }
+
+    /* Active Season Championship Box (Bulged lifted effect) */
+    .season-section-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #0f172a;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .championship-box-active {
+      display: block;
+      background: #ffffff;
+      border: 2px solid #ef4444;
+      border-radius: 20px;
+      padding: 1.75rem;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 12px 32px rgba(239, 68, 68, 0.18), inset 0 2px 4px rgba(255,255,255,0.9);
+      margin-bottom: 2rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .championship-box-active:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 18px 40px rgba(239, 68, 68, 0.28);
+    }
+    .active-badge-pill {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    }
+    .season-box-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 0.75rem;
+    }
+    .season-box-icon {
+      font-size: 2.2rem;
+      line-height: 1;
+    }
+    .season-box-title {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: #0f172a;
+    }
+    .season-box-desc {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+    }
+    .season-box-stats {
+      display: flex;
+      gap: 1.5rem;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 1rem;
+    }
+    .season-stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .season-stat-val {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #dc2626;
+    }
+    .season-stat-lbl {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    /* Archive Seasons Grid */
+    .seasons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .season-archive-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .season-archive-card:hover {
+      transform: translateY(-3px) scale(1.02);
+      border-color: #f87171;
+      box-shadow: 0 10px 24px rgba(239, 68, 68, 0.15);
+    }
+    .season-archive-tag {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #64748b;
+      margin-bottom: 0.25rem;
+    }
+    .season-archive-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+    .season-archive-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #dc2626;
+      font-weight: 800;
+    }
+
+    /* Details Dropdown for AdSense Indexing */
+    details.game-rules-dropdown {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      text-align: left;
+    }
+    details.game-rules-dropdown summary {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+    }
+    .rules-body-content {
+      margin-top: 1rem;
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: #334155;
+    }
+    .rules-body-content h4 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 1rem 0 0.4rem 0;
+    }
+
+    footer.site-footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border-color);
+      padding: 2rem 1.5rem;
+      margin-top: auto;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .footer-links a { color: var(--text-color); text-decoration: none; font-weight: 700; }
+    .footer-links a:hover { color: #dc2626; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <a href="/" class="brand-logo">
+      <span>🎮</span>
+      <span class="logo-badge">Gamify</span>
+    </a>
+    <div class="nav-actions">
+      <a href="/world_wars/global_leaderboard" class="btn-nav">Global Leaderboard</a>
+      <a href="/" class="btn-nav">Home</a>
+    </div>
+  </header>
+
+  <!-- Page Layout with Desktop Side Ads (Requirement 6 & Image 4) -->
+  <div class="page-layout">
+    <!-- Desktop Left Side Ad Rail -->
+    <aside class="side-ad-rail" aria-label="Advertisement">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-slot-box">Responsive Vertical Banner</div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Mobile Top Ad Banner -->
+      <div class="mobile-ad-banner">
+        <span class="ad-banner-label">Advertisement</span>
+        <div class="mobile-ad-box"></div>
+      </div>
+
+      <div class="hero-card">
+        <h1>⚔️ World Wars Championships</h1>
+        <p>Seven-day synchronized tournament seasons. Solve daily logic puzzles, earn championship battle points, and claim your place in the season archive.</p>
+        <a href="#active-season-box" class="championship-cta">
+          VIEW ACTIVE SEASON STANDINGS ▼
+        </a>
+      </div>
+
+      <!-- Active Championship Box -->
+      <h2 class="season-section-title">🔥 Current Championship</h2>
+      <a href="/world_wars/weekly_tournaments/S2026-W45" id="active-season-box" class="championship-box-active">
+        <div class="active-badge-pill">● LIVE SEASON</div>
+        <div class="season-box-header">
+          <div class="season-box-icon">👑</div>
+          <div>
+            <div class="season-box-title" id="active-season-title">Season 2026-W45 Championship</div>
+            <div style="font-size: 0.8rem; color: #dc2626; font-weight: 800;">Seven-day battle concludes Sunday 23:59 UTC</div>
+          </div>
+        </div>
+        <p class="season-box-desc">
+          Click to inspect the top 10 contenders, your personal standing, points tally, and live podium qualifications for this week's crown.
+        </p>
+        <div class="season-box-stats">
+          <div class="season-stat-item">
+            <span class="season-stat-val">10</span>
+            <span class="season-stat-lbl">Championship Spots</span>
+          </div>
+          <div class="season-stat-item">
+            <span class="season-stat-val">500</span>
+            <span class="season-stat-lbl">Max Daily Points</span>
+          </div>
+          <div class="season-stat-item">
+            <span class="season-stat-val" style="color: #10b981;">ACTIVE</span>
+            <span class="season-stat-lbl">Status</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Past Seasons Archive Grid -->
+      <h2 class="season-section-title">🏛️ Past Championship Archive</h2>
+      <div class="seasons-grid" id="seasons-archive-grid">
+        <!-- Dynamically populated past seasons -->
+      </div>
+
+      <!-- Static Collapsible Section: 250+ Words for Google AdSense Reviewers -->
+      <details open class="game-rules-dropdown">
+        <summary>📖 How World Wars Weekly Tournaments Work — Rules, Scoring & Rewards</summary>
+        <div class="rules-body-content">
+          <h4>Weekly Tournament Format & Reset Schedules</h4>
+          <p>
+            The World Wars championship is a weekly synchronous tournament designed to test consistent daily cognitive agility. Each season runs from Monday 00:00 UTC through Sunday 23:59 UTC. When the clock strikes midnight on Sunday, final standings are permanently locked into the season archive, and an all-new tournament season commences automatically.
+          </p>
+
+          <h4>Championship Points & Progression System</h4>
+          <p>
+            Contenders accrue tournament points by successfully completing daily puzzle challenges. Difficult puzzles (such as Hard Sudoku or Expert Number Grid) yield maximum points, while speed bonuses reward rapid deduction. Solvers can also accumulate bonus points by initiating PvP friend challenges. Maintaining active participation across all seven days ensures maximum point accrual for the weekly leaderboard.
+          </p>
+
+          <h4>Dedicated Dynamic Season Pages & Archival Queries</h4>
+          <p>
+            Every tournament season (e.g., <code>/world_wars/weekly_tournaments/S2026-W44</code>) possesses its own dedicated dynamic template page. This page queries Cloudflare D1 with high-efficiency compound indices to instantly render the top 10 prize contenders alongside the logged-in solver's personal rank, total points, and games played. Past season records remain permanently accessible, forming an indelible historical record of puzzle mastery.
+          </p>
+        </div>
+      </details>
+    </main>
+
+    <!-- Desktop Right Side Ad Rail -->
+    <aside class="side-ad-rail" aria-label="Advertisement">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-slot-box">Responsive Vertical Banner</div>
+    </aside>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/world_wars/global_leaderboard">Global Leaderboard</a>
+      <a href="/about.html">About Us</a>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/contact.html">Contact Us</a>
+      <a href="/terms.html">Terms of Service</a>
+    </div>
+    <p>&copy; 2026 Gamify. All rights reserved. World Wars weekly seasons reset Mondays 00:00 UTC.</p>
+  </footer>
+
+  <script>
+    // Calculate current ISO week
+    function getCurrentWeekId() {
+      const now = new Date();
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+      return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+    }
+
+    const currentWeek = getCurrentWeekId();
+    const activeBox = document.getElementById('active-season-box');
+    const activeTitle = document.getElementById('active-season-title');
+
+    activeBox.href = `/world_wars/weekly_tournaments/S${currentWeek}`;
+    activeTitle.textContent = `Season ${currentWeek} Championship`;
+
+    // Populate past 6 weekly tournament seasons
+    const grid = document.getElementById('seasons-archive-grid');
+    const currentWeekNumber = parseInt(currentWeek.split('-W')[1], 10);
+    const currentYear = parseInt(currentWeek.split('-W')[0], 10);
+
+    let archiveHtml = '';
+    for (let i = 1; i <= 6; i++) {
+      let targetWeek = currentWeekNumber - i;
+      let targetYear = currentYear;
+      if (targetWeek < 1) {
+        targetYear -= 1;
+        targetWeek = 52 + targetWeek;
+      }
+      const seasonCode = `${targetYear}-W${String(targetWeek).padStart(2, '0')}`;
+      archiveHtml += `
+        <a href="/world_wars/weekly_tournaments/S${seasonCode}" class="season-archive-card">
+          <div>
+            <div class="season-archive-tag">ARCHIVED SEASON</div>
+            <div class="season-archive-name">Season ${seasonCode}</div>
+            <div style="font-size:0.85rem; color:#64748b;">Top 10 Contenders & Final Rankings</div>
+          </div>
+          <div class="season-archive-footer">
+            <span>View Hall of Fame</span>
+            <span>➔</span>
+          </div>
+        </a>
+      `;
+    }
+    grid.innerHTML = archiveHtml;
+  </script>
+</body>
+</html>

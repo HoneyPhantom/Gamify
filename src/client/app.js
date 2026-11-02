@@ -997,6 +997,7 @@ async function enterGame(gameIdOrSlug, pushState = true) {
   hideAllStaticPages();
   frontPageView?.classList.add('hidden');
   gameView?.classList.remove('hidden');
+  document.body.classList.add('in-game-view');
 
   // Show launcher screen, hide arena initially
   gameLauncherScreen?.classList.remove('hidden');
@@ -1066,6 +1067,7 @@ function returnToHome(pushState = true) {
   hideAllStaticPages();
   gameView?.classList.add('hidden');
   frontPageView?.classList.remove('hidden');
+  document.body.classList.remove('in-game-view');
   updateDailySweepUI();
   renderGamesScrollList(gameSearchInput?.value?.trim() || '');
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1776,6 +1778,7 @@ btnAddFriend?.addEventListener('click', async () => {
 // =========================================================================
 
 async function openProfileModal() {
+  profileModal?.classList.remove('hidden');
   if (!currentUser && api.token) {
     try {
       await fetchUserProfile();
@@ -1864,12 +1867,33 @@ async function openProfileModal() {
 
   renderFollowersFollowingUI();
 
+  const privacySelect = document.getElementById('profile-privacy-select');
+  if (privacySelect && currentUser) {
+    privacySelect.value = String(currentUser.is_private ?? 0);
+  }
+  const viewOwnPageLink = document.getElementById('btn-view-own-dynamic-page');
+  if (viewOwnPageLink) {
+    viewOwnPageLink.href = currentUser.id ? `/profiles?id=${currentUser.id}` : '/profiles';
+  }
+
   if (btnLogoutEl) {
     btnLogoutEl.textContent = currentUser.isGuest ? '🔑 Log In / Register' : '🚪 Logout';
   }
 
   profileModal?.classList.remove('hidden');
 }
+
+// Account Privacy Toggle Handler
+document.getElementById('profile-privacy-select')?.addEventListener('change', async (e) => {
+  const isPrivate = e.target.value === '1';
+  try {
+    await api.updateProfile(currentUser?.displayName, currentUser?.about, isPrivate);
+    if (currentUser) currentUser.is_private = isPrivate ? 1 : 0;
+    api.setSession(api.token, currentUser);
+  } catch (err) {
+    console.warn('Privacy update error:', err);
+  }
+});
 
 btnOpenProfile?.addEventListener('click', (e) => {
   e.preventDefault();
@@ -1914,6 +1938,68 @@ async function openPublicProfile(username) {
     if (publicProfileAbout) publicProfileAbout.textContent = currentPublicUser.about || 'No description provided yet.';
     if (publicProfileFollowersCount) publicProfileFollowersCount.textContent = currentPublicUser.followersCount ?? 0;
     if (publicProfileFollowingCount) publicProfileFollowingCount.textContent = currentPublicUser.followingCount ?? 0;
+
+    const privateMsg = document.getElementById('public-profile-private-msg');
+    const socialDrawer = document.getElementById('public-profile-social-drawer');
+    const socialTitle = document.getElementById('public-profile-social-title');
+    const socialList = document.getElementById('public-profile-social-list');
+    const btnFollowers = document.getElementById('btn-view-public-followers');
+    const btnFollowing = document.getElementById('btn-view-public-following');
+    const btnOpenDynamic = document.getElementById('btn-open-public-dynamic-page');
+
+    if (btnOpenDynamic) {
+      btnOpenDynamic.href = `/profiles?username=${encodeURIComponent(currentPublicUser.username)}`;
+    }
+
+    const canViewSocial = currentPublicUser.canViewFollowers !== false;
+    if (!canViewSocial) {
+      if (privateMsg) privateMsg.classList.remove('hidden');
+      if (socialDrawer) socialDrawer.classList.add('hidden');
+    } else {
+      if (privateMsg) privateMsg.classList.add('hidden');
+    }
+
+    // Render social drawer when clicking Followers or Following (Image 2 style)
+    const showSocialList = (type = 'followers') => {
+      if (!canViewSocial) {
+        if (privateMsg) privateMsg.classList.remove('hidden');
+        return;
+      }
+      if (!socialDrawer || !socialList) return;
+      const list = type === 'followers' ? (currentPublicUser.followers || []) : (currentPublicUser.following || []);
+      if (socialTitle) socialTitle.textContent = type === 'followers' ? `Followers (${list.length})` : `Following (${list.length})`;
+      
+      if (list.length === 0) {
+        socialList.innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem; text-align:center; padding:0.5rem;">No ${type} found.</div>`;
+      } else {
+        socialList.innerHTML = list.map(u => {
+          const uInitial = (u.display_name || u.username || 'P')[0].toUpperCase();
+          return `
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:4px 0; border-bottom:1px solid #f1f5f9;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:28px; height:28px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800;">${uInitial}</div>
+                <div>
+                  <a href="/profiles?username=${encodeURIComponent(u.username)}" style="font-size:0.82rem; font-weight:800; color:var(--text-color); text-decoration:none;">${u.display_name || u.username}</a>
+                  <div style="font-size:0.7rem; color:var(--text-muted);">@${u.username}</div>
+                </div>
+              </div>
+              <a href="/profiles?username=${encodeURIComponent(u.username)}" style="font-size:0.72rem; font-weight:800; color:var(--accent); text-decoration:none; background:#f1f5f9; padding:2px 8px; border-radius:6px;">View ↗</a>
+            </div>
+          `;
+        }).join('');
+      }
+      socialDrawer.classList.remove('hidden');
+    };
+
+    if (btnFollowers) {
+      btnFollowers.onclick = () => showSocialList('followers');
+    }
+    if (btnFollowing) {
+      btnFollowing.onclick = () => showSocialList('following');
+    }
+    document.getElementById('btn-close-social-drawer')?.addEventListener('click', () => {
+      socialDrawer?.classList.add('hidden');
+    });
 
     applyCosmeticToAvatar(publicProfileAvatar, currentPublicUser.selectedFrame);
 
@@ -2012,7 +2098,7 @@ playerSearchInput?.addEventListener('input', () => {
             const username = item.dataset.username;
             playerSearchDropdown.classList.add('hidden');
             playerSearchInput.value = '';
-            openPublicProfile(username);
+            window.location.href = `/profiles?username=${encodeURIComponent(username)}`;
           });
         });
       }
@@ -2962,24 +3048,21 @@ window.addEventListener('appinstalled', () => {
 
 async function triggerInstallApp() {
   if (deferredInstallPrompt) {
-    deferredInstallPrompt.prompt();
-    const { outcome } = await deferredInstallPrompt.userChoice;
-    if (outcome === 'accepted') {
-      if (pwaInstallMsg) {
-        pwaInstallMsg.textContent = '🎉 Installing Gamify app...';
-        pwaInstallMsg.style.display = 'block';
-        pwaInstallMsg.style.background = '#dcfce7';
-        pwaInstallMsg.style.color = '#15803d';
+    try {
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        if (pwaInstallMsg) {
+          pwaInstallMsg.textContent = '🎉 Installing Gamify app...';
+          pwaInstallMsg.style.display = 'block';
+          pwaInstallMsg.style.background = '#dcfce7';
+          pwaInstallMsg.style.color = '#15803d';
+        }
       }
+    } catch (e) {
+      console.warn('Install prompt note:', e);
     }
     deferredInstallPrompt = null;
-  } else {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    if (isStandalone) {
-      alert('Gamify is already installed on your device!');
-    } else {
-      alert('To install Gamify:\n\n• On Chrome/Android: Tap (⋮) and select "Install app".\n• On iPhone/Safari: Tap Share (⎋) and select "Add to Home Screen".');
-    }
   }
 }
 
@@ -4185,46 +4268,50 @@ function setupRoutingListeners() {
   document.querySelectorAll('.btn-route-world-wars').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      openWorldWarsModal();
+      window.location.href = '/world_wars/weekly_tournaments';
     });
   });
 
   const worldWarsCardEl = document.getElementById('world-wars-card');
   worldWarsCardEl?.addEventListener('click', (e) => {
     if (e.target.closest('#btn-open-world-wars')) return;
-    openWorldWarsModal();
+    window.location.href = '/world_wars/weekly_tournaments';
   });
 
   document.getElementById('btn-open-world-wars')?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    openWorldWarsModal();
+    window.location.href = '/world_wars/weekly_tournaments';
   });
 
   document.getElementById('btn-open-profile')?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    openProfileModal();
+    if (currentUser?.id && currentUser.id !== 'guest') {
+      window.location.href = `/profiles?id=${encodeURIComponent(currentUser.id)}`;
+    } else {
+      window.location.href = '/profile.php';
+    }
   });
 
   document.querySelectorAll('.btn-nav-shop').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      navigateToShop(true);
+      window.location.href = '/shop';
     });
   });
 
   document.querySelectorAll('.btn-nav-challenges').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      navigateToChallenges(true);
+      window.location.href = '/challenges';
     });
   });
 
   const headerBadge = document.getElementById('header-updates-badge');
   headerBadge?.addEventListener('click', (e) => {
     e.preventDefault();
-    navigateToChallenges(true);
+    window.location.href = '/challenges';
   });
 
   document.querySelectorAll('.footer-nav-link').forEach(link => {

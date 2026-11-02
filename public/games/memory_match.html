@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Match — Daily Spatial Recall & Card Pair Puzzle | Gamify</title>
+  <meta name="description" content="Play Memory Match daily on Gamify. Uncover hidden cards and match identical symbols in minimal moves. Train visual working memory. Free and AdSense policy compliant." />
+  <link rel="canonical" href="https://gamify.com/games/memory_match" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --accent: #2563eb;
+      --correct-bg: #10b981;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header.site-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #0f172a;
+    }
+    .brand-logo span.logo-badge {
+      background: linear-gradient(135deg, #ef4444, #f59e0b, #10b981, #2563eb, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-nav-home {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      padding: 0.4rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .btn-nav-home:hover { background: #e2e8f0; }
+
+    /* Desktop Side Ads Layout (Requirement 6 & Image 4) */
+    .game-page-layout {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 2rem;
+      padding: 2rem 1rem;
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .side-ad-rail {
+      width: 160px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: sticky;
+      top: 80px;
+    }
+    .ad-banner-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      text-align: center;
+      display: block;
+    }
+    .ad-slot-box {
+      width: 160px;
+      min-height: 600px;
+      border: 1px dashed #cbd5e1;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 0.5rem;
+    }
+    .game-main-content {
+      flex: 1;
+      max-width: 680px;
+      min-width: 0;
+    }
+    .mobile-ad-banner {
+      display: none;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .mobile-ad-box {
+      width: 100%;
+      min-height: 90px;
+      border: 1px dashed #cbd5e1;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+    }
+
+    @media (max-width: 959px) {
+      .side-ad-rail { display: none; }
+      .mobile-ad-banner { display: block; }
+    }
+
+    /* Game Card */
+    .game-play-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .breadcrumb-nav {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .breadcrumb-nav a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .game-hero-title {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #0f172a;
+      margin-bottom: 0.25rem;
+    }
+    .game-tagline {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+    .btn-play-game {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 320px;
+      padding: 0.9rem 1.5rem;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 1.15rem;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(234, 88, 12, 0.38);
+      text-decoration: none;
+      transition: transform 0.15s;
+    }
+    .btn-play-game:hover { transform: translateY(-2px); }
+
+    /* Static Collapsible Rules Dropdown */
+    details.game-rules-dropdown {
+      margin-top: 2rem;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      text-align: left;
+    }
+    details.game-rules-dropdown summary {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+    }
+    .rules-body-content {
+      margin-top: 1rem;
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: #334155;
+    }
+    .rules-body-content h4 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 1rem 0 0.4rem 0;
+    }
+
+    footer.site-footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border-color);
+      padding: 2rem 1.5rem;
+      margin-top: auto;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .footer-links a { color: var(--text-color); text-decoration: none; font-weight: 700; }
+    .footer-links a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a href="/" class="brand-logo">
+      <span>🎮</span>
+      <span class="logo-badge">Gamify</span>
+    </a>
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <a href="/" class="btn-nav-home">Home</a>
+    </div>
+  </header>
+
+  <div class="game-page-layout">
+    <aside class="side-ad-rail" aria-label="Advertisement">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-slot-box">Responsive Vertical Banner</div>
+    </aside>
+
+    <main class="game-main-content">
+      <div class="mobile-ad-banner">
+        <span class="ad-banner-label">Advertisement</span>
+        <div class="mobile-ad-box"></div>
+      </div>
+
+      <div class="game-play-card">
+        <div class="breadcrumb-nav">
+          <a href="/">Home</a>
+          <span>›</span>
+          <a href="/">Games</a>
+          <span>›</span>
+          <span style="color:#0f172a;">Memory Match</span>
+        </div>
+
+        <h1 class="game-hero-title">🃏 MEMORY MATCH</h1>
+        <p class="game-tagline">Test and strengthen your visual memory by pairing hidden matching cards in fewer moves.</p>
+        
+        <div style="font-size: 4rem; margin: 1.5rem 0;">🃏</div>
+
+        <a href="/?game=memory-match" class="btn-play-game">
+          PLAY DAILY PUZZLE ▶
+        </a>
+      </div>
+
+      <details open class="game-rules-dropdown">
+        <summary>📖 How to Play Memory Match — Rules, Tips & Strategy</summary>
+        <div class="rules-body-content">
+          <h4>Game Objective</h4>
+          <p>
+            Memory Match is an engaging visual recall puzzle designed to stimulate neuroplasticity and short-term working memory. You are presented with a face-down card tableau containing identical matching symbol pairs (ranging from 8 cards / 4 pairs on Easy, up to 16 cards / 8 pairs on Hard). Your goal is to locate and flip over all matching pairs in the fewest total moves and fastest elapsed time.
+          </p>
+
+          <h4>Turn Mechanics & Matching Rules</h4>
+          <p>
+            On each turn, you flip two cards face-up. If the two selected cards reveal the identical symbol or character, you have achieved a match: the cards remain permanently exposed and illuminated on the board. If the two cards differ, both cards automatically flip back face-down after a brief view interval. A turn counter tracks every flip attempt made during the round.
+          </p>
+
+          <h4>Cognitive Mnemonic Strategies</h4>
+          <p>
+            To minimize flip penalties, systematically divide the grid into spatial sectors (such as top-left, top-right, bottom quadrant). Employ verbal labeling or association: when you uncover a symbol, mentally repeat its location coordinate (e.g., "Diamond at Row 1, Col 3"). Avoid random scatter clicking; deliberate methodical exploration ensures that when a matching partner is revealed, you can immediately retrieve its twin without wasting subsequent turns.
+          </p>
+
+          <h4>Escalating Hint Assistance & Scoring</h4>
+          <p>
+            If you lose track of hidden card positions, activate the single unified hint button on the arena bar. For an escalating coin fee (10, 20, 30 coins), the game will briefly pulse and highlight an uncollected matching pair on the grid. Scoring rewards low turn counts and rapid completion, feeding directly into your daily sweep bonus (+50 coins) and weekly tournament standings.
+          </p>
+        </div>
+      </details>
+    </main>
+
+    <aside class="side-ad-rail" aria-label="Advertisement">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-slot-box">Responsive Vertical Banner</div>
+    </aside>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/about.html">About Us</a>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/contact.html">Contact Us</a>
+      <a href="/terms.html">Terms of Service</a>
+    </div>
+    <p>&copy; 2026 Gamify. All rights reserved. Logic puzzles refreshed daily at 00:00 UTC.</p>
+  </footer>
+</body>
+</html>

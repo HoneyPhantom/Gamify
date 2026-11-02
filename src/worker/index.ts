@@ -37,10 +37,48 @@ export default {
       }
 
       if (env.ASSETS) {
-        let assetRes = await env.ASSETS.fetch(request);
         const pathname = url.pathname;
 
-        // SPA Fallback: for clean URLs like /games/*, /privacy, /about, /contact, /terms
+        // Static file mappings for dedicated AdSense pages
+        let mappedPath: string | null = null;
+        if (pathname === '/profiles' || pathname === '/profile' || pathname === '/profile.php') {
+          mappedPath = '/profile.php';
+        } else if (pathname === '/games/word_guess' || pathname === '/games/word-guess') {
+          mappedPath = '/games/word_guess.html';
+        } else if (pathname === '/games/number_grid' || pathname === '/games/number-grid') {
+          mappedPath = '/games/number_grid.html';
+        } else if (pathname === '/games/number_trail' || pathname === '/games/number-trail') {
+          mappedPath = '/games/number_trail.html';
+        } else if (pathname === '/games/sudoku') {
+          mappedPath = '/games/sudoku.html';
+        } else if (pathname === '/games/memory_match' || pathname === '/games/memory-match') {
+          mappedPath = '/games/memory_match.html';
+        } else if (pathname === '/games/crossword') {
+          mappedPath = '/games/crossword.html';
+        } else if (pathname === '/world_wars/global_leaderboard' || pathname === '/world-wars/global-leaderboard') {
+          mappedPath = '/world_wars/global_leaderboard.html';
+        } else if (pathname === '/world_wars/weekly_tournaments' || pathname === '/world-wars/weekly-tournaments') {
+          mappedPath = '/world_wars/weekly_tournaments.html';
+        } else if (pathname.startsWith('/world_wars/weekly_tournaments/') || pathname.startsWith('/world-wars/weekly-tournaments/') || pathname.startsWith('/tournaments/')) {
+          mappedPath = '/world_wars/season.html';
+        } else if (pathname === '/shop') {
+          mappedPath = '/shop.html';
+        } else if (pathname === '/challenges') {
+          mappedPath = '/challenges.html';
+        }
+
+        let assetRes: Response;
+        if (mappedPath) {
+          const directUrl = new URL(mappedPath, request.url);
+          assetRes = await env.ASSETS.fetch(new Request(directUrl.toString(), request));
+          if (assetRes.status === 404) {
+            assetRes = await env.ASSETS.fetch(request);
+          }
+        } else {
+          assetRes = await env.ASSETS.fetch(request);
+        }
+
+        // SPA Fallback: for clean URLs like /privacy, /about, /contact, /terms
         if (assetRes.status === 404 && !pathname.includes('.')) {
           // Check if there is a direct static HTML file in dist/ (e.g., /privacy -> /privacy.html)
           const directHtmlUrl = new URL(`${pathname.replace(/\/$/, '')}.html`, request.url);
@@ -55,7 +93,7 @@ export default {
         }
 
         // Never allow browsers or intermediate caches to cache HTML or the service worker
-        const isHtmlOrSw = pathname === '/' || pathname === '/index.html' || pathname === '/sw.js' || (!pathname.includes('.') && !pathname.startsWith('/assets/'));
+        const isHtmlOrSw = pathname === '/' || pathname === '/index.html' || pathname === '/sw.js' || pathname.endsWith('.php') || pathname.endsWith('.html') || mappedPath !== null || (!pathname.includes('.') && !pathname.startsWith('/assets/'));
         if (isHtmlOrSw) {
           const freshHeaders = new Headers(assetRes.headers);
           freshHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -157,7 +195,7 @@ export default {
         const [user, unlocks, stats, todayCompletions, followingResult, followersCountResult, pendingChallengesResult] = await Promise.all([
           (async () => {
             try {
-              return await env.DB.prepare(`SELECT id, username, display_name, COALESCE(about, 'Puzzle solver climbing to the top!') as about, coins, streak_count, COALESCE(best_streak, streak_count) as best_streak, COALESCE(xp, 0) as xp, COALESCE(selected_frame, 'default') as selected_frame, COALESCE(selected_title, '') as selected_title, last_played_date, last_login_at FROM users WHERE id = ?`)
+              return await env.DB.prepare(`SELECT id, username, display_name, COALESCE(about, 'Puzzle solver climbing to the top!') as about, coins, streak_count, COALESCE(best_streak, streak_count) as best_streak, COALESCE(xp, 0) as xp, COALESCE(selected_frame, 'default') as selected_frame, COALESCE(selected_title, '') as selected_title, COALESCE(is_private, 0) as is_private, last_played_date, last_login_at FROM users WHERE id = ?`)
                 .bind(auth.user.id).first<any>();
             } catch {
               try {
@@ -169,6 +207,7 @@ export default {
                   u.xp = 0;
                   u.selected_frame = 'default';
                   u.selected_title = '';
+                  u.is_private = 0;
                 }
                 return u;
               } catch {
@@ -291,6 +330,13 @@ export default {
       const userProfileMatch = url.pathname.match(/^\/api\/users\/([^/]+)$/);
       if (method === 'GET' && userProfileMatch && userProfileMatch[1] !== 'search') {
         return await handleGetUserProfile(request, env, decodeURIComponent(userProfileMatch[1]));
+      }
+
+      if (method === 'GET' && url.pathname === '/api/profile') {
+        const idOrUser = url.searchParams.get('id') || url.searchParams.get('username') || '';
+        if (idOrUser) {
+          return await handleGetUserProfile(request, env, decodeURIComponent(idOrUser));
+        }
       }
 
       if (method === 'PUT' && url.pathname === '/api/user/profile') {

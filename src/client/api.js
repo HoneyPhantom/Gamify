@@ -247,10 +247,14 @@ class GamifyApiClient {
     return data;
   }
 
-  async updateProfile(displayName, about) {
+  async updateProfile(displayName, about, isPrivate = undefined) {
+    const payload = { displayName, about };
+    if (isPrivate !== undefined) {
+      payload.isPrivate = isPrivate;
+    }
     const res = await this.request('/user/profile', {
       method: 'PUT',
-      body: JSON.stringify({ displayName, about }),
+      body: JSON.stringify(payload),
     });
     this._lastMeCache = null;
     return res;

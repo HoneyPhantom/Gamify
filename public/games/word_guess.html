@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word Guess — Daily 5-Letter Mystery Word Logic Puzzle | Gamify</title>
+  <meta name="description" content="Play Word Guess daily puzzle on Gamify. Deduce the hidden 5-letter word in 6 attempts using color feedback. Free, minimalist, and AdSense policy compliant." />
+  <link rel="canonical" href="https://gamify.com/games/word_guess" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/index.html" />
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --accent: #2563eb;
+      --correct-bg: #10b981;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header.site-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #0f172a;
+    }
+    .brand-logo span.logo-badge {
+      background: linear-gradient(135deg, #ef4444, #f59e0b, #10b981, #2563eb, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-nav-home {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      padding: 0.4rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .btn-nav-home:hover { background: #e2e8f0; }
+
+    /* Desktop Side Ads Layout (Requirement 6 & Image 4) */
+    .game-page-layout {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 2rem;
+      padding: 2rem 1rem;
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .side-ad-rail {
+      width: 160px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: sticky;
+      top: 80px;
+    }
+    .ad-banner-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      text-align: center;
+      display: block;
+    }
+    .ad-slot-box {
+      width: 160px;
+      min-height: 600px;
+      border: 1px dashed #cbd5e1;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 0.5rem;
+    }
+    .game-main-content {
+      flex: 1;
+      max-width: 680px;
+      min-width: 0;
+    }
+    .mobile-ad-banner {
+      display: none;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .mobile-ad-box {
+      width: 100%;
+      min-height: 90px;
+      border: 1px dashed #cbd5e1;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+    }
+
+    @media (max-width: 959px) {
+      .side-ad-rail { display: none; }
+      .mobile-ad-banner { display: block; }
+    }
+
+    /* Game Launcher & Playable Frame */
+    .game-play-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .breadcrumb-nav {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .breadcrumb-nav a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .game-hero-title {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #0f172a;
+      margin-bottom: 0.25rem;
+    }
+    .game-tagline {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+    .btn-play-game {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 320px;
+      padding: 0.9rem 1.5rem;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 1.15rem;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(234, 88, 12, 0.38);
+      text-decoration: none;
+      transition: transform 0.15s;
+    }
+    .btn-play-game:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Static Collapsible Rules Dropdown (250+ Words for AdSense Indexing) */
+    details.game-rules-dropdown {
+      margin-top: 2rem;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      text-align: left;
+    }
+    details.game-rules-dropdown summary {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+    }
+    .rules-body-content {
+      margin-top: 1rem;
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: #334155;
+    }
+    .rules-body-content h4 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 1rem 0 0.4rem 0;
+    }
+    .color-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.8rem;
+      color: #ffffff;
+    }
+    .color-green { background: #10b981; }
+    .color-yellow { background: #f59e0b; }
+    .color-gray { background: #64748b; }
+
+    footer.site-footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border-color);
+      padding: 2rem 1.5rem;
+      margin-top: auto;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .footer-links a { color: var(--text-color); text-decoration: none; font-weight: 700; }
+    .footer-links a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <a href="/" class="brand-logo">
+      <span>🎮</span>
+      <span class="logo-badge">Gamify</span>
+    </a>
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <a href="/" class="btn-nav-home">Home</a>
+    </div>
+  </header>
+
+  <!-- Page Layout with Desktop Side Ads (Requirement 6 & Image 4) -->
+  <div class="game-page-layout">
+    <!-- Desktop Left Side Ad Rail -->
+    <aside class="side-ad-rail" aria-label="Advertisement">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-slot-box">Responsive Vertical Banner</div>
+    </aside>
+
+    <!-- Main Game Container -->
+    <main class="game-main-content">
+      <!-- Mobile Top Ad Banner -->
+      <div class="mobile-ad-banner">
+        <span class="ad-banner-label">Advertisement</span>
+        <div class="mobile-ad-box"></div>
+      </div>
+
+      <div class="game-play-card">
+        <div class="breadcrumb-nav">
+          <a href="/">Home</a>
+          <span>›</span>
+          <a href="/">Games</a>
+          <span>›</span>
+          <span style="color:#0f172a;">Word Guess</span>
+        </div>
+
+        <h1 class="game-hero-title">🔤 WORD GUESS</h1>
+        <p class="game-tagline">Deduce the secret 5-letter mystery word within 6 strategic guesses.</p>
+        
+        <div style="font-size: 4rem; margin: 1.5rem 0;">😊</div>
+
+        <a href="/?game=wordle" class="btn-play-game">
+          PLAY DAILY PUZZLE ▶
+        </a>
+      </div>
+
+      <!-- Static Collapsible Section: 250+ Words for Google AdSense Reviewers -->
+      <details open class="game-rules-dropdown">
+        <summary>📖 How to Play Word Guess — Rules, Tips & Strategy</summary>
+        <div class="rules-body-content">
+          <h4>Game Objective</h4>
+          <p>
+            Word Guess is a minimalist vocabulary deduction puzzle designed to test linguistic reasoning and cognitive pattern recognition. Your goal is to identify a secret five-letter mystery word within six attempts or fewer. Each guess must be a valid English word present in the official puzzle dictionary.
+          </p>
+
+          <h4>Color-Coded Feedback Definitions</h4>
+          <p>After each submitted five-letter word, the letter tiles dynamically change color to provide deterministic feedback:</p>
+          <ul style="padding-left: 1.25rem; margin: 0.5rem 0;">
+            <li style="margin-bottom: 0.35rem;">
+              <span class="color-pill color-green">GREEN</span>: The letter is in the correct position in the mystery word.
+            </li>
+            <li style="margin-bottom: 0.35rem;">
+              <span class="color-pill color-yellow">YELLOW</span>: The letter is present in the mystery word, but located in a different slot.
+            </li>
+            <li>
+              <span class="color-pill color-gray">GRAY</span>: The letter does not appear anywhere in the target word.
+            </li>
+          </ul>
+
+          <h4>Winning Strategies & Letter Frequency</h4>
+          <p>
+            Veteran players begin with vowel-rich starter words containing high-frequency consonants such as <em>ARISE</em>, <em>CRANE</em>, <em>STARE</em>, or <em>AUDIO</em>. By evaluating five distinct common letters on your opening turn, you immediately eliminate large sectors of the dictionary and narrow down vowel patterns (A, E, I, O, U). Avoid repeating letters confirmed to be gray, and pay close attention to common consonant pairings such as CH, SH, TH, and ending blends like CK, NG, or ER.
+          </p>
+
+          <h4>Escalating Hint Assistance & Coin Economy</h4>
+          <p>
+            If you find yourself stuck on the final turns, you can utilize the in-game hint button located directly on the arena controls bar. Spending 10 coins reveals an undiscovered correct letter tile on the board. Successive hints within the same puzzle session scale in cost, rewarding disciplined solvers with higher net coin yields and competitive placement on the World Wars weekly leaderboards.
+          </p>
+        </div>
+      </details>
+    </main>
+
+    <!-- Desktop Right Side Ad Rail -->
+    <aside class="side-ad-rail" aria-label="Advertisement">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-slot-box">Responsive Vertical Banner</div>
+    </aside>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/about.html">About Us</a>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/contact.html">Contact Us</a>
+      <a href="/terms.html">Terms of Service</a>
+    </div>
+    <p>&copy; 2026 Gamify. All rights reserved. Logic puzzles refreshed daily at 00:00 UTC.</p>
+  </footer>
+</body>
+</html>

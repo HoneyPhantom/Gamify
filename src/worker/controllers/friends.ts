@@ -2,6 +2,7 @@ import { Env, AuthenticatedUser } from '../types';
 import { jsonResponse, errorResponse } from '../utils/response';
 import { calculateLevel } from '../utils/level';
 import { getTodayUTC, getYesterdayUTC, evaluateActiveStreak } from '../utils/date';
+import { authenticateRequest } from '../auth';
 
 /**
  * Controller for followers & following system, player username lookup, and profile management.
@@ -169,13 +170,23 @@ export async function handleSearchUsers(
   });
 }
 
-// GET /api/users/:username - Public profile lookup (shows gamertag, about, followers & following count, streaks)
+// GET /api/users/:identifier - Profile lookup by username OR user ID (with public/private filter)
 export async function handleGetUserProfile(
   request: Request,
   env: Env,
-  username: string
+  identifier: string
 ): Promise<Response> {
-  const cleanUsername = username.trim().toLowerCase();
+  const cleanIdOrUsername = identifier.trim().toLowerCase();
+
+  // Check viewer identity if authorization header is provided
+  let viewer: AuthenticatedUser | null = null;
+  try {
+    const authRes = await authenticateRequest(request, env);
+    if ('user' in authRes && authRes.user) {
+      viewer = authRes.user;
+    }
+  } catch {}
+
   const [row, statsResult, followersCount, followingCount] = await Promise.all([
     env.DB.prepare(`
       SELECT 
@@ -185,34 +196,69 @@ export async function handleGetUserProfile(
         COALESCE(about, 'Puzzle solver climbing to the top!') as about,
         COALESCE(xp, 0) as xp,
         COALESCE(selected_frame, 'default') as selected_frame,
-        COALESCE(selected_title, '') as selected_title
+        COALESCE(selected_title, '') as selected_title,
+        COALESCE(is_private, 0) as is_private
       FROM users 
-      WHERE LOWER(username) = ?
-    `).bind(cleanUsername).first<{ id: string; username: string; display_name: string; about: string; xp: number; selected_frame: string; selected_title: string }>(),
+      WHERE id = ? OR LOWER(username) = ?
+    `).bind(cleanIdOrUsername, cleanIdOrUsername).first<{ id: string; username: string; display_name: string; about: string; xp: number; selected_frame: string; selected_title: string; is_private: number }>(),
     
     env.DB.prepare(`
       SELECT game_id, best_streak, current_streak, last_daily_date
       FROM user_game_stats
-      WHERE user_id = (SELECT id FROM users WHERE LOWER(username) = ?)
-    `).bind(cleanUsername).all<{ game_id: string; best_streak: number; current_streak: number; last_daily_date: string | null }>(),
+      WHERE user_id = (SELECT id FROM users WHERE id = ? OR LOWER(username) = ?)
+    `).bind(cleanIdOrUsername, cleanIdOrUsername).all<{ game_id: string; best_streak: number; current_streak: number; last_daily_date: string | null }>(),
 
     // Followers count: how many follow this user
     env.DB.prepare(`
       SELECT COUNT(*) as count
       FROM user_friends
-      WHERE friend_id = (SELECT id FROM users WHERE LOWER(username) = ?)
-    `).bind(cleanUsername).first<{ count: number }>(),
+      WHERE friend_id = (SELECT id FROM users WHERE id = ? OR LOWER(username) = ?)
+    `).bind(cleanIdOrUsername, cleanIdOrUsername).first<{ count: number }>(),
 
     // Following count: how many this user follows
     env.DB.prepare(`
       SELECT COUNT(*) as count
       FROM user_friends
-      WHERE user_id = (SELECT id FROM users WHERE LOWER(username) = ?)
-    `).bind(cleanUsername).first<{ count: number }>(),
+      WHERE user_id = (SELECT id FROM users WHERE id = ? OR LOWER(username) = ?)
+    `).bind(cleanIdOrUsername, cleanIdOrUsername).first<{ count: number }>(),
   ]);
 
   if (!row) {
-    return errorResponse(`User '@${username}' not found`, 404);
+    return errorResponse(`User '${identifier}' not found`, 404);
+  }
+
+  const isSelf = viewer ? (viewer.id === row.id || viewer.username.toLowerCase() === row.username.toLowerCase()) : false;
+  let isFollowing = false;
+  if (viewer && !isSelf) {
+    const followCheck = await env.DB.prepare(
+      'SELECT 1 FROM user_friends WHERE user_id = ? AND friend_id = ?'
+    ).bind(viewer.id, row.id).first();
+    isFollowing = Boolean(followCheck);
+  }
+
+  const isPrivate = row.is_private === 1;
+  const canViewFollowers = !isPrivate || isSelf || isFollowing;
+
+  // If public or permitted, load the following & followers list
+  let followersList: any[] = [];
+  let followingList: any[] = [];
+  if (canViewFollowers) {
+    const [fListRes, fwingListRes] = await Promise.all([
+      env.DB.prepare(`
+        SELECT u.id, u.username, u.display_name, COALESCE(u.selected_frame, 'default') as selected_frame
+        FROM user_friends f JOIN users u ON f.user_id = u.id
+        WHERE f.friend_id = ?
+        ORDER BY u.display_name ASC LIMIT 50
+      `).bind(row.id).all(),
+      env.DB.prepare(`
+        SELECT u.id, u.username, u.display_name, COALESCE(u.selected_frame, 'default') as selected_frame
+        FROM user_friends f JOIN users u ON f.friend_id = u.id
+        WHERE f.user_id = ?
+        ORDER BY u.display_name ASC LIMIT 50
+      `).bind(row.id).all(),
+    ]);
+    followersList = fListRes.results || [];
+    followingList = fwingListRes.results || [];
   }
 
   const lvl = calculateLevel(row.xp || 0);
@@ -245,25 +291,31 @@ export async function handleGetUserProfile(
         levelTitle: lvl.title,
         selectedFrame: row.selected_frame || 'default',
         selectedTitle: row.selected_title || '',
+        isPrivate,
+        canViewFollowers,
+        isFollowing,
+        isSelf,
+        followersCount: canViewFollowers ? (followersCount?.count || 0) : null,
+        followingCount: canViewFollowers ? (followingCount?.count || 0) : null,
+        followers: followersList,
+        following: followingList,
         streaks: evaluatedStreaks,
-        followersCount: followersCount?.count || 0,
-        followingCount: followingCount?.count || 0,
       },
     },
     200,
     {
-      'Cache-Control': 'public, max-age=120, stale-while-revalidate=300',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
     }
   );
 }
 
-// PUT /api/user/profile - Update user's about description and gamertag (display_name)
+// PUT /api/user/profile - Update user's about description, gamertag, and privacy option
 export async function handleUpdateProfile(
   request: Request,
   env: Env,
   user: AuthenticatedUser
 ): Promise<Response> {
-  let body: { displayName?: string; about?: string };
+  let body: { displayName?: string; about?: string; isPrivate?: boolean | number };
   try {
     body = await request.json();
   } catch {
@@ -272,6 +324,7 @@ export async function handleUpdateProfile(
 
   const newDisplayName = body.displayName?.trim() || null;
   const newAbout = body.about?.trim() || null;
+  const newIsPrivate = body.isPrivate !== undefined ? (body.isPrivate ? 1 : 0) : null;
 
   if (newDisplayName && newDisplayName.length > 50) {
     return errorResponse('Gamertag cannot exceed 50 characters', 400);
@@ -286,12 +339,13 @@ export async function handleUpdateProfile(
     SET 
       display_name = COALESCE(?, display_name),
       about = COALESCE(?, about),
+      is_private = COALESCE(?, is_private),
       updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
-  `).bind(newDisplayName, newAbout, user.id).run();
+  `).bind(newDisplayName, newAbout, newIsPrivate, user.id).run();
 
   const updatedUser = await env.DB.prepare(`
-    SELECT id, username, display_name, about, coins, streak_count
+    SELECT id, username, display_name, about, coins, streak_count, COALESCE(is_private, 0) as is_private
     FROM users WHERE id = ?
   `).bind(user.id).first();
 

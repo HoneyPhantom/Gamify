@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
     xp INTEGER NOT NULL DEFAULT 0,                   -- Experience points for level system
     selected_frame TEXT DEFAULT 'default',           -- Avatar cosmetic frame
     selected_title TEXT DEFAULT '',                  -- Cosmetic title badge
+    is_private INTEGER NOT NULL DEFAULT 0,           -- 0 = public (followers visible), 1 = private (hidden from non-followers)
     last_played_date TEXT,                           -- ISO-8601 calendar date YYYY-MM-DD (UTC)
     last_login_at TEXT NOT NULL DEFAULT (DATETIME('now')), -- Tracks session issuance
     created_at TEXT NOT NULL DEFAULT (DATETIME('now')),

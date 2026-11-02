@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PvP Logic Duels & Friend Challenges — Gamify</title>
+  <meta name="description" content="Challenge friends and rivals to asynchronous 1-on-1 puzzle duels on Gamify. Compete on identical seeds with verified solution times and coin stakes." />
+  <link rel="canonical" href="https://gamify.com/challenges" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/index.html" />
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --accent: #2563eb;
+      --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header.site-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #0f172a;
+    }
+    .brand-logo span.logo-badge {
+      background: linear-gradient(135deg, #ef4444, #f59e0b, #10b981, #2563eb, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-nav-home {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      padding: 0.4rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .btn-nav-home:hover { background: #e2e8f0; }
+
+    /* Desktop Side Ads Layout (Requirement 6 & Image 4) */
+    .page-layout {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 2rem;
+      padding: 2rem 1rem;
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .side-ad-rail {
+      width: 160px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: sticky;
+      top: 80px;
+    }
+    .ad-banner-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      text-align: center;
+      display: block;
+    }
+    .ad-slot-box {
+      width: 160px;
+      min-height: 600px;
+      border: 1px dashed #cbd5e1;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 0.5rem;
+    }
+    .main-content {
+      flex: 1;
+      max-width: 760px;
+      min-width: 0;
+    }
+    .mobile-ad-banner {
+      display: none;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .mobile-ad-box {
+      width: 100%;
+      min-height: 90px;
+      border: 1px dashed #cbd5e1;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+    }
+    @media (max-width: 959px) {
+      .side-ad-rail { display: none; }
+      .mobile-ad-banner { display: block; }
+    }
+
+    /* Challenges Hero */
+    .challenges-hero {
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      border-radius: 20px;
+      padding: 2rem 1.5rem;
+      color: #ffffff;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+    }
+    .challenges-hero h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 0.25rem;
+    }
+    .challenges-hero p {
+      color: #dbeafe;
+      font-size: 0.95rem;
+      max-width: 540px;
+      margin: 0 auto 1.25rem;
+    }
+    .btn-create-challenge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      color: #1e40af;
+      font-weight: 900;
+      font-size: 0.95rem;
+      padding: 0.7rem 1.5rem;
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: transform 0.15s;
+    }
+    .btn-create-challenge:hover { transform: translateY(-2px); }
+
+    /* Duel Lists */
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #0f172a;
+      margin: 1.5rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .challenge-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .challenge-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .challenge-icon {
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .challenge-game {
+      font-weight: 800;
+      font-size: 1rem;
+      color: #0f172a;
+    }
+    .challenge-challenger {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .challenge-wager {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #f59e0b;
+    }
+    .btn-accept-challenge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.55rem 1.25rem;
+      border-radius: 10px;
+      background: #10b981;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      border: none;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .btn-accept-challenge:hover { background: #059669; }
+
+    /* Details Dropdown for AdSense Indexing */
+    details.game-rules-dropdown {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      text-align: left;
+    }
+    details.game-rules-dropdown summary {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+      cursor: pointer;
+      user-select: none;
+      outline: none;
+    }
+    .rules-body-content {
+      margin-top: 1rem;
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: #334155;
+    }
+    .rules-body-content h4 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 1rem 0 0.4rem 0;
+    }
+
+    footer.site-footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border-color);
+      padding: 2rem 1.5rem;
+      margin-top: auto;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .footer-links a { color: var(--text-color); text-decoration: none; font-weight: 700; }
+    .footer-links a:hover { color: #2563eb; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <a href="/" class="brand-logo">
+      <span>🎮</span>
+      <span class="logo-badge">Gamify</span>
+    </a>
+    <a href="/" class="btn-nav-home">Home</a>
+  </header>
+
+  <!-- Page Layout with Desktop Side Ads (Requirement 6 & Image 4) -->
+  <div class="page-layout">
+    <!-- Desktop Left Side Ad Rail -->
+    <aside class="side-ad-rail" aria-label="Advertisement">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-slot-box">Responsive Vertical Banner</div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Mobile Top Ad Banner -->
+      <div class="mobile-ad-banner">
+        <span class="ad-banner-label">Advertisement</span>
+        <div class="mobile-ad-box"></div>
+      </div>
+
+      <div class="challenges-hero">
+        <h1>⚔️ 1v1 Puzzle Duels</h1>
+        <p>Challenge friends to head-to-head logic puzzles on identical game boards. Fast deduction wins the pot!</p>
+        <a href="/?open=challenges" class="btn-create-challenge">
+          START NEW DUEL ⚡
+        </a>
+      </div>
+
+      <h2 class="section-title">📬 Pending Match Invitations</h2>
+      <div id="pending-challenges-list">
+        <div class="challenge-card">
+          <div class="challenge-info">
+            <div class="challenge-icon">🔤</div>
+            <div>
+              <div class="challenge-game">Word Guess Match</div>
+              <div class="challenge-challenger">Challenger: Gamify Bot • Medium Difficulty</div>
+            </div>
+          </div>
+          <div>
+            <div class="challenge-wager">🪙 25 Coin Stake</div>
+            <a href="/?open=challenges" class="btn-accept-challenge" style="margin-top: 6px;">Accept Duel</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Static Collapsible Section: 250+ Words for Google AdSense Reviewers -->
+      <details open class="game-rules-dropdown">
+        <summary>📖 How Asynchronous PvP Challenges Work — Rules & Matchmaking</summary>
+        <div class="rules-body-content">
+          <h4>Asynchronous Fair Play Engine</h4>
+          <p>
+            Gamify PvP Challenges allow puzzle solvers to compete 1-on-1 without requiring concurrent live connections. When Player A initiates a duel, the server generates a fixed pseudorandom seed. Player A solves the generated puzzle, recording their time taken, moves, and final score. An invitation is then dispatched to Player B.
+          </p>
+
+          <h4>Identical Puzzle Board Guarantees</h4>
+          <p>
+            When Player B accepts, they are presented with the exact same initial letter arrangement, number grid distribution, or Sudoku seed. Because both competitors encounter identical difficulty parameters, victory is determined purely by solving speed and analytical accuracy. The solver with the higher score or faster clear time automatically claims the match victory.
+          </p>
+
+          <h4>Coin Stakes & Escrow Security</h4>
+          <p>
+            Challenges can be played for friendly glory or with optional coin wagers. When a wager is specified, both players' coin stakes are held in server escrow. Upon match completion, the victor receives the combined pot alongside World Wars bonus points. Duels that remain unanswered for over 48 hours expire automatically, refunding all held coins to the challenger.
+          </p>
+        </div>
+      </details>
+    </main>
+
+    <!-- Desktop Right Side Ad Rail -->
+    <aside class="side-ad-rail" aria-label="Advertisement">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-slot-box">Responsive Vertical Banner</div>
+    </aside>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/world_wars/weekly_tournaments">Weekly Tournaments</a>
+      <a href="/about.html">About Us</a>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/contact.html">Contact Us</a>
+      <a href="/terms.html">Terms of Service</a>
+    </div>
+    <p>&copy; 2026 Gamify. All rights reserved. Head-to-head duels resolved in real-time.</p>
+  </footer>
+</body>
+</html>

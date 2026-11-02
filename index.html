@@ -86,9 +86,9 @@
     }
 
     .brand {
-      font-size: 1.65rem;
+      font-size: 2.15rem;
       font-weight: 950;
-      letter-spacing: -0.4px;
+      letter-spacing: -0.5px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -100,6 +100,7 @@
       transform: scale(1.02);
     }
     .brand-title {
+      font-size: 2.15rem;
       background: linear-gradient(135deg, #ea580c 0%, #f59e0b 35%, #0284c7 70%, #2563eb 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -539,6 +540,77 @@
       .game-card-bottom-banner {
         font-size: 0.98rem;
         padding: 7px 4px;
+      }
+    }
+
+    /* Desktop Side Ads Layout (Requirement 6 & Image 4) */
+    .game-view-desktop-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 1.5rem;
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 1rem;
+    }
+    .desktop-side-ad-rail {
+      width: 160px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: sticky;
+      top: 85px;
+    }
+    .desktop-side-ad-box {
+      width: 160px;
+      min-height: 600px;
+      border: 1px dashed #cbd5e1;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 0.5rem;
+    }
+    .game-view-center-content {
+      flex: 1;
+      max-width: 680px;
+      min-width: 0;
+      width: 100%;
+    }
+    .mobile-game-top-ad {
+      display: none;
+      text-align: center;
+      margin-bottom: 1rem;
+      width: 100%;
+    }
+    .mobile-ad-box {
+      width: 100%;
+      min-height: 90px;
+      border: 1px dashed #cbd5e1;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+    }
+
+    /* When in game on desktop, hide header ad so ads appear on side rails only (Image 4) */
+    body.in-game-view #ad-slot-header {
+      display: none;
+    }
+
+    @media (max-width: 959px) {
+      .desktop-side-ad-rail {
+        display: none !important;
+      }
+      .mobile-game-top-ad {
+        display: block;
+      }
+      body.in-game-view #ad-slot-header {
+        display: block;
       }
     }
 
@@ -2960,8 +3032,23 @@
     <!-- VIEW 2: ACTIVE GAME (IMAGE 2 LAUNCHER & ARENA)                    -->
     <!-- ================================================================= -->
     <section id="game-view" class="hidden">
-      <!-- 2A. Difficulty Launcher Screen (Image 2 style) -->
-      <div id="game-launcher-screen" class="launcher-screen">
+      <div class="game-view-desktop-wrapper">
+        <!-- Desktop Left Side Ad Rail (Requirement 6 & Image 4) -->
+        <aside class="desktop-side-ad-rail" aria-label="Advertisement">
+          <span class="ad-banner-label">Advertisement</span>
+          <div class="desktop-side-ad-box">Responsive Vertical Banner</div>
+        </aside>
+
+        <!-- Center Game Content -->
+        <div class="game-view-center-content">
+          <!-- Mobile Game Top Ad Banner (Image 4) -->
+          <div class="mobile-game-top-ad">
+            <span class="ad-banner-label">Advertisement</span>
+            <div class="mobile-ad-box"></div>
+          </div>
+
+          <!-- 2A. Difficulty Launcher Screen (Image 2 style) -->
+          <div id="game-launcher-screen" class="launcher-screen">
         <div class="breadcrumb-nav" style="width: 100%; max-width: 480px; justify-content: flex-start;">
           <a href="/" class="breadcrumb-link btn-route-home">Home</a>
           <span class="breadcrumb-sep">›</span>
@@ -3131,6 +3218,14 @@
           <button class="tab-btn" id="btn-friends-tab">👥 Friends Standings</button>
         </div>
         <div id="leaderboard-view">Loading standings...</div>
+      </div>
+        </div>
+
+        <!-- Desktop Right Side Ad Rail (Requirement 6 & Image 4) -->
+        <aside class="desktop-side-ad-rail" aria-label="Advertisement">
+          <span class="ad-banner-label">Advertisement</span>
+          <div class="desktop-side-ad-box">Responsive Vertical Banner</div>
+        </aside>
       </div>
     </section>
 
@@ -3739,6 +3834,19 @@
         <button type="button" id="btn-save-profile" class="btn-login" style="align-self: flex-end; margin-top: 0.4rem; padding: 0.4rem 0.9rem; font-size: 0.82rem;">Save About</button>
       </div>
 
+      <!-- Account Privacy Setting (Requirement 4) -->
+      <div class="form-group" style="margin-top: 0.85rem;">
+        <label for="profile-privacy-select" style="font-weight: 700; font-size: 0.82rem; color: var(--text-muted);">Account Privacy</label>
+        <select id="profile-privacy-select" class="form-input" style="padding: 0.45rem 0.75rem; font-weight: 700; border-radius: 8px;">
+          <option value="0">🌐 Public (Followers & following visible to everyone)</option>
+          <option value="1">🔒 Private (Followers & following visible to approved followers only)</option>
+        </select>
+      </div>
+
+      <div style="margin-top: 0.65rem; text-align: center;">
+        <a id="btn-view-own-dynamic-page" href="/profiles" style="font-size: 0.82rem; font-weight: 800; color: var(--accent); text-decoration: none;">View Dedicated Dynamic Profile Page ↗</a>
+      </div>
+
       <!-- Best Streaks per Game -->
       <div style="margin-top: 1.25rem;">
         <div class="profile-section-title">🔥 Best Streaks Maintained</div>
@@ -3782,7 +3890,7 @@
   <!-- PUBLIC PLAYER PROFILE MODAL                                         -->
   <!-- =================================================================== -->
   <div id="public-profile-modal" class="modal-overlay hidden">
-    <div class="modal-card" style="max-width: 440px; text-align: center;">
+    <div class="modal-card" style="max-width: 460px; text-align: center;">
       <button class="modal-close" id="public-profile-close" title="Close Modal">&times;</button>
       
       <div class="profile-avatar-large" id="public-profile-avatar" style="margin: 0 auto 0.6rem auto;">👤</div>
@@ -3791,10 +3899,23 @@
       <p id="public-profile-handle" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.4rem;">@username</p>
       <div class="badge" id="public-profile-level-badge" style="background:#fef3c7; border-color:#fde68a; color:#92400e; margin: 0 auto 0.75rem auto; display: inline-flex;">⭐ <span id="public-profile-level">Lvl 1 · Novice</span></div>
       
-      <!-- Followers & Following count -->
-      <div style="display: flex; justify-content: center; gap: 1.5rem; margin: 0.35rem 0 0.85rem 0; font-size: 0.92rem; font-weight: 700;">
-        <span style="color:var(--text-muted);">Followers: <strong id="public-profile-followers-count" style="color:var(--accent);">0</strong></span>
-        <span style="color:var(--text-muted);">Following: <strong id="public-profile-following-count" style="color:var(--accent);">0</strong></span>
+      <!-- Followers & Following count (Clickable to open drawer - Image 2) -->
+      <div style="display: flex; justify-content: center; gap: 0.75rem; margin: 0.35rem 0 0.85rem 0; font-size: 0.92rem; font-weight: 700;">
+        <button type="button" id="btn-view-public-followers" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:4px 10px; cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--text-color);">Followers: <strong id="public-profile-followers-count" style="color:var(--accent);">0</strong></button>
+        <button type="button" id="btn-view-public-following" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:4px 10px; cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--text-color);">Following: <strong id="public-profile-following-count" style="color:var(--accent);">0</strong></button>
+      </div>
+      <div id="public-profile-private-msg" class="hidden" style="padding: 0.65rem; background: #f1f5f9; border-radius: 10px; font-size: 0.82rem; color: #64748b; font-weight: 700; margin-bottom: 0.75rem;">
+        🔒 This account is private. Follow this player to view their network.
+      </div>
+      <!-- Social List Drawer / Modal for Followers & Following (Image 2 style) -->
+      <div id="public-profile-social-drawer" class="hidden" style="margin-top: 0.75rem; margin-bottom: 0.75rem; padding: 0.75rem; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; text-align: left; max-height: 220px; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-weight: 800; font-size: 0.85rem; color: var(--text-color);">
+          <span id="public-profile-social-title">Followers</span>
+          <button type="button" id="btn-close-social-drawer" style="background:none; border:none; cursor:pointer; font-size:1.1rem; color:#64748b; line-height: 1;">&times;</button>
+        </div>
+        <div id="public-profile-social-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <!-- Dynamically populated list with avatars, names, follow buttons -->
+        </div>
       </div>
 
       <div style="text-align: left; margin-bottom: 0.4rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">About:</div>
@@ -3811,6 +3932,7 @@
       <div id="public-profile-actions" style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
         <button id="btn-challenge-public" class="btn-challenge" style="width: 100%; justify-content: center;">🎯 Challenge Player</button>
         <button id="btn-toggle-friend-public" class="btn-login" style="width: 100%;">Follow Player</button>
+        <a id="btn-open-public-dynamic-page" href="#" style="margin-top: 0.4rem; font-size: 0.82rem; font-weight: 800; color: var(--accent); text-decoration: none;">View Dedicated Dynamic Profile Page ↗</a>
       </div>
     </div>
   </div>

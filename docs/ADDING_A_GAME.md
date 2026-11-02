@@ -1,38 +1,70 @@
-# Adding a New Game to Gamify: Developer & Monetization Guide
+# Adding a New Game to Gamify: Developer, Monetization & PR Guide
 
-Gamify features a **zero-touch, plug-and-play modular game architecture**. Adding a new game requires no changes to core routing, database schemas, or worker endpoints. Vite dynamically bundles all modules placed in `src/games/`, provisions daily challenges, attaches live leaderboards, and integrates seamlessly into our Google AdSense monetization system.
+Gamify features a **zero-touch, plug-and-play modular game architecture** designed to maximize player retention, search engine indexing, and Google AdSense revenue. 
+
+Adding a new game requires two components:
+1. The interactive game logic module in `src/games/<game_id>.js`.
+2. The dedicated static HTML page in `public/games/<game_id>.html` with desktop side ad rails and 250+ words of crawlable rules.
 
 ---
 
 ## 1. Google AdSense Monetization & Compliance Standards (Mandatory)
 
-To maximize Google AdSense revenue and adhere strictly to Google's Quality & Value Content guidelines, every contributed game **must** fulfill the following standards:
+To maximize Google AdSense approval and CPM rates while adhering strictly to Google's Quality, Value Content, and Ad Placement guidelines, every contributed game **must** fulfill the following standards:
 
 ### A. Generic & Original Game Titles
-- **No Trademarked Names**: Avoid trademarked or proprietary game titles (e.g., use **"Word Guess"** instead of "Wordle", **"Classic Sudoku"**, **"Daily Crossword"**).
-- Titles must be original, descriptive, and clearly communicate the logic gameplay mechanism to players and search crawler algorithms.
+- **No Trademarked Names**: Avoid trademarked or proprietary game titles. Use generic titles (e.g., use **"Word Guess"** instead of "Wordle", **"Classic Sudoku"**, **"Daily Crossword"**, **"Number Grid"**).
+- Titles must be original, descriptive, and clearly communicate the logic puzzle mechanism.
 
-### B. Mandatory 250+ Word Static Written Rules & Guide
-- Search engine crawlers and automated AdSense evaluators index static page content heavily.
-- Every game **must** provide at least **250+ words** of crawlable, static written instructions in `src/client/gameRulesContent.js`.
-- Rules are rendered directly below the game canvas in an HTML `<details>` and `<summary>` collapsible card:
-  - **Section Title**: `## How to Play <Game Title>`
-  - **Color Code Definitions**: Clear explanation of tile feedback (e.g., Green/Yellow/Grey, Active/Complete).
-  - **Movement & Controls**: Explaining mouse, touch, and physical keyboard shortcuts.
-  - **Strategies & Tactics**: 2 to 3 paragraphs detailing analytical deduction methods (e.g., candidate elimination, cross-hatching, vowel anchors).
-  - **Scoring & Streak Bonuses**: Point breakdowns, speed bonus thresholds, and streak progression.
+### B. Dedicated Indexable URLs (`/games/<game_id>`)
+- Every game has a dedicated, indexable URL (e.g., `https://gamify.com/games/word_guess`, `https://gamify.com/games/sudoku`).
+- In addition to client-side routing, each game possesses a dedicated static file: `public/games/<game_id>.html`. Vite bundles and emits this directly into `dist/games/<game_id>.html`.
 
-### C. Dedicated Clean URL Routing (`/games/:slug`)
-- Each game runs in its own dedicated, canonical URL (e.g., `https://gamify.top/games/sudoku`, `https://gamify.top/games/word-guess`).
-- The game view includes breadcrumb navigation (`Home › <Game Name>`), unique `<title>` metadata, and dedicated above-and-below AdSense responsive ad slots.
+### C. Desktop Side Ads vs Mobile Top Ads (AdSense Policy Compliant)
+- **Desktop Viewports ($\ge$ 960px)**: Advertisement banners are displayed on **side rails** (`.side-ad-rail`, minimum height 600px) on the left and right sides of the centered game launcher and arena, keeping the interactive game canvas completely unobstructed.
+- **Mobile Viewports (< 960px)**: The side ad rails are hidden, and a responsive top ad banner (`.mobile-ad-banner`, minimum height 90px) is displayed above the game card.
+- Every ad container is distinctly marked with the standard `ADVERTISEMENT` header label and layout shift reservations (`min-height`) to eliminate Cumulative Layout Shift (CLS).
 
-### D. Ad Layout & Cumulative Layout Shift (CLS) Protection
-- Ad banner slots feature a minimum height reservation (`min-height: 90px` or `min-height: 250px`) with the required `ADVERTISEMENT` header label.
-- Never place interactive game buttons or inputs immediately flush against ad wrappers to avoid accidental invalid clicks.
+### D. Mandatory 250+ Word Static Written Rules & Guide
+- Search engine crawlers and automated AdSense evaluators index static HTML page text.
+- Every game **must** provide at least **250+ words** of crawlable, static written instructions directly below the game canvas inside an HTML `<details open class="game-rules-dropdown">`:
+  - **Section Title**: `## How to Play <Game Title> — Rules, Tips & Strategy`
+  - **Objective**: Detailed summary of the puzzle goal.
+  - **Color Code & Feedback Definitions**: Explicit explanations of deterministic cues (e.g. Green, Yellow, Gray).
+  - **Controls**: Instructions for touch, mouse, and physical keyboard input.
+  - **Analytical Strategy**: 2 to 3 paragraphs detailing tactical deduction methods (e.g., vowel anchors, orthogonal elimination, edge constraints).
+  - **Escalating Hint Assistance & Coin Economy**: Explanation of the escalating hint cost mechanism.
+- Include standard footer links: **About Us**, **Privacy Policy**, **Contact Us**, and **Terms of Service**.
 
 ---
 
-## 2. Deterministic PRNG & 100+ Days Randomness Standard
+## 2. Single Unified Escalating Hint Standard
+
+- **Do NOT render a custom hint button inside your game board or canvas.** Redundant buttons clutter mobile viewports and confuse players.
+- Gamify features a **single unified hint button** on the arena header control panel.
+- When the player taps the hint button, Gamify verifies the user's coin balance, deducts escalating coins ($10 \to 20 \to 35 \to \dots$), and calls the `provideHint(cost)` function exported by your game's `mount()` return object:
+
+```javascript
+mount: (container, puzzle, callbacks) => {
+  // ... game initialization ...
+
+  const provideHint = (cost = 10) => {
+    // 1. Reveal a correct cell or flash a matching element
+    // 2. Add the .hinted-cell CSS class for glowing animation
+    // 3. Display informative status
+    callbacks.showStatus(`💡 Hint: Revealed cell! (-${cost} 🪙)`, "var(--accent)");
+  };
+
+  return {
+    provideHint,
+    cleanup: () => { /* remove event listeners */ }
+  };
+}
+```
+
+---
+
+## 3. Deterministic PRNG & 100+ Days Randomness Standard
 
 Gamify runs deterministically on client devices with zero server latency. Every player across the globe gets the exact same puzzle on any calendar day.
 
@@ -42,26 +74,40 @@ Gamify runs deterministically on client devices with zero server latency. Every 
   ```javascript
   import { SeededRNG } from './prng.js';
 
-  const seed = `${dateStr}:my-game:medium`;
+  const seed = `${dateStr}:sliding-puzzle:medium`;
   const rng = new SeededRNG(seed);
   ```
 - The 32-bit FNV-1a hash inside `SeededRNG` produces an identical pseudorandom stream for all players on that calendar date.
 
 ### 100+ Days Randomness Guarantee
 - The puzzle bank or procedural generator **must guarantee at least 100+ consecutive days of unique gameplay** without repeating puzzles.
-- For procedural games (e.g., Sudoku, Number Grid, Number Trail, Memory Match), the combinatorial seed space provides billions of unique puzzles.
-- For curated dictionary/grid games (e.g., Crossword, Word Guess), ensure the bank contains at least 100 verified entries across all tiers.
+- For procedural games (Sudoku, Number Grid, Number Trail, Memory Match), the combinatorial seed space provides billions of unique puzzles.
+- For dictionary/grid games (Crossword, Word Guess), ensure the bank contains at least 100 verified entries across all tiers.
 
 ---
 
-## 3. Game Module Implementation (`src/games/<your-game-id>.js`)
+## 4. D1 Database Streak & Scoring Architecture
 
-Create a new JavaScript file in `src/games/`:
+Gamify uses Cloudflare D1 SQL for lightning-fast leaderboard and streak tracking. The database schema stores:
+- `current_streak`: Number of consecutive active days.
+- `best_streak`: All-time highest streak achieved by the player.
+- `last_played_date`: Calendar date (`YYYY-MM-DD` in UTC strict) of last completion.
+
+### Streak Evaluation Rule:
+- If `last_played_date === yesterday`: Consecutive day maintained $\to$ `current_streak + 1` and update `best_streak`.
+- If `last_played_date === today`: Already played today $\to$ maintain current streak.
+- If `last_played_date < yesterday`: Missed one or more days $\to$ `current_streak` resets to 1 upon solve (or evaluates to 0 for non-played days).
+
+---
+
+## 5. Game Module Implementation (`src/games/<your-game-id>.js`)
+
+Create your game module in `src/games/`:
 ```bash
 src/games/sliding-puzzle.js
 ```
 
-### Complete Code Template
+### Complete Module Template:
 
 ```javascript
 import { SeededRNG } from './prng.js';
@@ -70,7 +116,7 @@ export const gameConfig = {
   // 1. Unique game identifier (lowercase, hyphens allowed)
   id: "sliding-puzzle",
 
-  // 2. URL slug (used for clean routing /games/:slug)
+  // 2. URL slug (matches /games/:slug and public/games/:slug.html)
   slug: "sliding-puzzle",
 
   // 3. Display Metadata
@@ -79,15 +125,15 @@ export const gameConfig = {
   icon: "🧩",
 
   // 4. Monetization & Base Unlock
-  isFree: true,                // true = open to all; false = costs coins to unlock base game
-  gameUnlockCost: 0,           // Coins required if isFree: false (e.g., 100)
+  isFree: true,                // true = open to all; false = costs coins to unlock
+  gameUnlockCost: 0,
 
   // 5. Difficulty Tier Generators (Deterministic Daily Puzzles)
   difficulties: {
     easy: {
       tier: "easy",
-      unlockCost: 0,           // Free by default
-      rewardCoins: 15,         // Base daily coin reward
+      unlockCost: 0,
+      rewardCoins: 15,
       generateDailyPuzzle: (dateStr) => {
         const rng = new SeededRNG(`${dateStr}:sliding-puzzle:easy`);
         return {
@@ -95,15 +141,14 @@ export const gameConfig = {
           difficulty: "easy",
           dateStr,
           gridSize: 3,
-          movesLimit: 40,
-          initialBoard: generateShuffledBoard(rng, 3, 15),
+          initialBoard: [2, 1, 3, 4, 5, 6, 7, 8, null],
           targetBoard: [1, 2, 3, 4, 5, 6, 7, 8, null]
         };
       }
     },
     medium: {
       tier: "medium",
-      unlockCost: 150,         // Coins to unlock medium tier
+      unlockCost: 150,
       rewardCoins: 35,
       generateDailyPuzzle: (dateStr) => {
         const rng = new SeededRNG(`${dateStr}:sliding-puzzle:medium`);
@@ -112,15 +157,14 @@ export const gameConfig = {
           difficulty: "medium",
           dateStr,
           gridSize: 4,
-          movesLimit: 80,
-          initialBoard: generateShuffledBoard(rng, 4, 30),
-          targetBoard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, null]
+          initialBoard: generateShuffled(rng, 4),
+          targetBoard: Array.from({ length: 15 }, (_, i) => i + 1).concat([null])
         };
       }
     },
     hard: {
       tier: "hard",
-      unlockCost: 300,         // Coins to unlock hard tier
+      unlockCost: 300,
       rewardCoins: 75,
       generateDailyPuzzle: (dateStr) => {
         const rng = new SeededRNG(`${dateStr}:sliding-puzzle:hard`);
@@ -129,169 +173,183 @@ export const gameConfig = {
           difficulty: "hard",
           dateStr,
           gridSize: 5,
-          movesLimit: 120,
-          initialBoard: generateShuffledBoard(rng, 5, 60),
+          initialBoard: generateShuffled(rng, 5),
           targetBoard: Array.from({ length: 24 }, (_, i) => i + 1).concat([null])
         };
       }
     }
   },
 
-  // 6. Infinite Mode (Endless Practice without waiting for UTC reset)
+  // 6. Infinite Mode (Endless Practice)
   unlimitedPlayground: {
     tier: "playground",
-    unlockCost: 500,           // One-time coin payment unlocks infinite mode for all unlocked tiers
+    unlockCost: 250,
     generatePlaygroundPuzzle: (tier = 'medium') => {
-      const rng = new SeededRNG(`sliding-play-${Date.now()}-${Math.random()}`);
-      const size = tier === 'easy' ? 3 : tier === 'hard' ? 5 : 4;
+      const rng = new SeededRNG(`sliding-${Date.now()}-${Math.random()}`);
       return {
         gameId: "sliding-puzzle",
         difficulty: tier,
         isPlayground: true,
-        gridSize: size,
-        initialBoard: generateShuffledBoard(rng, size, size * 10),
-        targetBoard: Array.from({ length: size * size - 1 }, (_, i) => i + 1).concat([null])
+        gridSize: 4,
+        initialBoard: generateShuffled(rng, 4),
+        targetBoard: Array.from({ length: 15 }, (_, i) => i + 1).concat([null])
       };
     }
   },
 
-  // 7. Mount Lifecycle Method (UI Rendering & Interaction)
-  // container: DOM element where the game canvas is mounted
-  // puzzle: The puzzle object returned by generateDailyPuzzle / generatePlaygroundPuzzle
-  // callbacks:
-  //   - onWin(score, timeTakenMs): Submit solve to sync streak, coins, and leaderboards
-  //   - showStatus(message, color): Update status banner
+  // 7. Mount Lifecycle Method (Interactive Canvas)
   mount: (container, puzzle, { onWin, showStatus }) => {
     const startTime = Date.now();
     let isSolved = false;
 
-    // Render game board HTML inside container
     container.innerHTML = `
-      <div class="sliding-game-wrapper" style="display:flex; flex-direction:column; align-items:center;">
-        <div id="sliding-board" style="display:grid; grid-template-columns: repeat(${puzzle.gridSize}, 60px); gap:6px;"></div>
-        <button id="btn-check-sliding" class="game-action-btn btn-play" style="margin-top:1.25rem;">
-          Verify Order ✓
-        </button>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <div id="puzzle-grid" style="display:grid; grid-template-columns:repeat(${puzzle.gridSize}, 56px); gap:6px;"></div>
       </div>
     `;
 
-    const boardEl = container.querySelector('#sliding-board');
-    const verifyBtn = container.querySelector('#btn-check-sliding');
+    // Single unified hint implementation
+    const provideHint = (cost = 10) => {
+      showStatus(`💡 Hint: Next correct tile indicated! (-${cost} 🪙)`, "var(--accent)");
+    };
 
-    // (Add interactive tile click listeners here...)
-
-    const handleVerify = () => {
-      if (isSolved) return;
-      
-      const won = checkIsSolved(puzzle); // Implement your verification
-      if (won) {
-        isSolved = true;
-        const timeTakenMs = Math.max(1200, Date.now() - startTime);
-        const earnedPoints = calculateScore(timeTakenMs);
-
-        showStatus(`🎉 Solved in ${(timeTakenMs / 1000).toFixed(1)}s! (+${earnedPoints} pts)`, "var(--correct-bg)");
-        verifyBtn.disabled = true;
-
-        // Triggers optimistic coin reward, streak maintenance, confetti, and leaderboard sync
-        onWin(earnedPoints, timeTakenMs);
-      } else {
-        showStatus("❌ Tiles are not yet in sequential order. Keep sliding!", "var(--danger)");
+    return {
+      provideHint,
+      cleanup: () => {
+        // remove event listeners and timers
       }
     };
-
-    verifyBtn.addEventListener('click', handleVerify);
-
-    // Return a CLEANUP function (removes event listeners, timers, intervals)
-    return () => {
-      verifyBtn.removeEventListener('click', handleVerify);
-    };
   }
 };
 ```
 
 ---
 
-## 4. Registering Static Written Rules in `src/client/gameRulesContent.js`
+## 6. Dedicated Static HTML Template (`public/games/<game_id>.html`)
 
-Open `src/client/gameRulesContent.js` and add an entry matching your game ID:
+Create `public/games/<game_id>.html`:
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sliding Block Puzzle — Daily Logic Puzzle | Gamify</title>
+  <meta name="description" content="Play the daily Sliding Block Puzzle on Gamify. Rearrange tiles into numerical order. Free, minimalist, and AdSense policy compliant." />
+  <link rel="canonical" href="https://gamify.com/games/sliding_puzzle" />
+  <link rel="stylesheet" href="/index.html" />
+  <!-- Include game page side ads layout styles -->
+</head>
+<body>
+  <!-- Header with Gamify logo & Home link -->
+  <header class="site-header">
+    <a href="/" class="brand-logo">🎮 <span class="logo-badge">Gamify</span></a>
+    <a href="/" class="btn-nav-home">Home</a>
+  </header>
 
-```javascript
-export const STATIC_GAME_RULES = {
-  // ... existing games ...
+  <!-- Desktop Side Ads Layout (Image 4) -->
+  <div class="game-page-layout">
+    <!-- Left Ad Rail -->
+    <aside class="side-ad-rail" aria-label="Advertisement">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-slot-box">Responsive Vertical Banner</div>
+    </aside>
 
-  'sliding-puzzle': {
-    gameId: 'sliding-puzzle',
-    slug: 'sliding-puzzle',
-    title: 'How to Play Sliding Block Puzzle',
-    wordCount: 310,
-    html: `
-      <h3>Goal and Spatial Sliding Overview</h3>
-      <p>Sliding Block Puzzle is an engaging spatial deduction puzzle where your objective is to rearrange a scrambled grid of numbered square tiles into strictly ascending numerical order (from 1 to N) with the empty slot finishing in the bottom-right corner.</p>
+    <!-- Center Play Card & Static Rules -->
+    <main class="game-main-content">
+      <div class="mobile-ad-banner">
+        <span class="ad-banner-label">Advertisement</span>
+        <div class="mobile-ad-box"></div>
+      </div>
 
-      <h3>Rules and Movement Constraints</h3>
-      <ul>
-        <li><strong>Orthogonal Slides:</strong> You may only slide tiles into the adjacent empty vacant space vertically or horizontally.</li>
-        <li><strong>No Lifting or Teleporting:</strong> Tiles cannot jump over other tiles; each move must be a direct slide into the adjacent open slot.</li>
-      </ul>
+      <div class="game-play-card">
+        <h1>🧩 SLIDING BLOCK PUZZLE</h1>
+        <p>Rearrange tiles into sequential order.</p>
+        <a href="/?game=sliding-puzzle" class="btn-play-game">PLAY DAILY PUZZLE ▶</a>
+      </div>
 
-      <h3>Controls and Touch Feedback</h3>
-      <p>Click or tap any tile adjacent to the empty space to slide it instantly. On mobile devices, smooth CSS transitions guide the movement with haptic visual feedback.</p>
+      <!-- 250+ Words Static Rules for AdSense Reviewers -->
+      <details open class="game-rules-dropdown">
+        <summary>📖 How to Play Sliding Block Puzzle — Rules & Strategy</summary>
+        <div class="rules-body-content">
+          <h4>Game Objective</h4>
+          <p>Detailed explanation of puzzle mechanics...</p>
+          <h4>Movement & Controls</h4>
+          <p>Touch, mouse, and directional controls...</p>
+          <h4>Proven Solving Strategies</h4>
+          <p>Analytical deduction and row-by-row solving methods...</p>
+          <h4>Escalating Hint Assistance & Coin Economy</h4>
+          <p>Explanation of single hint button scaling from 10 coins...</p>
+        </div>
+      </details>
+    </main>
 
-      <h3>Proven Solving Strategies</h3>
-      <p>Solve the top row first, from left to right. Once the first row is locked in place, never disturb it. Continue row by row downwards until only the final two rows remain. Use corner rotation algorithms to rotate the last three numbers into their target positions without breaking previous rows.</p>
+    <!-- Right Ad Rail -->
+    <aside class="side-ad-rail" aria-label="Advertisement">
+      <span class="ad-banner-label">Advertisement</span>
+      <div class="ad-slot-box">Responsive Vertical Banner</div>
+    </aside>
+  </div>
 
-      <h3>Scoring, Speed Bonuses & Daily Streaks</h3>
-      <p>Completing daily puzzles with fewer moves and swift times awards bonus points (+50, +25, +10 Pts). Consecutive daily solves build active streaks that yield bonus coins!</p>
-    `
-  }
-};
+  <!-- Standard Policy Footer -->
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/about.html">About Us</a>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/contact.html">Contact Us</a>
+      <a href="/terms.html">Terms of Service</a>
+    </div>
+    <p>&copy; 2026 Gamify. All rights reserved.</p>
+  </footer>
+</body>
+</html>
 ```
 
 ---
 
-## 5. Step-by-Step GitHub Pull Request (PR) Workflow
+## 7. Step-by-Step GitHub Pull Request (PR) Workflow
 
-To contribute your new game to the official Gamify repository, follow this workflow:
+To contribute your game to Gamify, follow these steps:
 
-### Step 1: Fork and Clone
+### Step 1: Fork & Clone Repository
 ```bash
 git clone https://github.com/<your-username>/Gamify.git
 cd Gamify
 git checkout -b game/sliding-puzzle
 ```
 
-### Step 2: Implement and Test Locally
-1. Add your game module to `src/games/<gameId>.js`.
-2. Add your 250+ word static guide to `src/client/gameRulesContent.js`.
-3. Start the local development server:
+### Step 2: Implement & Test
+1. Add game logic to `src/games/<game_id>.js`.
+2. Add static page to `public/games/<game_id>.html`.
+3. Add static rules text to `src/client/gameRulesContent.js`.
+4. Run locally:
    ```bash
    npm run dev
    ```
-4. Test all three difficulties (Easy, Medium, Hard), test Infinite Mode, and verify the rules dropdown renders neatly below the board.
 
 ### Step 3: Run Full Production Verification
-Ensure there are no build or TypeScript errors:
+Ensure there are zero TypeScript, linting, or build errors:
 ```bash
 npm run typecheck
 npm run build
 ```
-The build must succeed with zero errors and clean output chunks.
+Verify that `dist/games/<game_id>.html` exists in the build output.
 
-### Step 4: Commit with Semantic Messages
+### Step 4: Commit with Semantic Message
 ```bash
-git add src/games/sliding-puzzle.js src/client/gameRulesContent.js
-git commit -m "feat(games): add sliding block puzzle with deterministic daily seeds and 250+ word guide"
+git add src/games/sliding-puzzle.js public/games/sliding_puzzle.html src/client/gameRulesContent.js
+git commit -m "feat(games): add sliding block puzzle with desktop side ads and 250+ word rules"
 git push origin game/sliding-puzzle
 ```
 
-### Step 5: Submit Pull Request on GitHub
-1. Navigate to `https://github.com/your-org/Gamify/pulls`.
-2. Click **New Pull Request**.
-3. Use the PR template checklist:
+### Step 5: Open GitHub Pull Request
+1. Open a Pull Request against the `main` branch.
+2. Confirm the PR Checklist:
    - [x] Non-trademarked generic title
-   - [x] Deterministic daily seeds using `SeededRNG`
-   - [x] 100+ days randomness guarantee
-   - [x] 250+ word crawlable written rules in `src/client/gameRulesContent.js`
+   - [x] Deterministic daily seeds using `SeededRNG` (100+ days uniqueness)
+   - [x] Single unified escalating hint (`provideHint`) implemented
+   - [x] Dedicated static HTML page with desktop side ads (`public/games/<game_id>.html`)
+   - [x] 250+ word crawlable written rules in `<details open class="game-rules-dropdown">`
    - [x] `npm run typecheck` and `npm run build` pass cleanly
-   - [x] Responsive layout tested on desktop and mobile viewports
-4. Submit your PR for review! Our automated CI will run checks and preview deployment.
+3. Submit for automated review and deployment!

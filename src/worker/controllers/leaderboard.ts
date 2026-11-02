@@ -298,8 +298,9 @@ export async function handleGetTournamentArchive(
     return errorResponse("Missing required 'weekId' parameter", 400);
   }
 
+  const normalizedWeekId = weekId.replace(/^S/i, '');
   const currentWeekId = getWeekIdUTC();
-  const isActive = weekId === currentWeekId;
+  const isActive = normalizedWeekId === currentWeekId;
 
   // 1. Fetch Top 10 Contenders for this week using indexed scan
   const top10Query = `
@@ -338,7 +339,7 @@ export async function handleGetTournamentArchive(
             ) AS user_rank
           FROM weekly_tournament wt
           WHERE wt.week_id = ? AND wt.user_id = ?
-        `).bind(weekId, weekId, auth.user.id).first<any>();
+        `).bind(normalizedWeekId, normalizedWeekId, auth.user.id).first<any>();
 
         if (userRow) {
           userStanding = {
@@ -351,7 +352,7 @@ export async function handleGetTournamentArchive(
     } catch {}
   }
 
-  const top10Result = await env.DB.prepare(top10Query).bind(weekId).all().catch(err => {
+  const top10Result = await env.DB.prepare(top10Query).bind(normalizedWeekId).all().catch(err => {
     console.warn('[Tournament Archive Note]', err?.message || err);
     return { results: [] };
   });
@@ -359,10 +360,10 @@ export async function handleGetTournamentArchive(
   return jsonResponse(
     {
       success: true,
-      weekId,
+      weekId: normalizedWeekId,
       currentWeekId,
       isActive,
-      title: `⚔️ Season ${weekId}`,
+      title: `⚔️ Season ${normalizedWeekId}`,
       top10: top10Result.results || [],
       userStanding,
     },

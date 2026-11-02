@@ -56,6 +56,7 @@ export interface UserRow {
   xp?: number;
   selected_frame?: string;
   selected_title?: string;
+  is_private?: number;
   last_played_date: string | null;
   last_login_at: string;
   created_at: string;
