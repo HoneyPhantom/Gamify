@@ -579,9 +579,28 @@
     }
     .game-view-center-content {
       flex: 1;
-      max-width: 680px;
+      max-width: 900px;
       min-width: 0;
       width: 100%;
+    }
+    .btn-orange-done {
+      background: linear-gradient(135deg, #ea580c, #f97316) !important;
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      border: none !important;
+      border-radius: 12px !important;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4) !important;
+      cursor: pointer !important;
+      padding: 0.85rem 2rem !important;
+      font-size: 1rem !important;
+      transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+    }
+    .btn-orange-done:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(234, 88, 12, 0.5) !important;
+    }
+    .btn-orange-done:active {
+      transform: translateY(1px);
     }
     .mobile-game-top-ad {
       display: none;
@@ -3143,7 +3162,6 @@
 
           <div class="score-board">
             <div>Total Score: <span id="total-score">0</span></div>
-            <div>Games Won: <span id="games-won">0</span></div>
             <div>⏱️ Timer: <span id="game-timer" style="color:var(--accent); font-family:monospace; font-weight:800;">00:00</span></div>
             <div>⚡ Speed: <span id="speed-bonus-indicator" style="color:var(--correct-bg); font-weight:800;">+50 Pts</span></div>
           </div>
@@ -3170,7 +3188,7 @@
           </div>
 
           <!-- Static Indexable Written Rules & Instructions (Directly Below Game Canvas for SEO/AdSense) -->
-          <details id="game-static-rules-dropdown" class="game-rules-details" open>
+          <details id="game-static-rules-dropdown" class="game-rules-details">
             <summary class="game-rules-summary">
               <span style="display:flex; align-items:center; gap:0.5rem;">
                 <span>📖</span>
@@ -3899,10 +3917,10 @@
       <p id="public-profile-handle" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.4rem;">@username</p>
       <div class="badge" id="public-profile-level-badge" style="background:#fef3c7; border-color:#fde68a; color:#92400e; margin: 0 auto 0.75rem auto; display: inline-flex;">⭐ <span id="public-profile-level">Lvl 1 · Novice</span></div>
       
-      <!-- Followers & Following count (Clickable to open drawer - Image 2) -->
-      <div style="display: flex; justify-content: center; gap: 0.75rem; margin: 0.35rem 0 0.85rem 0; font-size: 0.92rem; font-weight: 700;">
-        <button type="button" id="btn-view-public-followers" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:4px 10px; cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--text-color);">Followers: <strong id="public-profile-followers-count" style="color:var(--accent);">0</strong></button>
-        <button type="button" id="btn-view-public-following" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:4px 10px; cursor:pointer; font-size:0.85rem; font-weight:700; color:var(--text-color);">Following: <strong id="public-profile-following-count" style="color:var(--accent);">0</strong></button>
+      <!-- Followers & Following count (Clickable tabs - Image 2) -->
+      <div class="tabs" style="display: flex; justify-content: center; gap: 0.5rem; margin: 0.5rem 0 0.85rem 0;">
+        <button type="button" class="tab-btn active" id="btn-view-public-following">Following (<span id="public-profile-following-count">0</span>)</button>
+        <button type="button" class="tab-btn" id="btn-view-public-followers">Followers (<span id="public-profile-followers-count">0</span>)</button>
       </div>
       <div id="public-profile-private-msg" class="hidden" style="padding: 0.65rem; background: #f1f5f9; border-radius: 10px; font-size: 0.82rem; color: #64748b; font-weight: 700; margin-bottom: 0.75rem;">
         🔒 This account is private. Follow this player to view their network.
@@ -3932,6 +3950,7 @@
       <div id="public-profile-actions" style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
         <button id="btn-challenge-public" class="btn-challenge" style="width: 100%; justify-content: center;">🎯 Challenge Player</button>
         <button id="btn-toggle-friend-public" class="btn-login" style="width: 100%;">Follow Player</button>
+        <button type="button" id="btn-public-profile-shop" class="btn-shop" style="width: 100%; justify-content: center;">🛍️ Shop</button>
         <a id="btn-open-public-dynamic-page" href="#" style="margin-top: 0.4rem; font-size: 0.82rem; font-weight: 800; color: var(--accent); text-decoration: none;">View Dedicated Dynamic Profile Page ↗</a>
       </div>
     </div>

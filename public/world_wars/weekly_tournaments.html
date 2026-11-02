@@ -265,6 +265,130 @@
       text-transform: uppercase;
     }
 
+    /* Live Contenders Card (Requirement 3) */
+    .contenders-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06);
+      margin-bottom: 2rem;
+    }
+    .contenders-header {
+      background: #f8fafc;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .contender-row {
+      display: flex;
+      align-items: center;
+      padding: 0.9rem 1.25rem;
+      border-bottom: 1px solid #f1f5f9;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s;
+    }
+    .contender-row:hover { background: #f8fafc; }
+    .contender-row:last-child { border-bottom: none; }
+    .contender-rank {
+      font-weight: 900;
+      font-size: 1.1rem;
+      width: 44px;
+      color: #64748b;
+    }
+    .rank-1-badge { color: #f59e0b; font-size: 1.3rem; }
+    .rank-2-badge { color: #94a3b8; font-size: 1.3rem; }
+    .rank-3-badge { color: #d97706; font-size: 1.3rem; }
+    .contender-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .contender-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 0.9rem;
+      color: #334155;
+      border: 2px solid #cbd5e1;
+    }
+    .contender-meta {
+      display: flex;
+      flex-direction: column;
+    }
+    .contender-name {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #0f172a;
+    }
+    .contender-title {
+      font-size: 0.72rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .contender-stat {
+      text-align: right;
+    }
+    .contender-points {
+      font-weight: 900;
+      font-size: 1.15rem;
+      color: #dc2626;
+    }
+    .contender-games {
+      font-size: 0.72rem;
+      color: #94a3b8;
+    }
+
+    .user-standing-card {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border: 1.5px solid #fecaca;
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .standing-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #dc2626;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .standing-stats {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .standing-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .standing-val {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #0f172a;
+    }
+    .standing-sub {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #64748b;
+    }
+
     /* Archive Seasons Grid */
     .seasons-grid {
       display: grid;
@@ -396,40 +520,42 @@
       <div class="hero-card">
         <h1>⚔️ World Wars Championships</h1>
         <p>Seven-day synchronized tournament seasons. Solve daily logic puzzles, earn championship battle points, and claim your place in the season archive.</p>
-        <a href="#active-season-box" class="championship-cta">
-          VIEW ACTIVE SEASON STANDINGS ▼
-        </a>
       </div>
 
-      <!-- Active Championship Box -->
-      <h2 class="season-section-title">🔥 Current Championship</h2>
-      <a href="/world_wars/weekly_tournaments/S2026-W45" id="active-season-box" class="championship-box-active">
-        <div class="active-badge-pill">● LIVE SEASON</div>
-        <div class="season-box-header">
-          <div class="season-box-icon">👑</div>
+      <!-- Active Championship Top 10 Contenders + User Standing (Requirement 3) -->
+      <h2 class="season-section-title" id="active-season-heading">🔥 Current Championship Standings (Active Season)</h2>
+      <div class="contenders-card">
+        <div class="contenders-header">
+          <span>Contender</span>
+          <span>Points</span>
+        </div>
+        <div id="contenders-list">
+          <div style="padding: 2rem; text-align: center; color: #94a3b8;">
+            Querying tournament archives...
+          </div>
+        </div>
+        <!-- User Standing Card rendered at bottom of all those 10 -->
+        <div id="user-standing-box" class="user-standing-card" style="margin: 0.75rem 1rem 1rem 1rem; display: none;">
           <div>
-            <div class="season-box-title" id="active-season-title">Season 2026-W45 Championship</div>
-            <div style="font-size: 0.8rem; color: #dc2626; font-weight: 800;">Seven-day battle concludes Sunday 23:59 UTC</div>
+            <div class="standing-label">Your Championship Standing</div>
+            <div id="user-standing-name" style="font-weight: 800; font-size: 1rem; color: #0f172a; margin-top: 2px;">Player</div>
+          </div>
+          <div class="standing-stats">
+            <div class="standing-item">
+              <span class="standing-val" id="user-rank-val">-</span>
+              <span class="standing-sub">Rank</span>
+            </div>
+            <div class="standing-item">
+              <span class="standing-val" id="user-points-val">0</span>
+              <span class="standing-sub">Points</span>
+            </div>
+            <div class="standing-item">
+              <span class="standing-val" id="user-games-val">0</span>
+              <span class="standing-sub">Played</span>
+            </div>
           </div>
         </div>
-        <p class="season-box-desc">
-          Click to inspect the top 10 contenders, your personal standing, points tally, and live podium qualifications for this week's crown.
-        </p>
-        <div class="season-box-stats">
-          <div class="season-stat-item">
-            <span class="season-stat-val">10</span>
-            <span class="season-stat-lbl">Championship Spots</span>
-          </div>
-          <div class="season-stat-item">
-            <span class="season-stat-val">500</span>
-            <span class="season-stat-lbl">Max Daily Points</span>
-          </div>
-          <div class="season-stat-item">
-            <span class="season-stat-val" style="color: #10b981;">ACTIVE</span>
-            <span class="season-stat-lbl">Status</span>
-          </div>
-        </div>
-      </a>
+      </div>
 
       <!-- Past Seasons Archive Grid -->
       <h2 class="season-section-title">🏛️ Past Championship Archive</h2>
@@ -437,8 +563,8 @@
         <!-- Dynamically populated past seasons -->
       </div>
 
-      <!-- Static Collapsible Section: 250+ Words for Google AdSense Reviewers -->
-      <details open class="game-rules-dropdown">
+      <!-- Static Collapsible Section: 250+ Words for Google AdSense Reviewers (Defaultly Collapsed) -->
+      <details class="game-rules-dropdown">
         <summary>📖 How World Wars Weekly Tournaments Work — Rules, Scoring & Rewards</summary>
         <div class="rules-body-content">
           <h4>Weekly Tournament Format & Reset Schedules</h4>
@@ -492,11 +618,98 @@
     }
 
     const currentWeek = getCurrentWeekId();
-    const activeBox = document.getElementById('active-season-box');
-    const activeTitle = document.getElementById('active-season-title');
+    const activeHeading = document.getElementById('active-season-heading');
+    if (activeHeading) activeHeading.textContent = `🔥 Season ${currentWeek} Championship — Top 10 Contenders`;
 
-    activeBox.href = `/world_wars/weekly_tournaments/S${currentWeek}`;
-    activeTitle.textContent = `Season ${currentWeek} Championship`;
+    // Fetch Active Season Top 10 Contenders and User's Standing
+    async function loadActiveTournament() {
+      const contendersList = document.getElementById('contenders-list');
+      const userStandingBox = document.getElementById('user-standing-box');
+      const userNameEl = document.getElementById('user-standing-name');
+      const userRankEl = document.getElementById('user-rank-val');
+      const userPointsEl = document.getElementById('user-points-val');
+      const userGamesEl = document.getElementById('user-games-val');
+
+      const token = localStorage.getItem('gamify_jwt_token') || localStorage.getItem('gamify_session_token');
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      try {
+        const res = await fetch(`/api/tournaments/${encodeURIComponent(currentWeek)}`, { headers });
+        const data = await res.json();
+
+        if (data.success && data.top10 && data.top10.length > 0) {
+          contendersList.innerHTML = data.top10.map((r, idx) => {
+            const rank = idx + 1;
+            let rankBadge = `#${rank}`;
+            if (rank === 1) rankBadge = `<span class="rank-1-badge">🥇</span>`;
+            else if (rank === 2) rankBadge = `<span class="rank-2-badge">🥈</span>`;
+            else if (rank === 3) rankBadge = `<span class="rank-3-badge">🥉</span>`;
+
+            return `
+              <a href="/profiles?username=${encodeURIComponent(r.username)}" class="contender-row">
+                <div class="contender-rank">${rankBadge}</div>
+                <div class="contender-info">
+                  <div class="contender-avatar">${r.selected_frame || '🎮'}</div>
+                  <div class="contender-meta">
+                    <span class="contender-name">${escapeHtml(r.display_name || r.username)}</span>
+                    <span class="contender-title">${escapeHtml(r.selected_title || `@${r.username}`)}</span>
+                  </div>
+                </div>
+                <div class="contender-stat">
+                  <div class="contender-points">${r.points ?? 0} Pts</div>
+                  <div class="contender-games">${r.games_played ?? 0} solved</div>
+                </div>
+              </a>
+            `;
+          }).join('');
+        } else {
+          contendersList.innerHTML = `
+            <div style="padding: 2.5rem 1rem; text-align: center; color: #64748b;">
+              <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">⚔️</div>
+              <p style="font-weight: 700;">No scores submitted yet for Season ${currentWeek}.</p>
+              <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 4px;">Solve daily puzzles to claim the #1 spot on this week's podium!</p>
+            </div>
+          `;
+        }
+
+        // Render user standing at the bottom of all 10
+        if (data.userStanding) {
+          userStandingBox.style.display = 'flex';
+          userNameEl.textContent = 'Your Active Standing';
+          userRankEl.textContent = `#${data.userStanding.rank}`;
+          userPointsEl.textContent = data.userStanding.points;
+          userGamesEl.textContent = data.userStanding.gamesPlayed;
+        } else {
+          // Check local user
+          let storedUser = null;
+          try {
+            storedUser = JSON.parse(localStorage.getItem('gamify_user_profile') || localStorage.getItem('gamify_session_user'));
+          } catch {}
+          userStandingBox.style.display = 'flex';
+          if (storedUser) {
+            userNameEl.textContent = storedUser.displayName || storedUser.username;
+            userRankEl.textContent = '#--';
+            userPointsEl.textContent = '0';
+            userGamesEl.textContent = '0';
+          } else {
+            userNameEl.textContent = 'Guest Player';
+            userRankEl.textContent = '#--';
+            userPointsEl.textContent = '0';
+            userGamesEl.textContent = '0';
+          }
+        }
+      } catch (err) {
+        contendersList.innerHTML = `<div style="padding: 2rem; text-align: center; color: #94a3b8;">Unable to load tournament contenders right now.</div>`;
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    loadActiveTournament();
 
     // Populate past 6 weekly tournament seasons
     const grid = document.getElementById('seasons-archive-grid');

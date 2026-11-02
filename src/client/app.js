@@ -420,6 +420,12 @@ function clearPinBoxes(containerId, targetId) {
 
 function updateAuthUI() {
   if (currentUser && api.token) {
+    try {
+      localStorage.setItem('gamify_user_profile', JSON.stringify(currentUser));
+      localStorage.setItem('gamify_session_user', JSON.stringify(currentUser));
+      localStorage.setItem('gamify_jwt_token', api.token);
+      localStorage.setItem('gamify_session_token', api.token);
+    } catch {}
     authStateLoggedIn.classList.remove('hidden');
     authStateLoggedOut.classList.add('hidden');
     if (coinBalanceEl) coinBalanceEl.textContent = currentUser.coins ?? 100;
@@ -634,6 +640,11 @@ btnProfileShop?.addEventListener('click', () => {
   navigateToShop(true);
 });
 
+document.getElementById('btn-public-profile-shop')?.addEventListener('click', () => {
+  publicProfileModal?.classList.add('hidden');
+  navigateToShop(true);
+});
+
 // =========================================================================
 // 2. BATCHED PROFILE & OFFLINE-FIRST STATE (INDEXEDDB)
 // =========================================================================
@@ -797,9 +808,13 @@ function renderGamesScrollList(searchQuery = '') {
   });
 }
 
-// Client-side Instant Game Search
+// Client-side Game Search (500ms half-second debounce)
+let gameSearchTimeout = null;
 gameSearchInput?.addEventListener('input', () => {
-  renderGamesScrollList(gameSearchInput.value.trim());
+  clearTimeout(gameSearchTimeout);
+  gameSearchTimeout = setTimeout(() => {
+    renderGamesScrollList(gameSearchInput.value.trim());
+  }, 500);
 });
 
 async function handleGameCardClick(game) {
@@ -1130,15 +1145,22 @@ const GAME_HELP_CONTENT = {
 };
 
 function showGameHelp(gameId) {
-  // If currently in launcher, transition to arena so rules directly below canvas are visible
-  if (gameArenaScreen?.classList.contains('hidden')) {
-    gameLauncherScreen?.classList.add('hidden');
-    gameArenaScreen?.classList.remove('hidden');
-    loadCurrentPuzzle();
-  }
+  const gId = gameId || activeGameId || 'word-guess';
+  const gameObj = getAllGames().find(g => g.id === gId);
+  const title = gameObj?.title || GAME_TITLES[gId] || 'Logic Puzzle';
+  const rules = GAME_RULES_HTML[gId] || '<p>Solve the puzzle by using logical deduction.</p>';
 
+  const helpTitleEl = document.getElementById('help-dialog-title');
+  const helpBodyEl = document.getElementById('help-dialog-body');
+  const helpModalEl = document.getElementById('help-dialog-modal');
+
+  if (helpTitleEl) helpTitleEl.textContent = `How to Play ${title}`;
+  if (helpBodyEl) helpBodyEl.innerHTML = rules;
+  if (helpModalEl) helpModalEl.classList.remove('hidden');
+
+  // If already in arena, also expand the rules details and scroll to it smoothly
   const rulesDetails = document.getElementById('game-static-rules-dropdown');
-  if (rulesDetails) {
+  if (rulesDetails && !gameArenaScreen?.classList.contains('hidden')) {
     rulesDetails.open = true;
     rulesDetails.classList.add('highlight-pulse');
     setTimeout(() => rulesDetails.classList.remove('highlight-pulse'), 1400);
@@ -1158,20 +1180,57 @@ helpDialogModal?.addEventListener('click', (e) => {
 // 6. PUZZLE EXECUTION & OPTIMISTIC SCORE SUBMISSION
 // =========================================================================
 
+function getPuzzleTimerKey() {
+  const dateStr = getTodayDateStr();
+  const mode = isInfinitePlay ? 'infinite' : dateStr;
+  return `gamify_timer_${activeGameId}_${currentTier}_${mode}`;
+}
+
 function startPuzzleTimer() {
   if (gameTimerInterval) clearInterval(gameTimerInterval);
-  startTime = Date.now();
-  if (gameTimerEl) gameTimerEl.textContent = '00:00';
+
+  const timerKey = getPuzzleTimerKey();
+  let savedElapsedSec = 0;
+  try {
+    const stored = localStorage.getItem(timerKey);
+    if (stored) {
+      savedElapsedSec = parseInt(stored, 10) || 0;
+    }
+  } catch {}
+
+  // Resumed timer: calculate start time offset by previously saved elapsed seconds
+  startTime = Date.now() - (savedElapsedSec * 1000);
+
+  const m = String(Math.floor(savedElapsedSec / 60)).padStart(2, '0');
+  const s = String(savedElapsedSec % 60).padStart(2, '0');
+  if (gameTimerEl) gameTimerEl.textContent = `${m}:${s}`;
+
   if (speedBonusEl) {
-    speedBonusEl.textContent = '+50 Pts';
-    speedBonusEl.style.color = 'var(--correct-bg)';
+    if (savedElapsedSec < 30) {
+      speedBonusEl.textContent = '+50 Pts';
+      speedBonusEl.style.color = 'var(--correct-bg)';
+    } else if (savedElapsedSec < 60) {
+      speedBonusEl.textContent = '+25 Pts';
+      speedBonusEl.style.color = 'var(--warning)';
+    } else if (savedElapsedSec < 120) {
+      speedBonusEl.textContent = '+10 Pts';
+      speedBonusEl.style.color = 'var(--accent)';
+    } else {
+      speedBonusEl.textContent = '+0 Pts';
+      speedBonusEl.style.color = 'var(--text-muted)';
+    }
   }
 
   gameTimerInterval = setInterval(() => {
     const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
-    const m = String(Math.floor(elapsedSec / 60)).padStart(2, '0');
-    const s = String(elapsedSec % 60).padStart(2, '0');
-    if (gameTimerEl) gameTimerEl.textContent = `${m}:${s}`;
+    const mm = String(Math.floor(elapsedSec / 60)).padStart(2, '0');
+    const ss = String(elapsedSec % 60).padStart(2, '0');
+    if (gameTimerEl) gameTimerEl.textContent = `${mm}:${ss}`;
+
+    // Persist ongoing elapsed time so timer is never lost if closed/reopened
+    try {
+      localStorage.setItem(timerKey, String(elapsedSec));
+    } catch {}
 
     if (speedBonusEl) {
       if (elapsedSec < 30) {
@@ -1196,6 +1255,13 @@ function stopPuzzleTimer() {
     clearInterval(gameTimerInterval);
     gameTimerInterval = null;
   }
+}
+
+function clearPuzzleTimerKey() {
+  try {
+    const timerKey = getPuzzleTimerKey();
+    localStorage.removeItem(timerKey);
+  } catch {}
 }
 
 function updateDailySweepUI() {
@@ -1341,18 +1407,18 @@ async function loadCurrentPuzzle(isNewInfinite = false) {
   }
 
   // 4. Setup puzzle for play (Lazy loads game module)
-  newGameBtn.style.display = 'inline-block';
   if (isInfinitePlay) {
+    newGameBtn.style.display = 'inline-block';
     newGameBtn.textContent = '♾️ Next Puzzle';
     currentPuzzle = await getPlaygroundPuzzle(activeGameId, currentTier);
     gameBadge.textContent = `Infinite ${currentTier.toUpperCase()} Mode ♾️`;
   } else {
-    newGameBtn.textContent = '↺ Reset Puzzle';
+    // Reset puzzle is for infinite mode only; when daily question is asked, that option is not shown
+    newGameBtn.style.display = 'none';
     currentPuzzle = await getDailyPuzzle(activeGameId, currentTier, dateStr);
     gameBadge.textContent = `Daily ${currentTier.toUpperCase()} (${dateStr})`;
   }
 
-  startTime = Date.now();
   startPuzzleTimer();
 
   // Reset escalating hints per puzzle session
@@ -1403,27 +1469,21 @@ btnGameHint?.addEventListener('click', async () => {
   }
 
   try {
-    btnGameHint.disabled = true;
-    btnGameHint.textContent = '💡 Revealing...';
+    // Immediately give the hint result without changing text to "Revealing..."
+    if (typeof activeGameProvideHint === 'function') {
+      activeGameProvideHint(cost);
+    }
+    sessionHintCount++;
+    updateHintButtonUI();
 
-    const res = await api.useHint(activeGameId, sessionHintCount);
+    const res = await api.useHint(activeGameId, sessionHintCount - 1);
     currentUser.coins = res.remainingCoins;
     updateAuthUI();
     updateScoreDisplay();
-
-    if (typeof activeGameProvideHint === 'function') {
-      activeGameProvideHint(res.cost || cost);
-    }
-
-    sessionHintCount++;
-    updateHintButtonUI();
   } catch (err) {
     showStatus(`⚠️ ${err.message || 'Could not purchase hint'}`, 'var(--danger)');
   } finally {
-    if (btnGameHint) {
-      btnGameHint.disabled = false;
-      updateHintButtonUI();
-    }
+    updateHintButtonUI();
   }
 });
 
@@ -1450,8 +1510,10 @@ solveVictoryModal?.addEventListener('click', (e) => {
 });
 
 async function handleGameWin(gameId, tier, earnedPoints, customTimeTakenMs, extraCtx) {
-  stopPuzzleTimer();
   const timeTakenMs = customTimeTakenMs || Math.max(1500, Date.now() - startTime);
+  stopPuzzleTimer();
+  clearPuzzleTimerKey();
+  if (gameTimerEl) gameTimerEl.textContent = '00:00';
 
   let speedBonus = 0;
   if (timeTakenMs < 30000) speedBonus = 50;
@@ -1616,6 +1678,7 @@ function updateScoreDisplay() {
 }
 
 newGameBtn?.addEventListener('click', () => {
+  clearPuzzleTimerKey();
   loadCurrentPuzzle(isInfinitePlay);
 });
 
@@ -1898,7 +1961,11 @@ document.getElementById('profile-privacy-select')?.addEventListener('change', as
 btnOpenProfile?.addEventListener('click', (e) => {
   e.preventDefault();
   e.stopPropagation();
-  openProfileModal();
+  if (currentUser?.id && currentUser.id !== 'guest') {
+    window.location.href = `/profiles?id=${encodeURIComponent(currentUser.id)}`;
+  } else {
+    window.location.href = '/profiles';
+  }
 });
 
 profileModalClose?.addEventListener('click', () => profileModal?.classList.add('hidden'));
@@ -1960,33 +2027,75 @@ async function openPublicProfile(username) {
     }
 
     // Render social drawer when clicking Followers or Following (Image 2 style)
-    const showSocialList = (type = 'followers') => {
+    const showSocialList = (type = 'following') => {
       if (!canViewSocial) {
         if (privateMsg) privateMsg.classList.remove('hidden');
         return;
       }
       if (!socialDrawer || !socialList) return;
+
+      // Update button tab visual states
+      if (type === 'following') {
+        btnFollowing?.classList.add('active');
+        btnFollowers?.classList.remove('active');
+      } else {
+        btnFollowers?.classList.add('active');
+        btnFollowing?.classList.remove('active');
+      }
+
       const list = type === 'followers' ? (currentPublicUser.followers || []) : (currentPublicUser.following || []);
       if (socialTitle) socialTitle.textContent = type === 'followers' ? `Followers (${list.length})` : `Following (${list.length})`;
       
       if (list.length === 0) {
-        socialList.innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem; text-align:center; padding:0.5rem;">No ${type} found.</div>`;
+        socialList.innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem; text-align:center; padding:0.75rem;">No ${type} found.</div>`;
       } else {
         socialList.innerHTML = list.map(u => {
           const uInitial = (u.display_name || u.username || 'P')[0].toUpperCase();
+          const isUSelf = currentUser && (currentUser.username?.toLowerCase() === u.username?.toLowerCase() || currentUser.id === u.id);
+          const isUFollowing = userFollowing.some(f => f.username?.toLowerCase() === u.username?.toLowerCase() || f.id === u.id);
+          
           return `
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:4px 0; border-bottom:1px solid #f1f5f9;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <div style="width:28px; height:28px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800;">${uInitial}</div>
-                <div>
-                  <a href="/profiles?username=${encodeURIComponent(u.username)}" style="font-size:0.82rem; font-weight:800; color:var(--text-color); text-decoration:none;">${u.display_name || u.username}</a>
-                  <div style="font-size:0.7rem; color:var(--text-muted);">@${u.username}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid #f1f5f9;">
+              <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                <div style="width:32px; height:32px; border-radius:50%; background:#e0f2fe; color:#0369a1; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; flex-shrink:0;">${uInitial}</div>
+                <div style="min-width:0; overflow:hidden;">
+                  <a href="/profiles?username=${encodeURIComponent(u.username)}" style="font-size:0.85rem; font-weight:800; color:var(--text-color); text-decoration:none; display:block; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${u.display_name || u.username}</a>
+                  <div style="font-size:0.72rem; color:var(--text-muted);">@${u.username}</div>
                 </div>
               </div>
-              <a href="/profiles?username=${encodeURIComponent(u.username)}" style="font-size:0.72rem; font-weight:800; color:var(--accent); text-decoration:none; background:#f1f5f9; padding:2px 8px; border-radius:6px;">View ↗</a>
+              <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                ${!isUSelf ? `
+                  <button type="button" class="btn-toggle-follow-public-item" data-username="${u.username}" data-id="${u.id || ''}" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; padding:4px 12px; font-size:0.75rem; font-weight:700; color:${isUFollowing ? '#dc2626' : '#0284c7'}; cursor:pointer; transition:all 0.15s;">
+                    ${isUFollowing ? 'Unfollow' : 'Follow'}
+                  </button>
+                ` : ''}
+                <a href="/profiles?username=${encodeURIComponent(u.username)}" style="font-size:0.72rem; font-weight:800; color:var(--accent); text-decoration:none; background:#f1f5f9; padding:4px 8px; border-radius:6px;">View ↗</a>
+              </div>
             </div>
           `;
         }).join('');
+
+        socialList.querySelectorAll('.btn-toggle-follow-public-item').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const targetUsername = btn.dataset.username;
+            const targetId = btn.dataset.id;
+            const currentlyFollowing = userFollowing.some(f => f.username?.toLowerCase() === targetUsername?.toLowerCase() || f.id === targetId);
+            btn.disabled = true;
+            btn.textContent = '...';
+            try {
+              if (currentlyFollowing) {
+                await unfollowPlayer(targetId, targetUsername);
+              } else {
+                await followPlayer(targetUsername);
+              }
+              showSocialList(type);
+            } catch (err) {
+              btn.disabled = false;
+              btn.textContent = currentlyFollowing ? 'Unfollow' : 'Follow';
+            }
+          });
+        });
       }
       socialDrawer.classList.remove('hidden');
     };
@@ -2067,7 +2176,7 @@ publicProfileModal?.addEventListener('click', (e) => {
   if (e.target === publicProfileModal) publicProfileModal?.classList.add('hidden');
 });
 
-// Debounced Player Search (1000ms debounce as requested)
+// Debounced Player Search (500ms half-second debounce)
 let playerSearchTimeout = null;
 playerSearchInput?.addEventListener('input', () => {
   const q = playerSearchInput.value.trim();
@@ -2106,7 +2215,7 @@ playerSearchInput?.addEventListener('input', () => {
     } catch (err) {
       console.warn('Player search error:', err);
     }
-  }, 1000);
+  }, 500);
 });
 
 document.addEventListener('click', (e) => {
@@ -2749,7 +2858,7 @@ function openWorldWarsModal() {
 btnOpenWorldWars?.addEventListener('click', (e) => {
   e.preventDefault();
   e.stopPropagation();
-  openWorldWarsModal();
+  window.location.href = '/world_wars/weekly_tournaments';
 });
 
 worldWarsModalClose?.addEventListener('click', () => {
@@ -4224,8 +4333,7 @@ function handleUrlRouting(pushState = false) {
   }
 
   if (path === '/world-wars') {
-    returnToHome(false);
-    openWorldWarsModal();
+    window.location.href = '/world_wars/weekly_tournaments';
     return;
   }
 
@@ -4276,22 +4384,6 @@ function setupRoutingListeners() {
   worldWarsCardEl?.addEventListener('click', (e) => {
     if (e.target.closest('#btn-open-world-wars')) return;
     window.location.href = '/world_wars/weekly_tournaments';
-  });
-
-  document.getElementById('btn-open-world-wars')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    window.location.href = '/world_wars/weekly_tournaments';
-  });
-
-  document.getElementById('btn-open-profile')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (currentUser?.id && currentUser.id !== 'guest') {
-      window.location.href = `/profiles?id=${encodeURIComponent(currentUser.id)}`;
-    } else {
-      window.location.href = '/profile.php';
-    }
   });
 
   document.querySelectorAll('.btn-nav-shop').forEach(btn => {

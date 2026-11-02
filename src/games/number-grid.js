@@ -198,8 +198,8 @@ export const gameConfig = {
     }
     html += `<div class="matrix-cell target">★</div></div>
       <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-        <button id="verify-matrix-btn" class="game-action-btn btn-play" style="max-width: 220px;">
-          Verify Solution & Submit
+        <button id="verify-matrix-btn" class="game-action-btn btn-orange-done" style="max-width: 220px;">
+          Done
         </button>
       </div>
     </div>`;
@@ -237,7 +237,7 @@ export const gameConfig = {
 
       showStatus(`🎉 Matrix Solved in ${(timeTakenMs / 1000).toFixed(1)}s! (+${score} pts)`, "var(--correct-bg)");
       verifyBtn.disabled = true;
-      verifyBtn.textContent = 'Solved! ✓';
+      verifyBtn.textContent = 'Done ✓';
       onWin(score, timeTakenMs);
     };
 

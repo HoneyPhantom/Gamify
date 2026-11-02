@@ -1,8 +1,3 @@
-<?php
-// Gamify Dynamic Player Profile Template
-// URL Formats: /profile.php?id=5 | /profiles?id=5 | /profile.php?username=archcrispy
-$userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['username']) ? htmlspecialchars($_GET['username']) : '');
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,8 +17,8 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
       --text-color: #0f172a;
       --text-muted: #64748b;
       --border-color: #e2e8f0;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
       --correct-bg: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
@@ -144,7 +139,7 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
     }
     .main-profile-column {
       flex: 1;
-      max-width: 620px;
+      max-width: 500px;
       min-width: 0;
     }
 
@@ -167,172 +162,489 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
       .mobile-ad-banner { display: block; }
     }
 
-    /* Profile Card (Image 1 & Image 2 Style) */
+    /* Profile Card (Exact Images 2 & 3 Parity) */
     .profile-card {
       background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
-      padding: 2rem 1.75rem;
+      padding: 1.75rem 1.6rem;
       box-shadow: var(--shadow-md);
       position: relative;
     }
-    .profile-avatar-large {
-      width: 76px;
-      height: 76px;
-      border-radius: 50%;
-      background: #e0f2fe;
+
+    /* Header matching Image 3 */
+    .profile-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .profile-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex: 1;
+      min-width: 0;
+    }
+    .profile-avatar-box {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      background: #0284c7;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2.2rem;
+      font-size: 2rem;
+      flex-shrink: 0;
       border: 3px solid #38bdf8;
-      margin: 0 auto 0.75rem auto;
-      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
     }
-    .profile-title-header {
-      text-align: center;
-      margin-bottom: 0.75rem;
+    .profile-meta-info {
+      flex: 1;
+      min-width: 0;
     }
-    .profile-gamertag {
-      font-size: 1.5rem;
+    .profile-name-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .profile-display-gamertag {
+      margin: 0;
+      font-size: 1.35rem;
       font-weight: 900;
-      color: #0f172a;
       line-height: 1.2;
+      color: #0f172a;
     }
-    .profile-handle {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-top: 2px;
-    }
-    .profile-level-badge {
+    .custom-title-badge {
+      background: #ede9fe;
+      color: #7c3aed;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      background: #fef3c7;
-      border: 1px solid #fde68a;
-      color: #92400e;
-      font-weight: 800;
-      font-size: 0.85rem;
-      padding: 0.35rem 0.8rem;
-      border-radius: 999px;
-      margin-top: 0.5rem;
+      white-space: nowrap;
     }
-
-    /* Clickable Followers & Following Counts (Image 2 style) */
-    .social-counts-row {
-      display: flex;
-      justify-content: center;
-      gap: 1.5rem;
-      margin: 1rem 0;
-      font-size: 0.95rem;
-      font-weight: 700;
-    }
-    .social-count-item {
+    .profile-display-handle {
+      margin: 3px 0 0 0;
       color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+    .btn-install-header {
+      height: 44px;
+      padding: 0 1.25rem;
+      font-size: 0.88rem;
+      font-weight: 800;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      border: none;
       cursor: pointer;
-      padding: 0.35rem 0.75rem;
-      border-radius: 8px;
-      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: transform 0.15s, box-shadow 0.15s;
     }
-    .social-count-item:hover {
-      background: #f1f5f9;
-      color: var(--text-color);
-    }
-    .social-count-item strong {
-      color: var(--accent);
-      margin-left: 4px;
+    .btn-install-header:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
     }
 
-    /* Social List Drawer (when clicking followers/following) */
-    .social-drawer {
-      background: #f8fafc;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 1.25rem;
-      display: none;
-    }
-    .social-drawer.active { display: block; }
-    .social-drawer-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.75rem;
-      font-weight: 800;
-      font-size: 0.9rem;
-    }
-    .social-drawer-items {
-      max-height: 220px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .social-user-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.5rem 0.75rem;
+    /* XP Progress Box (Image 3) */
+    .xp-progress-box {
+      margin: 1.15rem 0;
+      padding: 0.85rem 1rem;
       background: #ffffff;
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      text-decoration: none;
-      color: inherit;
-      transition: transform 0.15s, border-color 0.15s;
+      border-radius: 12px;
     }
-    .social-user-row:hover {
-      transform: translateY(-1px);
-      border-color: var(--accent);
+    .xp-level-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .xp-level-text {
+      font-size: 0.88rem;
+      font-weight: 900;
+      color: #b45309;
+    }
+    .xp-title-text {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .xp-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #fef3c7;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .xp-bar-fill {
+      height: 100%;
+      background: #f59e0b;
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+    .xp-text {
+      text-align: right;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-top: 0.35rem;
     }
 
-    /* About Section */
-    .about-box {
-      background: #f8fafc;
+    /* Quick Action Pills Row (Image 3) */
+    .quick-actions-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .quick-pill-streak {
+      background: #ffffff;
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      margin: 1.25rem 0;
-      font-size: 0.95rem;
+      border-radius: 999px;
+      padding: 0.5rem 0.85rem;
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: #0f172a;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .quick-pill-challenges {
+      flex: 1;
+      justify-content: center;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+      transition: transform 0.15s;
+    }
+    .quick-pill-challenges:hover { transform: translateY(-1px); }
+    .quick-pill-shop {
+      flex: 1;
+      justify-content: center;
+      background: linear-gradient(135deg, #ec4899, #a855f7);
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);
+      transition: transform 0.15s;
+    }
+    .quick-pill-shop:hover { transform: translateY(-1px); }
+
+    /* About Me Section (Image 3) */
+    .form-group {
+      margin-bottom: 1.15rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .form-group label {
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: #0f172a;
+      margin-bottom: 0.4rem;
+    }
+    .about-textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
+      font-family: inherit;
+      font-size: 0.88rem;
+      color: #1e293b;
+      resize: vertical;
+      min-height: 65px;
+      outline: none;
+      background: #ffffff;
+      transition: border-color 0.15s;
+    }
+    .about-textarea:focus { border-color: var(--accent); }
+    .about-display-box {
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.75rem 0.95rem;
+      background: #f8fafc;
+      font-size: 0.88rem;
       color: #334155;
+    }
+    .btn-save-about {
+      align-self: flex-end;
+      margin-top: 0.45rem;
+      padding: 0.45rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      border-radius: 8px;
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-save-about:hover { background: #0369a1; }
+
+    /* Account Privacy (Image 3) */
+    .privacy-select-box {
+      width: 100%;
+      padding: 0.55rem 0.85rem;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #0f172a;
+      outline: none;
+      font-family: inherit;
+    }
+    .privacy-link-sub {
+      margin-top: 0.65rem;
       text-align: center;
     }
-
-    /* Streaks Maintained Grid */
-    .streaks-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 0.65rem;
-      margin-top: 0.75rem;
+    .privacy-link-sub a {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-decoration: none;
     }
-    .streak-card {
-      background: #f8fafc;
+    .privacy-link-sub a:hover { text-decoration: underline; }
+
+    /* Best Streaks Maintained (Image 3) */
+    .section-title-streaks {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 1.25rem 0 0.65rem 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .streaks-scroll-container {
+      display: flex;
+      gap: 0.65rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      scrollbar-width: thin;
+    }
+    .streak-card-item {
+      flex: 0 0 130px;
+      background: #ffffff;
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 0.75rem 0.5rem;
       text-align: center;
     }
-    .streak-game-title {
+    .streak-card-game {
       font-size: 0.72rem;
+      color: var(--text-muted);
       font-weight: 800;
       text-transform: uppercase;
-      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .streak-score-val {
-      font-size: 1.25rem;
+    .streak-card-val {
+      font-size: 1.35rem;
       font-weight: 900;
       color: #ea580c;
-      margin-top: 2px;
+      margin-top: 0.25rem;
     }
 
-    /* Action Buttons */
-    .profile-actions-row {
+    /* Following & Followers Button Tabs (Image 2 Parity - Requirement 4) */
+    .social-tabs-row {
+      display: flex;
+      gap: 0.6rem;
+      margin: 1.25rem 0 0.75rem 0;
+    }
+    .tab-btn-social {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: #475569;
+      padding: 0.5rem 1.15rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 0.85rem;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tab-btn-social:hover {
+      color: var(--text-color);
+      border-color: #cbd5e1;
+    }
+    .tab-btn-social.active {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+    }
+
+    /* Friends Box Container (Image 2) */
+    .friends-box-container {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .add-friend-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .add-friend-input {
+      flex: 1;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.85rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: #ffffff;
+      outline: none;
+      font-family: inherit;
+    }
+    .add-friend-input:focus { border-color: var(--accent); }
+    .btn-submit-follow {
+      padding: 0.55rem 1.15rem;
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-submit-follow:hover { background: #0369a1; }
+
+    .social-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .friend-row-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      transition: border-color 0.15s;
+    }
+    .friend-row-card:hover { border-color: #cbd5e1; }
+    .friend-info-left {
+      min-width: 0;
+      overflow: hidden;
+    }
+    .friend-link-gamertag {
+      font-weight: 800;
+      font-size: 0.88rem;
+      cursor: pointer;
+      color: #0284c7;
+      text-decoration: none;
+      display: block;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .friend-link-gamertag:hover { text-decoration: underline; }
+    .friend-handle-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+    .btn-item-unfollow {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-item-unfollow:hover {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #dc2626;
+    }
+    .btn-item-follow-back {
+      background: #0284c7;
+      border: 1px solid #0284c7;
+      color: #ffffff;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 800;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-item-follow-back:hover { background: #0369a1; }
+
+    /* Bottom Logout Card Button (Image 2) */
+    .logout-wrapper {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+    .btn-logout-card {
+      width: 100%;
+      padding: 0.75rem;
+      color: #e11d48;
+      border: 1px solid #fecdd3;
+      font-weight: 800;
+      background: #fff1f2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: background 0.15s;
+    }
+    .btn-logout-card:hover { background: #ffe4e6; }
+
+    .other-user-actions-row {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
       display: flex;
       gap: 0.75rem;
-      margin-top: 1.5rem;
-      flex-wrap: wrap;
     }
-    .btn-action-primary {
+    .btn-challenge-action {
       flex: 1;
       padding: 0.75rem 1rem;
       background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
@@ -340,7 +652,7 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
       border: none;
       border-radius: 12px;
       font-weight: 800;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -349,81 +661,7 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
       box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
       transition: transform 0.15s;
     }
-    .btn-action-primary:hover { transform: translateY(-2px); }
-
-    .btn-action-secondary {
-      flex: 1;
-      padding: 0.75rem 1rem;
-      background: #ffffff;
-      color: #334155;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      font-weight: 800;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: background 0.15s;
-      text-align: center;
-    }
-    .btn-action-secondary:hover { background: #f8fafc; }
-
-    /* Privacy Toggle Box */
-    .privacy-toggle-box {
-      margin-top: 1.25rem;
-      padding: 0.75rem 1rem;
-      background: #f1f5f9;
-      border-radius: 12px;
-      border: 1px solid #cbd5e1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-    .privacy-select {
-      padding: 0.35rem 0.75rem;
-      font-weight: 800;
-      border-radius: 8px;
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      font-family: inherit;
-    }
-
-    /* Modal Overlay (Image 1 Style) */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.55);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 1rem;
-    }
-    .modal-card {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 1.75rem 1.6rem;
-      max-width: 440px;
-      width: 100%;
-      box-shadow: 0 20px 45px rgba(15,23,42,0.22);
-    }
-
-    /* Static Text Section for AdSense */
-    .profile-static-info {
-      margin-top: 2.5rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--border-color);
-      color: #475569;
-      font-size: 0.88rem;
-      line-height: 1.6;
-    }
-    .profile-static-info h3 {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 0.5rem;
-    }
-    .profile-static-info p { margin-bottom: 0.75rem; }
+    .btn-challenge-action:hover { transform: translateY(-1px); }
 
     /* Footer */
     footer.site-footer {
@@ -464,7 +702,7 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
     </div>
   </header>
 
-  <!-- Page Layout with Side Ads (Requirement 6) -->
+  <!-- Page Layout with Desktop Side Ads (Requirement 6) -->
   <div class="page-layout-wrapper">
     <!-- Desktop Left Side Ad Rail -->
     <aside class="side-ad-rail" aria-label="Advertisement">
@@ -472,7 +710,7 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
       <div class="ad-slot-box">Responsive Vertical Banner</div>
     </aside>
 
-    <!-- Main Profile Card Content -->
+    <!-- Main Profile Card Content (Images 2 & 3 Parity) -->
     <main class="main-profile-column">
       <!-- Mobile Top Ad Banner -->
       <div class="mobile-ad-banner">
@@ -480,85 +718,144 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
         <div class="mobile-ad-box"></div>
       </div>
 
-      <div class="profile-card" id="profile-card-content">
-        <!-- Avatar & Details -->
-        <div class="profile-avatar-large" id="profile-display-avatar">🎮</div>
-        <div class="profile-title-header">
-          <h1 class="profile-gamertag" id="profile-display-name">Player</h1>
-          <p class="profile-handle" id="profile-display-handle">@loading</p>
-          <div class="profile-level-badge" id="profile-display-level">⭐ Lvl 1 • Novice</div>
-        </div>
-
-        <!-- Followers & Following (Clickable if public) -->
-        <div class="social-counts-row">
-          <div class="social-count-item" id="btn-toggle-followers">
-            Followers: <strong id="profile-followers-count">0</strong>
+      <div class="profile-card" id="profile-main-card">
+        <!-- Header (Image 3) -->
+        <div class="profile-header-row">
+          <div class="profile-header-left">
+            <div class="profile-avatar-box" id="profile-avatar">🎮</div>
+            <div class="profile-meta-info">
+              <div class="profile-name-title-wrap">
+                <h1 class="profile-display-gamertag" id="profile-display-name">Player</h1>
+                <span id="profile-custom-title" class="custom-title-badge hidden">Title</span>
+              </div>
+              <p class="profile-display-handle" id="profile-username">@player</p>
+            </div>
           </div>
-          <div class="social-count-item" id="btn-toggle-following">
-            Following: <strong id="profile-following-count">0</strong>
-          </div>
-        </div>
-
-        <!-- Social List Drawer (Opened when clicking Followers or Following) -->
-        <div class="social-drawer" id="social-drawer">
-          <div class="social-drawer-header">
-            <span id="social-drawer-title">Followers</span>
-            <button type="button" id="btn-close-drawer" style="border:none; background:none; cursor:pointer; font-size:1rem; color:#64748b;">✕</button>
-          </div>
-          <div class="social-drawer-items" id="social-drawer-list">
-            <!-- Populated dynamically -->
+          <!-- Action Button on Right (Install App for self, Follow/Unfollow for other) -->
+          <div id="profile-header-action-container">
+            <button type="button" id="btn-profile-install-app" class="btn-install-header">
+              📲 Install App
+            </button>
           </div>
         </div>
 
-        <!-- About Description -->
-        <div class="about-box" id="profile-about-box">
-          Loading player bio...
+        <!-- XP Progress Box (Image 3) -->
+        <div class="xp-progress-box">
+          <div class="xp-level-header">
+            <span class="xp-level-text" id="profile-user-level">Lvl 1</span>
+            <span class="xp-title-text" id="profile-level-title">Novice</span>
+          </div>
+          <div class="xp-bar-bg">
+            <div class="xp-bar-fill" id="profile-xp-fill" style="width: 0%;"></div>
+          </div>
+          <div class="xp-text" id="profile-xp-text">0 / 25 XP</div>
         </div>
 
-        <!-- Best Streaks Maintained -->
-        <div style="margin-top: 1.5rem;">
-          <h3 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;">
-            🔥 Best Streaks Maintained:
-          </h3>
-          <div class="streaks-grid" id="profile-streaks-grid">
-            <!-- Populated dynamically -->
+        <!-- Quick Action Pills Row (Image 3) -->
+        <div class="quick-actions-row">
+          <div class="quick-pill-streak" id="profile-streak-badge">
+            🔥 Streak: <strong id="profile-streak-count" style="margin-left: 2px;">0</strong> Days
+          </div>
+          <a href="/challenges" class="quick-pill-challenges" id="btn-profile-challenges">
+            🎯 Challenges
+          </a>
+          <a href="/shop" class="quick-pill-shop" id="btn-profile-shop">
+            🛍️ Shop
+          </a>
+        </div>
+
+        <!-- About Me Section (Image 3) -->
+        <div class="form-group" id="profile-about-group">
+          <label for="profile-about-input">About Me</label>
+          <div id="profile-about-container">
+            <textarea id="profile-about-input" class="about-textarea" rows="2" placeholder="Tell other players about yourself..."></textarea>
+            <button type="button" id="btn-save-profile" class="btn-save-about">Save About</button>
           </div>
         </div>
 
-        <!-- Actions Row (Challenge / Follow or Install / Edit if self) -->
-        <div class="profile-actions-row" id="profile-actions-container">
-          <!-- Populated dynamically -->
-        </div>
-
-        <!-- Privacy Setting (Only shown when viewing own profile) -->
-        <div class="privacy-toggle-box hidden" id="own-privacy-box">
-          <div>
-            <strong style="font-size: 0.85rem; color: #0f172a;">Profile Privacy</strong>
-            <p style="font-size: 0.75rem; color: #64748b; margin: 0;">Hide followers & following from non-followers</p>
-          </div>
-          <select id="select-profile-privacy" class="privacy-select">
-            <option value="0">🌐 Public</option>
-            <option value="1">🔒 Private</option>
+        <!-- Account Privacy Setting (Image 3) -->
+        <div class="form-group" id="profile-privacy-group">
+          <label for="profile-privacy-select" style="font-size: 0.82rem; color: var(--text-muted);">Account Privacy</label>
+          <select id="profile-privacy-select" class="privacy-select-box">
+            <option value="0">🌐 Public (Followers & following visible to everyone)</option>
+            <option value="1">🔒 Private (Followers & following visible to approved followers only)</option>
           </select>
+          <div class="privacy-link-sub">
+            <a href="/profiles" id="btn-view-own-dynamic-page">View Dedicated Dynamic Profile Page ↗</a>
+          </div>
+        </div>
+
+        <!-- Private Account Notice (Shown when viewing another user who is private) -->
+        <div id="profile-private-warning" class="hidden" style="margin-bottom: 1.15rem; padding: 0.75rem; background: #f1f5f9; border-radius: 10px; font-size: 0.85rem; color: #64748b; font-weight: 700; text-align: center;">
+          🔒 This account is private. Follow this player to view their network.
+        </div>
+
+        <!-- Best Streaks Maintained (Image 3) -->
+        <div>
+          <div class="section-title-streaks">🔥 Best Streaks Maintained</div>
+          <div class="streaks-scroll-container" id="profile-streaks-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Followers & Following Section (Image 2 Parity - Requirement 4) -->
+        <div style="margin-top: 1.25rem;">
+          <div class="social-tabs-row" id="follow-tabs">
+            <button type="button" class="tab-btn-social active" id="tab-btn-following" data-tab="following">Following (<span id="tab-following-count">0</span>)</button>
+            <button type="button" class="tab-btn-social" id="tab-btn-followers" data-tab="followers">Followers (<span id="tab-followers-count">0</span>)</button>
+          </div>
+
+          <div class="friends-box-container" id="friends-box-container">
+            <div class="add-friend-row" id="add-friend-row-wrapper">
+              <input type="text" id="add-friend-input" class="add-friend-input" placeholder="Follow player by username..." />
+              <button type="button" id="btn-add-friend" class="btn-submit-follow">Follow</button>
+            </div>
+            <div id="profile-friends-feedback" style="font-size: 0.8rem; margin-bottom: 0.5rem; display: none;"></div>
+            
+            <div class="social-items-list" id="profile-following-list">
+              <!-- Populated dynamically with following -->
+            </div>
+            <div class="social-items-list hidden" id="profile-followers-list">
+              <!-- Populated dynamically with followers -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Logout Action (Image 2) -->
+        <div class="logout-wrapper" id="profile-logout-wrapper">
+          <button type="button" id="btn-profile-logout" class="btn-logout-card">
+            🚪 Logout
+          </button>
+        </div>
+
+        <!-- Other User Bottom Actions (Challenge / Shop) -->
+        <div class="other-user-actions-row hidden" id="other-user-actions-row">
+          <button type="button" id="btn-challenge-player-bottom" class="btn-challenge-action">🎯 Challenge Player</button>
+          <a href="/shop" class="quick-pill-shop" style="flex: 0 0 110px; border-radius: 12px; font-size: 0.92rem;">🛍️ Shop</a>
         </div>
       </div>
 
-      <!-- Static SEO & AdSense Section (250+ Words Original Text) -->
-      <section class="profile-static-info">
-        <h3>About Gamify Player Profiles & Progression System</h3>
-        <p>
-          Welcome to the official player profile hub on <strong>Gamify</strong>. Every registered puzzle enthusiast is assigned a unique gamertag, cryptographic identifier, and persistent skill ledger that tracks puzzle-solving prowess across six unique daily brain challenges: Word Guess, Number Grid, Classic Sudoku, Memory Match, Number Trail, and the Daily Crossword.
-        </p>
-        <p>
-          <strong>Experience Points (XP) & Player Levels:</strong> Whenever you conquer a daily puzzle, your profile is credited with experience points calibrated by puzzle complexity and speed bonuses. As your XP grows, your rank advances from Novice to Apprentice, Strategist, Master, and ultimately Grandmaster. Your avatar frame visually showcases your earned prestige to fellow contenders across the global arena.
-        </p>
-        <p>
-          <strong>Consecutive Daily Streaks:</strong> Consistency is the cornerstone of cognitive agility. Gamify tracks consecutive calendar day completions calculated precisely at UTC midnight. Solving all daily sweep games awards bonus coins and elevates your historic best streak badge. If a day is missed, active streaks reset while your historic high watermark remains permanently celebrated on your profile.
-        </p>
-        <p>
-          <strong>Social Privacy Controls:</strong> Gamify gives players complete sovereignty over their social footprint. Accounts marked as <em>Public</em> allow community members to inspect follower networks and challenge players directly. Setting your account to <em>Private</em> conceals your follower roster from non-followers while preserving your standing on the World Wars global leaderboards.
-        </p>
-      </section>
+      <!-- Static SEO & AdSense Section (250+ Words Original Text - Defaultly Collapsed) -->
+      <details class="game-rules-dropdown" style="margin-top: 1.5rem; background: #ffffff; border: 1px solid var(--border-color); border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: left;">
+        <summary style="font-size: 1rem; font-weight: 800; color: #0f172a; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between;">
+          <span>📖 About Gamify Player Profiles & Progression System</span>
+          <span style="font-size: 0.8rem; color: #94a3b8;">▼ Expand</span>
+        </summary>
+        <div style="margin-top: 1rem; font-size: 0.92rem; line-height: 1.7; color: #334155;">
+          <p style="margin-bottom: 0.85rem;">
+            Welcome to the official player profile hub on <strong>Gamify</strong>. Every registered puzzle enthusiast is assigned a unique gamertag, cryptographic identifier, and persistent skill ledger that tracks puzzle-solving prowess across six unique daily brain challenges: Word Guess, Number Grid, Classic Sudoku, Memory Match, Number Trail, and the Daily Crossword.
+          </p>
+          <p style="margin-bottom: 0.85rem;">
+            <strong>Experience Points (XP) & Player Levels:</strong> Whenever you conquer a daily puzzle, your profile is credited with experience points calibrated by puzzle complexity and speed bonuses. As your XP grows, your rank advances from Novice to Apprentice, Strategist, Master, and ultimately Grandmaster. Your avatar frame visually showcases your earned prestige to fellow contenders across the global arena.
+          </p>
+          <p style="margin-bottom: 0.85rem;">
+            <strong>Consecutive Daily Streaks:</strong> Consistency is the cornerstone of cognitive agility. Gamify tracks consecutive calendar day completions calculated precisely at UTC midnight. Solving all daily sweep games awards bonus coins and elevates your historic best streak badge. If a day is missed, active streaks reset while your historic high watermark remains permanently celebrated on your profile.
+          </p>
+          <p style="margin-bottom: 0.85rem;">
+            <strong>Social Privacy Controls:</strong> Gamify gives players complete sovereignty over their social footprint. Accounts marked as <em>Public</em> allow community members to inspect follower networks and challenge players directly. Setting your account to <em>Private</em> conceals your follower roster from non-followers while preserving your standing on the World Wars global leaderboards.
+          </p>
+        </div>
+      </details>
     </main>
 
     <!-- Desktop Right Side Ad Rail -->
@@ -577,47 +874,93 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
       <a href="/contact.html">Contact Us</a>
       <a href="/terms.html">Terms of Service</a>
     </div>
-    <p>&copy; <?php echo date('Y'); ?> Gamify. All rights reserved. Logic puzzles refreshed daily at 00:00 UTC.</p>
+    <p>&copy; 2026 Gamify. All rights reserved. Logic puzzles refreshed daily at 00:00 UTC.</p>
   </footer>
 
   <script>
-    // Client-side Profile Data Hydration
+    // Client-side Profile Data Hydration with Complete Image 2 & 3 Parity
     (async function initProfilePage() {
       const urlParams = new URLSearchParams(window.location.search);
       let targetIdentifier = urlParams.get('id') || urlParams.get('username') || '';
 
-      // Fallback: check session user from localStorage if no query param provided
-      const storedUser = localStorage.getItem('gamify_session_user');
+      const storedUser = localStorage.getItem('gamify_user_profile') || localStorage.getItem('gamify_session_user');
       let currentUser = null;
-      let token = localStorage.getItem('gamify_session_token');
+      let token = localStorage.getItem('gamify_jwt_token') || localStorage.getItem('gamify_session_token');
       try {
         if (storedUser) currentUser = JSON.parse(storedUser);
       } catch {}
 
+      // Header coin sync
+      const headerCoinEl = document.getElementById('header-user-coins');
+      if (headerCoinEl && currentUser && currentUser.coins !== undefined) {
+        headerCoinEl.textContent = currentUser.coins;
+      }
+
+      if (token) {
+        fetch('/api/me', { headers: { 'Authorization': `Bearer ${token}` } })
+          .then(r => r.json())
+          .then(d => {
+            if (d && d.user) {
+              currentUser = d.user;
+              localStorage.setItem('gamify_user_profile', JSON.stringify(currentUser));
+              localStorage.setItem('gamify_session_user', JSON.stringify(currentUser));
+              if (headerCoinEl) headerCoinEl.textContent = currentUser.coins ?? 0;
+            }
+          })
+          .catch(() => {});
+      }
+
       if (!targetIdentifier && currentUser) {
         targetIdentifier = currentUser.id || currentUser.username;
       }
-
       if (!targetIdentifier) {
         targetIdentifier = 'guest';
       }
 
-      const avatarEl = document.getElementById('profile-display-avatar');
+      // DOM Elements
+      const avatarEl = document.getElementById('profile-avatar');
       const nameEl = document.getElementById('profile-display-name');
-      const handleEl = document.getElementById('profile-display-handle');
-      const levelEl = document.getElementById('profile-display-level');
-      const aboutEl = document.getElementById('profile-about-box');
-      const followersCountEl = document.getElementById('profile-followers-count');
-      const followingCountEl = document.getElementById('profile-following-count');
-      const streaksGridEl = document.getElementById('profile-streaks-grid');
-      const actionsContainer = document.getElementById('profile-actions-container');
-      const privacyBox = document.getElementById('own-privacy-box');
-      const privacySelect = document.getElementById('select-profile-privacy');
-      const drawer = document.getElementById('social-drawer');
-      const drawerTitle = document.getElementById('social-drawer-title');
-      const drawerList = document.getElementById('social-drawer-list');
+      const customTitleEl = document.getElementById('profile-custom-title');
+      const handleEl = document.getElementById('profile-username');
+      const levelEl = document.getElementById('profile-user-level');
+      const levelTitleEl = document.getElementById('profile-level-title');
+      const xpFillEl = document.getElementById('profile-xp-fill');
+      const xpTextEl = document.getElementById('profile-xp-text');
+      const streakCountEl = document.getElementById('profile-streak-count');
+      const aboutInput = document.getElementById('profile-about-input');
+      const btnSaveProfile = document.getElementById('btn-save-profile');
+      const privacyGroup = document.getElementById('profile-privacy-group');
+      const privacySelect = document.getElementById('profile-privacy-select');
+      const privateWarning = document.getElementById('profile-private-warning');
+      const streaksGrid = document.getElementById('profile-streaks-grid');
+      const headerActionContainer = document.getElementById('profile-header-action-container');
+      const logoutWrapper = document.getElementById('profile-logout-wrapper');
+      const otherActionsRow = document.getElementById('other-user-actions-row');
+      const challengeBtnBottom = document.getElementById('btn-challenge-player-bottom');
 
-      let currentProfileData = null;
+      // Social Elements
+      const tabBtnFollowing = document.getElementById('tab-btn-following');
+      const tabBtnFollowers = document.getElementById('tab-btn-followers');
+      const tabFollowingCount = document.getElementById('tab-following-count');
+      const tabFollowersCount = document.getElementById('tab-followers-count');
+      const followingListEl = document.getElementById('profile-following-list');
+      const followersListEl = document.getElementById('profile-followers-list');
+      const addFriendRowWrapper = document.getElementById('add-friend-row-wrapper');
+      const addFriendInput = document.getElementById('add-friend-input');
+      const btnAddFriend = document.getElementById('btn-add-friend');
+      const friendsFeedback = document.getElementById('profile-friends-feedback');
+
+      let currentProfile = null;
+      let viewerFollowing = [];
+
+      // Fetch viewer's own following list to cross-reference follow/unfollow states
+      if (token) {
+        try {
+          const fRes = await fetch('/api/friends', { headers: { 'Authorization': `Bearer ${token}` } });
+          const fData = await fRes.json();
+          if (fData.following) viewerFollowing = fData.following;
+        } catch {}
+      }
 
       try {
         const headers = {};
@@ -630,61 +973,110 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
           throw new Error(data.message || 'Player not found');
         }
 
-        currentProfileData = data.profile;
-        document.title = `${currentProfileData.displayName || currentProfileData.username}'s Profile — Gamify`;
+        currentProfile = data.profile;
+        const isSelf = currentProfile.isSelf || (currentUser && currentUser.username?.toLowerCase() === currentProfile.username?.toLowerCase());
+        document.title = `${currentProfile.displayName || currentProfile.username}'s Profile — Gamify`;
 
-        // Render details
-        nameEl.textContent = currentProfileData.displayName || currentProfileData.username;
-        handleEl.textContent = `@${currentProfileData.username}`;
-        levelEl.textContent = `⭐ Lvl ${currentProfileData.level || 1} • ${currentProfileData.levelTitle || 'Novice'}`;
-        aboutEl.textContent = currentProfileData.about || 'Puzzle solver climbing to the top!';
+        // 1. Header Information
+        nameEl.textContent = currentProfile.displayName || currentProfile.username || 'Player';
+        handleEl.textContent = `@${currentProfile.username || 'player'}`;
 
-        // Cosmetic frame
-        if (currentProfileData.selectedFrame && currentProfileData.selectedFrame !== 'default') {
-          avatarEl.style.borderColor = currentProfileData.selectedFrame === 'gold' ? '#f59e0b' : '#38bdf8';
-        }
-
-        // Followers / Following Privacy Check
-        if (currentProfileData.canViewFollowers) {
-          followersCountEl.textContent = currentProfileData.followersCount ?? (currentProfileData.followers || []).length;
-          followingCountEl.textContent = currentProfileData.followingCount ?? (currentProfileData.following || []).length;
+        if (currentProfile.selectedTitle) {
+          customTitleEl.textContent = currentProfile.selectedTitle.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          customTitleEl.classList.remove('hidden');
         } else {
-          followersCountEl.textContent = '🔒 Private';
-          followingCountEl.textContent = '🔒 Private';
+          customTitleEl.classList.add('hidden');
         }
 
-        // Render Streaks
+        if (currentProfile.selectedFrame && currentProfile.selectedFrame !== 'default') {
+          avatarEl.style.borderColor = currentProfile.selectedFrame === 'gold' ? '#f59e0b' : '#38bdf8';
+        }
+
+        // 2. XP & Level Progress (Matching Image 3)
+        const lvl = currentProfile.level || 1;
+        const xp = currentProfile.xp || 0;
+        levelEl.textContent = `Lvl ${lvl}`;
+        levelTitleEl.textContent = currentProfile.levelTitle || 'Novice';
+
+        const xpNeeded = 25;
+        const xpInLevel = Math.max(0, xp % xpNeeded);
+        const pct = Math.min(100, Math.floor((xpInLevel / xpNeeded) * 100));
+        xpFillEl.style.width = `${pct}%`;
+        xpTextEl.textContent = `${xp} / ${xpNeeded} XP`;
+
+        // 3. Best Streaks (Image 3)
         const allGameTitles = {
-          'number-grid': 'Number Grid',
-          'sudoku': 'Classic Sudoku',
-          'memory-match': 'Memory Match',
-          'wordle': 'Word Guess',
-          'number-trail': 'Number Trail',
-          'crossword': 'Daily Crossword'
+          'number-trail': 'NUMBER TRAIL',
+          'wordle': 'WORD GUESS',
+          'memory-match': 'MEMORY MATCH',
+          'sudoku': 'CLASSIC SUDOKU',
+          'number-grid': 'NUMBER GRID',
+          'crossword': 'DAILY CROSSWORD'
         };
 
-        const streakList = currentProfileData.streaks || [];
-        streaksGridEl.innerHTML = Object.entries(allGameTitles).map(([gid, title]) => {
-          const match = streakList.find(s => s.game_id === gid);
+        const streaks = currentProfile.streaks || [];
+        let maxStreak = 0;
+        streaksGrid.innerHTML = Object.entries(allGameTitles).map(([gid, title]) => {
+          const match = streaks.find(s => s.game_id === gid);
           const best = match ? match.best_streak : 0;
+          if (best > maxStreak) maxStreak = best;
           return `
-            <div class="streak-card">
-              <div class="streak-game-title">${title}</div>
-              <div class="streak-score-val">🔥 ${best}</div>
+            <div class="streak-card-item">
+              <div class="streak-card-game">${title}</div>
+              <div class="streak-card-val">🔥 ${best}</div>
             </div>
           `;
         }).join('');
 
-        const isSelf = currentProfileData.isSelf || (currentUser && currentUser.username === currentProfileData.username);
+        streakCountEl.textContent = maxStreak;
 
-        // Actions Rendering
+        // 4. About Me
         if (isSelf) {
-          // Viewing own profile: Install App & Privacy Toggle
-          privacyBox.classList.remove('hidden');
-          privacySelect.value = currentProfileData.isPrivate ? '1' : '0';
+          aboutInput.value = currentProfile.about || '';
+          btnSaveProfile?.addEventListener('click', async () => {
+            const bio = aboutInput.value.trim();
+            btnSaveProfile.disabled = true;
+            btnSaveProfile.textContent = 'Saving...';
+            try {
+              const uRes = await fetch('/api/user/profile', {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ about: bio })
+              });
+              const uData = await uRes.json();
+              if (uData.success) {
+                btnSaveProfile.textContent = 'Saved ✓';
+                if (currentUser) {
+                  currentUser.about = bio;
+                  localStorage.setItem('gamify_user_profile', JSON.stringify(currentUser));
+                }
+              } else {
+                throw new Error(uData.message || 'Failed to save');
+              }
+            } catch (err) {
+              alert(err.message || 'Error saving bio');
+            } finally {
+              setTimeout(() => {
+                btnSaveProfile.textContent = 'Save About';
+                btnSaveProfile.disabled = false;
+              }, 1500);
+            }
+          });
+        } else {
+          const aboutContainer = document.getElementById('profile-about-container');
+          aboutContainer.innerHTML = `
+            <div class="about-display-box">${currentProfile.about || 'Puzzle solver climbing to the top!'}</div>
+          `;
+        }
 
+        // 5. Privacy Settings / Privacy Notice
+        if (isSelf) {
+          privacyGroup.classList.remove('hidden');
+          privacySelect.value = currentProfile.isPrivate ? '1' : '0';
           privacySelect.addEventListener('change', async () => {
-            const isPriv = privacySelect.value === '1';
             try {
               await fetch('/api/user/profile', {
                 method: 'PUT',
@@ -692,101 +1084,249 @@ $userId = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : (isset($_GET['use
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ isPrivate: isPriv })
+                body: JSON.stringify({ isPrivate: privacySelect.value === '1' })
               });
-              alert('Profile privacy updated successfully!');
-            } catch (err) {
+              alert('Account privacy preference updated.');
+            } catch {
               alert('Failed to update privacy');
             }
           });
+        } else {
+          privacyGroup.classList.add('hidden');
+          if (!currentProfile.canViewFollowers) {
+            privateWarning.classList.remove('hidden');
+          }
+        }
 
-          actionsContainer.innerHTML = `
-            <button type="button" class="btn-action-primary" id="btn-trigger-install">📲 Install App</button>
-            <button type="button" class="btn-action-secondary" id="btn-profile-logout">🚪 Logout</button>
+        // 6. Header Action (Install App for self, Follow/Unfollow for other)
+        if (isSelf) {
+          headerActionContainer.innerHTML = `
+            <button type="button" id="btn-profile-install-app" class="btn-install-header">
+              📲 Install App
+            </button>
           `;
+          logoutWrapper.classList.remove('hidden');
+          otherActionsRow.classList.add('hidden');
 
-          let deferredInstallPrompt = null;
+          let deferredInstall = null;
           window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            deferredInstallPrompt = e;
+            deferredInstall = e;
           });
-
-          document.getElementById('btn-trigger-install')?.addEventListener('click', async () => {
-            if (deferredInstallPrompt) {
+          document.getElementById('btn-profile-install-app')?.addEventListener('click', async () => {
+            if (deferredInstall) {
               try {
-                deferredInstallPrompt.prompt();
-                await deferredInstallPrompt.userChoice;
-              } catch (e) {}
-              deferredInstallPrompt = null;
+                deferredInstall.prompt();
+                await deferredInstall.userChoice;
+              } catch {}
+              deferredInstall = null;
             }
           });
 
           document.getElementById('btn-profile-logout')?.addEventListener('click', () => {
+            localStorage.removeItem('gamify_user_profile');
             localStorage.removeItem('gamify_session_user');
+            localStorage.removeItem('gamify_jwt_token');
             localStorage.removeItem('gamify_session_token');
             window.location.href = '/';
           });
         } else {
-          // Viewing another player: Challenge & Follow/Unfollow
-          const isFollowing = currentProfileData.isFollowing;
-          actionsContainer.innerHTML = `
-            <button type="button" class="btn-action-primary" id="btn-challenge-player">🎯 Challenge Player</button>
-            <button type="button" class="btn-action-secondary" id="btn-toggle-follow">${isFollowing ? 'Unfollow' : 'Follow Player'}</button>
+          logoutWrapper.classList.add('hidden');
+          otherActionsRow.classList.remove('hidden');
+
+          const isFollowingProfile = currentProfile.isFollowing;
+          headerActionContainer.innerHTML = `
+            <button type="button" id="btn-toggle-follow-header" style="height: 44px; padding: 0 1.25rem; font-size: 0.88rem; font-weight: 800; border-radius: 12px; background: ${isFollowingProfile ? '#ffffff' : '#0284c7'}; color: ${isFollowingProfile ? '#dc2626' : '#ffffff'}; border: 1px solid ${isFollowingProfile ? '#cbd5e1' : '#0284c7'}; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+              ${isFollowingProfile ? 'Unfollow' : 'Follow Player'}
+            </button>
           `;
 
-          document.getElementById('btn-challenge-player')?.addEventListener('click', () => {
-            window.location.href = `/?challenge=${encodeURIComponent(currentProfileData.username)}`;
-          });
-
-          document.getElementById('btn-toggle-follow')?.addEventListener('click', async () => {
+          document.getElementById('btn-toggle-follow-header')?.addEventListener('click', async () => {
             if (!token) {
               alert('Please log in on Gamify to follow players.');
               return;
             }
             try {
-              const endpoint = isFollowing ? '/api/friends/remove' : '/api/friends/add';
+              const endpoint = isFollowingProfile ? '/api/friends/remove' : '/api/friends/add';
               await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ username: currentProfileData.username })
+                body: JSON.stringify({ username: currentProfile.username })
               });
               window.location.reload();
-            } catch (err) {
+            } catch {
               alert('Action failed');
+            }
+          });
+
+          challengeBtnBottom?.addEventListener('click', () => {
+            window.location.href = `/?challenge=${encodeURIComponent(currentProfile.username)}`;
+          });
+        }
+
+        // 7. Social Following & Followers Lists with Tabs (Requirement 4 & Image 2)
+        const followingList = currentProfile.following || [];
+        const followersList = currentProfile.followers || [];
+
+        tabFollowingCount.textContent = currentProfile.canViewFollowers ? (currentProfile.followingCount ?? followingList.length) : '0';
+        tabFollowersCount.textContent = currentProfile.canViewFollowers ? (currentProfile.followersCount ?? followersList.length) : '0';
+
+        if (!currentProfile.canViewFollowers) {
+          followingListEl.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; text-align:center;">Followers and following are private.</div>';
+          followersListEl.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; text-align:center;">Followers and following are private.</div>';
+          addFriendRowWrapper.classList.add('hidden');
+        } else {
+          // Render Following List
+          const renderSocialItems = (items, targetEl, isFollowersTab = false) => {
+            if (!items || items.length === 0) {
+              targetEl.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; text-align:center;">No ${isFollowersTab ? 'followers' : 'following'} yet.</div>`;
+              return;
+            }
+
+            targetEl.innerHTML = items.map(u => {
+              const isUSelf = currentUser && (currentUser.username?.toLowerCase() === u.username?.toLowerCase() || currentUser.id === u.id);
+              const isUFollowing = viewerFollowing.some(f => f.username?.toLowerCase() === u.username?.toLowerCase() || f.id === u.id);
+
+              return `
+                <div class="friend-row-card">
+                  <div class="friend-info-left">
+                    <a href="/profiles?username=${encodeURIComponent(u.username)}" class="friend-link-gamertag">${u.display_name || u.username}</a>
+                    <div class="friend-handle-sub">@${u.username}</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    ${!isUSelf && token ? `
+                      <button type="button" class="btn-toggle-follow-item" data-username="${u.username}" data-id="${u.id || ''}" style="background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; padding:4px 12px; font-size:0.75rem; font-weight:700; color:${isUFollowing ? '#dc2626' : '#0284c7'}; cursor:pointer;">
+                        ${isUFollowing ? 'Unfollow' : (isFollowersTab ? 'Follow Back' : 'Follow')}
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+              `;
+            }).join('');
+
+            // Attach follow/unfollow toggle listener
+            targetEl.querySelectorAll('.btn-toggle-follow-item').forEach(btn => {
+              btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const targetU = btn.dataset.username;
+                const targetId = btn.dataset.id;
+                const isCurrentlyFollowing = viewerFollowing.some(f => f.username?.toLowerCase() === targetU?.toLowerCase() || f.id === targetId);
+                btn.disabled = true;
+                btn.textContent = '...';
+
+                try {
+                  const endpoint = isCurrentlyFollowing ? '/api/friends/remove' : '/api/friends/add';
+                  await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ username: targetU, friendId: targetId })
+                  });
+
+                  if (isCurrentlyFollowing) {
+                    viewerFollowing = viewerFollowing.filter(f => f.username?.toLowerCase() !== targetU?.toLowerCase() && f.id !== targetId);
+                    if (isSelf && !isFollowersTab) {
+                      const updated = followingList.filter(f => f.username?.toLowerCase() !== targetU?.toLowerCase());
+                      renderSocialItems(updated, followingListEl, false);
+                      tabFollowingCount.textContent = updated.length;
+                    } else {
+                      renderSocialItems(items, targetEl, isFollowersTab);
+                    }
+                  } else {
+                    viewerFollowing.push({ username: targetU, id: targetId });
+                    renderSocialItems(items, targetEl, isFollowersTab);
+                  }
+                } catch {
+                  btn.disabled = false;
+                  btn.textContent = isCurrentlyFollowing ? 'Unfollow' : 'Follow';
+                }
+              });
+            });
+          };
+
+          renderSocialItems(followingList, followingListEl, false);
+          renderSocialItems(followersList, followersListEl, true);
+
+          // Follow by Username input
+          btnAddFriend?.addEventListener('click', async () => {
+            const usernameToFollow = addFriendInput.value.trim();
+            if (!usernameToFollow) return;
+            if (!token) {
+              alert('Please log in on Gamify to follow players.');
+              return;
+            }
+
+            btnAddFriend.disabled = true;
+            btnAddFriend.textContent = '...';
+            friendsFeedback.style.display = 'block';
+            friendsFeedback.style.color = 'var(--text-muted)';
+            friendsFeedback.textContent = 'Searching player...';
+
+            try {
+              const fRes = await fetch('/api/friends/add', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ username: usernameToFollow })
+              });
+              const fData = await fRes.json();
+              if (fData.success) {
+                friendsFeedback.style.color = 'var(--correct-bg)';
+                friendsFeedback.textContent = fData.message || 'Followed player successfully!';
+                addFriendInput.value = '';
+                if (fData.friend) {
+                  viewerFollowing.push(fData.friend);
+                  if (isSelf) {
+                    followingList.unshift(fData.friend);
+                    renderSocialItems(followingList, followingListEl, false);
+                    tabFollowingCount.textContent = followingList.length;
+                  }
+                }
+              } else {
+                throw new Error(fData.message || 'Player not found');
+              }
+            } catch (err) {
+              friendsFeedback.style.color = 'var(--danger)';
+              friendsFeedback.textContent = err.message || 'Failed to follow player';
+            } finally {
+              btnAddFriend.disabled = false;
+              btnAddFriend.textContent = 'Follow';
+              setTimeout(() => { friendsFeedback.style.display = 'none'; }, 3000);
             }
           });
         }
 
-        // Clicking Followers / Following (Image 2 style)
-        const showDrawer = (type) => {
-          if (!currentProfileData.canViewFollowers) {
-            alert('This player has set their account to Private. Follow them to view their connections.');
-            return;
-          }
-          drawer.classList.add('active');
-          drawerTitle.textContent = type === 'followers' ? 'Followers' : 'Following';
-          const list = type === 'followers' ? (currentProfileData.followers || []) : (currentProfileData.following || []);
-          if (list.length === 0) {
-            drawerList.innerHTML = `<div style="text-align:center; color:#94a3b8; padding:1rem; font-size:0.85rem;">No ${type} yet.</div>`;
-          } else {
-            drawerList.innerHTML = list.map(u => `
-              <a href="/profile.php?username=${encodeURIComponent(u.username)}" class="social-user-row">
-                <span style="font-weight:800;">${u.display_name || u.username}</span>
-                <span style="color:#64748b; font-size:0.82rem;">@${u.username}</span>
-              </a>
-            `).join('');
-          }
-        };
+        // Tab Switching (Image 2 style)
+        tabBtnFollowing?.addEventListener('click', () => {
+          tabBtnFollowing.classList.add('active');
+          tabBtnFollowers?.classList.remove('active');
+          followingListEl.classList.remove('hidden');
+          followersListEl.classList.add('hidden');
+        });
 
-        document.getElementById('btn-toggle-followers')?.addEventListener('click', () => showDrawer('followers'));
-        document.getElementById('btn-toggle-following')?.addEventListener('click', () => showDrawer('following'));
-        document.getElementById('btn-close-drawer')?.addEventListener('click', () => drawer.classList.remove('active'));
+        tabBtnFollowers?.addEventListener('click', () => {
+          tabBtnFollowers.classList.add('active');
+          tabBtnFollowing?.classList.remove('active');
+          followersListEl.classList.remove('hidden');
+          followingListEl.classList.add('hidden');
+        });
 
       } catch (err) {
-        aboutEl.innerHTML = `<p style="color:var(--danger); font-weight:700;">${err.message || 'Could not load player profile'}</p>`;
+        document.getElementById('profile-main-card').innerHTML = `
+          <div style="text-align: center; padding: 2rem 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔍</div>
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;">Player Profile Not Found</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">The requested player account could not be located on the Gamify ledger.</p>
+            <a href="/" class="btn-nav-home" style="display: inline-block; padding: 0.6rem 1.25rem;">Return Home</a>
+          </div>
+        `;
       }
     })();
   </script>

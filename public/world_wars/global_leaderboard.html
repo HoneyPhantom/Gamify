@@ -410,6 +410,11 @@
         <h1>🏆 Global Leaderboard</h1>
         <p class="hero-subtitle">All-time rankings and cumulative points across all logic challenges.</p>
 
+        <!-- Game Search Input with 500ms Debounce (Requirement 3) -->
+        <div class="leaderboard-search-wrapper" style="margin: 1.25rem auto 1rem auto; max-width: 440px;">
+          <input type="text" id="leaderboard-game-search" placeholder="🔍 Search game (Word Guess, Sudoku, Number Grid...)" style="width: 100%; padding: 0.75rem 1.25rem; font-size: 0.92rem; font-weight: 700; border-radius: 9999px; border: 1.5px solid var(--border-color); background: #ffffff; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.04); font-family: inherit; color: var(--text-color);" />
+        </div>
+
         <div class="game-filter-bar" id="filter-bar">
           <button class="filter-btn active" data-game="all">All Games</button>
           <button class="filter-btn" data-game="wordle">Word Guess</button>
@@ -437,7 +442,7 @@
       </div>
 
       <!-- Static Collapsible Section: 250+ Words for Google AdSense Reviewers -->
-      <details open class="game-rules-dropdown">
+      <details class="game-rules-dropdown">
         <summary>📖 About the Gamify Global Leaderboard & Scoring Mechanics</summary>
         <div class="rules-body-content">
           <h4>Global Ranking Architecture</h4>
@@ -512,6 +517,7 @@
           const username = player.username || '';
           const profileLink = username ? `/profiles?username=${encodeURIComponent(username)}` : `/profiles?id=${player.user_id}`;
           const score = player.total_score || player.score || 0;
+          const bestScore = player.best_score || score;
           const title = player.selected_title ? `<div class="podium-title">${player.selected_title}</div>` : '';
 
           podiumHtml += `
@@ -519,7 +525,8 @@
               <div class="podium-badge">${badge}</div>
               <a href="${profileLink}" class="podium-name" title="${name}">${name}</a>
               ${title}
-              <div class="podium-score">${score.toLocaleString()}</div>
+              <div class="podium-score">${score.toLocaleString()} <span style="font-size:0.75rem; color:#64748b; font-weight:700;">pts</span></div>
+              <div class="podium-best-score" style="font-size:0.75rem; font-weight:800; color:#10b981; margin-top:4px;">⚡ Best: ${bestScore.toLocaleString()}</div>
             </div>
           `;
         });
@@ -536,6 +543,7 @@
             const username = player.username || '';
             const profileLink = username ? `/profiles?username=${encodeURIComponent(username)}` : `/profiles?id=${player.user_id}`;
             const score = player.total_score || player.score || 0;
+            const bestScore = player.best_score || score;
             const plays = player.plays_count ? `${player.plays_count} puzzles solved` : 'Challenger';
             const title = player.selected_title ? `<span class="leader-title">• ${player.selected_title}</span>` : '';
             const initial = (name[0] || 'P').toUpperCase();
@@ -551,8 +559,8 @@
                   </div>
                 </div>
                 <div class="leader-stat">
-                  <div class="leader-score">${score.toLocaleString()}</div>
-                  <div class="leader-sub">pts</div>
+                  <div class="leader-score">${score.toLocaleString()} <span style="font-size:0.75rem; color:#64748b;">pts</span></div>
+                  <div class="leader-best" style="font-size:0.72rem; font-weight:800; color:#10b981; margin-top:2px;">⚡ Best: ${bestScore.toLocaleString()}</div>
                 </div>
               </a>
             `;
@@ -565,12 +573,52 @@
       }
     }
 
+    // Game Search Debounce (500ms half-second debounce - Requirement 3)
+    const gameSearchInput = document.getElementById('leaderboard-game-search');
+    let gameSearchTimeout = null;
+
+    const gameAliasMap = [
+      { id: 'all', keywords: ['all', 'everything', 'global'] },
+      { id: 'wordle', keywords: ['word', 'wordle', 'guess', 'word guess'] },
+      { id: 'number_grid', keywords: ['number grid', 'grid', 'matrix', 'math'] },
+      { id: 'number_trail', keywords: ['number trail', 'trail', 'path', 'connect'] },
+      { id: 'sudoku', keywords: ['sudoku', 'classic sudoku'] },
+      { id: 'memory_match', keywords: ['memory', 'match', 'memory match', 'card', 'cards'] },
+      { id: 'crossword', keywords: ['crossword', 'cross', 'puzzle', 'daily crossword'] }
+    ];
+
+    function selectGameFilter(gameId) {
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        if (b.dataset.game === gameId) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+      loadLeaderboard(gameId);
+    }
+
+    gameSearchInput?.addEventListener('input', () => {
+      clearTimeout(gameSearchTimeout);
+      gameSearchTimeout = setTimeout(() => {
+        const query = gameSearchInput.value.trim().toLowerCase();
+        if (!query) {
+          selectGameFilter('all');
+          return;
+        }
+
+        const match = gameAliasMap.find(g => 
+          g.id.includes(query) || g.keywords.some(k => k.includes(query) || query.includes(k))
+        );
+
+        if (match) {
+          selectGameFilter(match.id);
+        }
+      }, 500);
+    });
+
     // Set up filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        loadLeaderboard(btn.dataset.game);
+        selectGameFilter(btn.dataset.game);
+        if (gameSearchInput) gameSearchInput.value = '';
       });
     });
 
